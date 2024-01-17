@@ -1,7 +1,7 @@
 # Build step 1(installing node modules and preparing compiled build)
 
 # Use an official Node.js image as the base image
-FROM node:14
+FROM node:14 as builder
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
@@ -14,26 +14,20 @@ RUN npm install
 
 # Copy the rest of the application code to the working directory
 COPY . .
+
 # Build the Vue.js application
 RUN npm run build
 
-# Exporse the port where the Vue.js application will run
-EXPOSE 80
-
-# Set the entrypoint as the Vue.js application command
-ENTRYPOINT ["npm", "run", "serve"]
-
 
 # Build step 2(Deploying build on NGINX)
-
 FROM nginx:1.17
-# Update package lists
-RUN apt-get update -y && apt-get upgrade -y
-# Install additional packages
-RUN apt-get install -y wget
-# Clean up
-RUN rm -rf /var/lib/apt/lists/*
-# Remove default Nginx HTML content
+
+# Update package lists and install necessary packages
+RUN apt-get update -y && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
+
+# Clean up default Nginx HTML content
 RUN rm -rf /usr/share/nginx/html/*
-COPY --from=node:14 /usr/src/app/nginx/nginx.conf /etc/nginx/conf.d/default.conf:ro
-COPY --from=node:14 /usr/src/app/dist /usr/share/nginx/html
+
+# Copy configuration and built files from the builder stage
+COPY --from=builder /usr/src/app/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /usr/src/app/dist /usr/share/nginx/html

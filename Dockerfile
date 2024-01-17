@@ -27,9 +27,13 @@ ENTRYPOINT ["npm", "run", "serve"]
 # Build step 2(Deploying build on NGINX)
 
 FROM nginx:1.17
-RUN  apt-get update \
-  && apt-get install -y wget \
-  && rm -rf /var/lib/apt/lists/*
+# Update package lists
+RUN apt-get update -y && apt-get upgrade -y
+# Install additional packages
+RUN apt-get install -y wget
+# Clean up
+RUN rm -rf /var/lib/apt/lists/*
+# Remove default Nginx HTML content
 RUN rm -rf /usr/share/nginx/html/*
 COPY --from=node:14 /usr/src/app/nginx/nginx.conf /etc/nginx/conf.d/default.conf:ro
 COPY --from=node:14 /usr/src/app/dist /usr/share/nginx/html

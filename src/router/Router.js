@@ -14,6 +14,22 @@ const router = new Router({
       component: () => import("@/layouts/full-layout/FullLayout"),
       children: [
         {
+          name: "Custom Dashboard",
+          path: '/dashboard/entra',          
+          component: () =>
+            import(
+              "@/views/dashboards/custom-dashboard/CustomDashboard"
+            ),
+        },
+        {
+          name: "Client Dashboard",
+          path: '/dashboard/client',          
+          component: () =>
+            import(
+              "@/views/dashboards/client-dashboard/ClientDashboard"
+            ),
+        },
+        {
           name: "Starter",
           path: "starter",
           component: () => import("@/views/Starter"),

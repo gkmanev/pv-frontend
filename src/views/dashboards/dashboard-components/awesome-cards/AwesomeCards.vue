@@ -2,9 +2,9 @@
   <div>
     <b-row>
       <b-col
-        lg="3"
+        lg="4"
         cols="12"
-        md="6"
+        md="4"
         v-for="awesome in awesomes"
         :key="awesome.number"
       >
@@ -30,23 +30,23 @@ export default {
       {
         cardbg: "info",
         number: "2,064",
-        subtitle: "Sessions",
+        subtitle: "Min Power",
       },
       {
         cardbg: "primary",
         number: "1,738",
-        subtitle: "Users",
+        subtitle: "Max Power",
       },
       {
         cardbg: "success",
         number: "5963",
-        subtitle: "Page Views",
+        subtitle: "Avarage Power",
       },
-      {
-        cardbg: "warning",
-        number: "10%",
-        subtitle: "Bounce Rate",
-      },
+      // {
+      //   cardbg: "warning",
+      //   number: "10%",
+      //   subtitle: "Bounce Rate",
+      // },
     ],
   }),
 };

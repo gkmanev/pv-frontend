@@ -1,10 +1,14 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import moment from "moment";
+
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    selectedDev: '',
+    all_devs: [],
+    dateRange: 'today',
     Theme: "dark", // theme can be light or dark
     LayoutType: "full-sidebar", // this can be full-sidebar, mini-sidebar
     Sidebar_drawer: false,
@@ -25,6 +29,18 @@ export default new Vuex.Store({
     ],
   },
   mutations: {
+
+    SET_SELECTED_DEV(state, payload){
+      state.selectedDev = payload
+    },
+
+    CREATE_ALL_DEVS(state, create_all) {
+      state.all_devs = create_all
+    },
+
+    SET_DATE_RANGE(state, newRange) {
+      state.dateRange = newRange;
+    },
     SET_THEME(state, payload) {
       state.Theme = payload;
     },
@@ -57,8 +73,16 @@ export default new Vuex.Store({
       const newEvent = Object.assign({}, event);
       state.calendarEvents.push(newEvent);
     },
+    
+
   },
   actions: {
+    updateDateRange({ commit }, newRange) {
+      commit('SET_DATE_RANGE', newRange);
+    },
+    updateSelected({ commit }, selected) {
+      commit('SET_SELECTED_DEV', selected);
+    },
     setLayoutType({ commit }, width) {
       commit("SET_LAYOUT_TYPE", width);
     },
@@ -66,6 +90,9 @@ export default new Vuex.Store({
     addCalendarEvent({ commit }, event) {
       commit("ADD_CALENDAR_EVENT", event);
     },
+    allDevsCreation({ commit }, event) {
+      commit("CREATE_ALL_DEVS", event)
+    }
   },
   getters: {},
 });

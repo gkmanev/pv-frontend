@@ -25,19 +25,18 @@
       <!-- --------------------------------------------------------- 
       Sales Summary
       --------------------------------------------------------- -->
-      <b-col cols="12">
+      <!-- <b-col cols="12">
         <b-card class="mb-4" no-body>
           <RevenueStatistics />
         </b-card>
-      </b-col>     
+      </b-col>      -->
     </b-row>
   </template>
   <script>
   // -----------------------------------------
   // Import Components Here
   // -----------------------------------------
-  import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";
-  import RevenueStatistics from "../dashboard-components/revenue-statistics/RevenueStatistics";
+  import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
   import RangeComponent from "../dashboard-components/range-component/RangeComponent";
   import LineChart from "../dashboard-components/echarts/LineChart";
   import PriceChart from "../dashboard-components/echarts/PriceChart";
@@ -79,8 +78,7 @@
       ],
     }),
     components: {
-    AwesomeCards,
-    RevenueStatistics,
+    AwesomeCards,    
     RangeComponent,
     LineChart,
     PriceChart,

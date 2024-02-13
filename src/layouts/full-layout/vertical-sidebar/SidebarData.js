@@ -1,9 +1,22 @@
 export default [
   // { header: "Dashboard", icon: "mdi mdi-dots-horizontal" },
   {
+    id:"1200",
+    icon: "zap",
+    title: "Entra Dash",
+    i18n: "Entra Dash", 
+    to: "/dashboard/entra"
+  },  
+  {
+    id:"1201",
+    icon: "bar-chart",
+    title: "Client",     
+    to: "/dashboard/client"
+  },
+  {
     id: "1",
     icon: "crosshair",
-    title: "Dashboard",
+    title: "Dashboard Test1",
     i18n: "Dashboard",
     to: "/dashboard/modern-dashboard",
   },
@@ -17,15 +30,15 @@ export default [
   {
     id: "3",
     icon: "activity",
-    title: "Flexibility",
-    i18n: "Flexibility",
+    title: "Dashboard Test2",
+    i18n: "Dashboard Test2",
     to: "/dashboard/classy-dashboard",
   },
   {
     id: "41",
     icon: "pocket",
-    title: "System",
-    i18n: "System",
+    title: "Dashboard Test3",
+    i18n: "Dashboard Test3",
     to: "/dashboard/analytical-dashboard",
   },
   {
@@ -43,19 +56,7 @@ export default [
      i18n: "Storage", 
      to: "/starter" 
   },
-  {
-    id:"1201",
-    icon: "bar-chart",
-    title: "Client",     
-    to: "/dashboard/client"
-  },
-  {
-    id:"1200",
-    icon: "zap",
-    title: "Entra Dash",
-    i18n: "Entra Dash", 
-    to: "/dashboard/entra"
-  },
+
   //aditional
   { header: "Apps", icon: "mdi mdi-dots-horizontal" },
   {

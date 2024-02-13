@@ -10,7 +10,7 @@ const router = new Router({
   routes: [
     {
       path: "/",
-      redirect: "/dashboard/modern-dashboard",
+      redirect: "/dashboard/entra",
       component: () => import("@/layouts/full-layout/FullLayout"),
       children: [
         {

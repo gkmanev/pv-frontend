@@ -19,6 +19,7 @@
   </div>
 </template>
 <script>
+import axios from 'axios';
 export default {
   name: "AwesomeCards",
   props: {
@@ -30,17 +31,17 @@ export default {
       {
         cardbg: "info",
         number: "2,064",
-        subtitle: "Min Power",
+        subtitle: "Min Power kW",
       },
       {
         cardbg: "primary",
         number: "1,738",
-        subtitle: "Max Power",
+        subtitle: "Max Power kW",
       },
       {
         cardbg: "success",
         number: "5963",
-        subtitle: "Avarage Power",
+        subtitle: "Avarage Power kW",
       },
       // {
       //   cardbg: "warning",
@@ -49,5 +50,22 @@ export default {
       // },
     ],
   }),
+  created() {
+    this.fetchData();
+  },
+  methods: {
+    fetchData() {
+      axios.get('http://85.14.6.37:16455/api/aggregate/today/')
+        .then(response => {
+          const data = response.data.today_overview;
+          this.awesomes[0].number = data.min.toFixed(2); // Format to 2 decimal places
+          this.awesomes[1].number = data.max.toFixed(2); // Format to 2 decimal places
+          this.awesomes[2].number = data.avg.toFixed(2); // Format to 2 decimal places
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+    },
+  },
 };
 </script>

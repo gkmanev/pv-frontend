@@ -137,23 +137,28 @@
             smooth: true,
             step: 'middle',
             clip: true,
+            lineStyle:{
+              width:1
+            },
 
             itemStyle: {
-                color: 'rgb(102,173,62)'
+                color: '#39c449'
             },
             sampling: 'average',
             data: [],
             type: 'line'
+            
         },
         {
             name: "price",
             smooth: false,
             step: 'middle',
             lineStyle:{
-                type: 'dotted'
+                type: 'dotted',
+                width: 1
             },
             itemStyle: {
-                color: 'rgb(102,173,62)'
+                color: '#39c449'
             },
             sampling: 'lttb',
             data: [],
@@ -242,7 +247,7 @@
         const start = this.currDate;
         const end = this.currTime;
         const tomorrow = new Date(new Date(start).setDate(new Date(start).getDate() + 1)).toISOString();
-        console.log(start, end, tomorrow, queryParam)
+        
 
         // Configuration based on dateRange
         if (queryParam === 'today') {
@@ -250,7 +255,7 @@
 
             const url1 = `http://85.14.6.37:16455/api/price/?timestamp=&start_date=${start}&end_date=${end}`;
             const url2 = `http://85.14.6.37:16455/api/price/?timestamp=&start_date=${end}&end_date=${tomorrow}`;
-            console.log(url1,url2)
+            
             try {
                 const [responseOne, responseTwo] = await Promise.all([
                     axios.get(url1),
@@ -263,6 +268,17 @@
                 console.error('Error fetching data:', error);
             }
         }
+        else{
+          const url = `http://85.14.6.37:16455/api/price/?date_range=${queryParam}`;
+          axios.get(url)
+                 .then(response => response.data.forEach(el=>{
+                    this.option.series[0].data.push([el.timestamp,el.value])
+                 }))
+                .catch(errors => {
+                    console.log(errors)
+                })
+        }
+        this.setAxisTimeRange()
     },
     getCurrTime(){
         let date = new Date();
@@ -286,13 +302,7 @@
    daysInMonth (month, year) {
        return new Date(year, month, 0).getDate();
    },
-   // Example of extracting chart configuration into a separate method
-// configureChartForToday() {
-//     this.option.xAxis.type = 'category';
-//     this.option.xAxis.axisLabel.formatter = timeLineSet;
-//     this.option.tooltip.formatter = toolTipSet;
-//     this.option.xAxis.splitNumber = 20;
-// },
+
 
     // Example of extracting data processing into a separate method
     processResponseData(seriesIndex, priceData) {
@@ -309,9 +319,7 @@
             })   
 
         }
-}
-
-        
+      }        
         // Make an API call to fetch data      
     
       }

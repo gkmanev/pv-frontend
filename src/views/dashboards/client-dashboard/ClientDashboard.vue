@@ -1,27 +1,28 @@
 <template>
     <b-row class="justify-content-start">        
-        <b-col cols="12">        
-            <AwesomeCards />
+        <b-col cols="4">            
             <SelectComponent />
-            <LineChart />
         </b-col>
-  
+        <b-col cols="3">            
+            <RangeComponent class="mb-4"  @filter="handleFilter" />          
+        </b-col>
+        <b-col cols="12">
+            <LineChart />
+        </b-col>  
+        <b-col cols="12">
+            <PriceChart />
+        </b-col>  
     </b-row>
   </template>
   <script>
   // -----------------------------------------
   // Import Components Here
   // -----------------------------------------
-  import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
-  import SelectComponent from "../dashboard-components/select-component/SelectComponent";
-  // import RangeComponent from "../dashboard-components/range-component/RangeComponent";
-  import LineChart from "../dashboard-components/echarts/LineChart";
-
-  // import PriceChart from "../dashboard-components/echarts/PriceChart"; 
-
   
-
-
+  import SelectComponent from "../dashboard-components/select-component/SelectComponent";
+  import RangeComponent from "../dashboard-components/range-component/RangeComponent";
+  import LineChart from "../dashboard-components/echarts/LineChart";
+  import PriceChart from "../dashboard-components/echarts/PriceChart"; 
   
   // -----------------------------------------
   // Export Here
@@ -34,14 +35,17 @@
       
     }),
     components: {
-    AwesomeCards,
+   
     LineChart,
     SelectComponent,    
+    RangeComponent,
+    PriceChart
 },
     methods: {
 
   },
     created() {
+      this.handleFilter('today')
        
     },
     };

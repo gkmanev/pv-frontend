@@ -69,13 +69,32 @@ export default {
     },
   },
   tooltip: {
-    trigger: 'axis',
+    trigger: 'item',
     axisPointer: {
       type: 'cross',
       label: {
-        backgroundColor: '#6a7985'
-      }
-    }
+        backgroundColor: 'gray',
+        formatter: function(params) {
+          if (params.axisDimension == "x"){
+            let date = new Date(params.value);
+            let year = date.getUTCFullYear();
+            let month = ('0' + (date.getUTCMonth() + 1)).slice(-2); // Months are zero-based (0 = January)
+            let day = ('0' + date.getUTCDate()).slice(-2);
+            let hours = ('0' + date.getUTCHours()).slice(-2);
+            let minutes = ('0' + date.getUTCMinutes()).slice(-2);
+            let formattedDateTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
+            return formattedDateTime
+          }
+          else if(params.axisDimension == "y"){
+            return params.value.toFixed(2)
+          }
+   
+  },
+      },    
+    },
+    
+    
+
   },
   // legend: {
   //   data: ['Email', 'Union Ads', 'Video Ads', 'Direct', 'Search Engine']
@@ -234,7 +253,7 @@ export default {
           
           let devData = responses[0].data
           let forecastData = responses[1].data
-          console.log(devData,forecastData)
+          console.log(devData)
           if(devData){
             const devIds = Array.from(new Set(devData.map((item) => item.devId)));  
             const seriesData = devIds.map((devId) => {
@@ -243,39 +262,48 @@ export default {
                 type: "line",
                 sampling: "lttb",
                 showSymbol: false,
-                connectNulls: false,
+                connectNulls: false,                
                 lineStyle: { width: 1 },
+
                 data: devData
                     .filter((item) => item.devId === devId)
                     .map((item) => [item[this.created_date_or_created], item.value]),
             };
+           
             if (this.lastRouteSegment == 'entra') {
                 return {
                     ...baseSeriesConfig,
                     emphasis: { focus: 'series' },
                     stack: "Total",
-                    areaStyle: {},
+                    areaStyle: {},            
                 };
             } else {
-                return baseSeriesConfig;
+                return {
+                  ...baseSeriesConfig,
+                  itemStyle: {color:'#009efb'},
+                }
             }
             });
             // Check if lastRouteSegment is not 'entra' and forecastData is not empty
             if (this.lastRouteSegment !== 'entra' && forecastData && forecastData.length > 0) {
                 // Add another series for forecastData
+                this.option.title.text = "Power kW"
                 seriesData.push({
                     name: 'Forecast',
                     type: "line",
                     sampling: "lttb",
                     showSymbol: false,
+                    
                     connectNulls: false,
-                    lineStyle: { width: 1 },
+                    lineStyle: { width: 1,type: 'dotted', },
                     data: forecastData.map((item) => [item[this.created_date_or_created], item.value]),
+                 
                 });
             }
 
             this.setAxisTimeRange()          
             this.option.series = seriesData
+          
           }
 
 
@@ -283,68 +311,9 @@ export default {
 
       }catch(error){
         console.log(error)
-      }
-      
-      // // Make an API call to fetch data    
-      // if(url){  
-      //   axios.get(url)
-      //     .then(response => {
-      //       const apiData = response.data;          
-      //       // Extract devIds and created_date
-      //       const devIds = Array.from(new Set(apiData.map((item) => item.devId)));    
-
-      //       const seriesData = devIds.map((devId) => {
-      //         if(this.lastRouteSegment == 'entra')
-      //         {
-      //           return {
-      //             name: devId,
-      //             type: "line",
-      //             "sampling": "lttb",
-      //             "showSymbol": false,
-      //             "connectNulls": false,
-      //             "lineStyle": {
-      //               "width": 1
-      //             },
-      //             emphasis: { focus: 'series' },
-      //             "stack": "Total",
-      //             "areaStyle": {},
-      //             data: apiData
-      //               .filter((item) => item.devId === devId)                
-      //               .map((item) => {                        
-      //                 return [item[this.created_date_or_created], item.value];
-      //               }),
-      //           };
-      //         }
-      //         //client chart config
-      //         else{
-      //           return {
-      //             name: devId,
-      //             type: "line",
-      //             "sampling": "lttb",
-      //             "showSymbol": false,
-      //             "connectNulls": false,
-      //             "lineStyle": {
-      //               "width": 1
-      //             },
-                  
-      //             data: apiData
-      //               .filter((item) => item.devId === devId)                
-      //               .map((item) => {                        
-      //                 return [item[this.created_date_or_created], item.value];
-      //               }),
-      //           };
-      //         }
-      //       });
-      //       this.setAxisTimeRange()          
-      //       this.option.series = seriesData
-              
-          
-
-      //     })
-      //     .catch(error => {
-      //       console.error('Error fetching data:', error);
-      //     });
-      //   }
+      }    
+                    
+   
     }
   }
 

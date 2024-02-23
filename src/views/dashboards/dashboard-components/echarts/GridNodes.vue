@@ -166,8 +166,7 @@
           if (device) {            
             const grid = treeData.find(grid => grid.name === assignment.grid_name);
             if (grid) {
-              console.log("grid",grid)
-              console.log("device",device)
+      
               const deviceNode = {
                 name: `${device.id} | ${device.power} kW`,
                 value: device.power,

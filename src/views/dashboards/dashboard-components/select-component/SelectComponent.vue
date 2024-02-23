@@ -1,7 +1,7 @@
 <template>
     <div>
       <b-form-select v-model="selected" @change="setSelected(selected)" :options="options"></b-form-select>      
-      <div class="mt-3">Selected: <strong>{{ selected }}</strong></div>
+      <!-- <div class="mt-3">Selected: <strong>{{ selected }}</strong></div> -->
     </div>
 
   </template>
@@ -38,7 +38,7 @@
                 this.updateSelected(sel)
             },
             populateOptions() {       
-                console.log(this.all_devs)
+               
                                          
                 const devOptions = this.all_devs.map(dev => ({                    
                         value: dev.id, 

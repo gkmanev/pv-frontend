@@ -30,9 +30,18 @@ const router = new Router({
             ),
         },
         {
+          name: "System",
+          path: '/dashboard/system',          
+          component: () =>
+            import(
+              "@/views/dashboards/system-dashboard/SystemDashboard"
+            ),
+        },
+        {
           name: "Starter",
           path: "starter",
-          component: () => import("@/views/Starter"),
+          component: () => 
+          import("@/views/Starter"),
         },
         {
           name: "Services",

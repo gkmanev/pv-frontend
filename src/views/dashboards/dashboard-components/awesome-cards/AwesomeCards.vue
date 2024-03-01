@@ -31,17 +31,17 @@ export default {
       {
         cardbg: "info",
         number: "2,064",
-        subtitle: "Min Power kW",
+        subtitle: "Min Power",
       },
       {
         cardbg: "primary",
         number: "1,738",
-        subtitle: "Max Power kW",
+        subtitle: "Max Power",
       },
       {
         cardbg: "success",
         number: "5963",
-        subtitle: "Avarage Power kW",
+        subtitle: "Avarage Power",
       },
       // {
       //   cardbg: "warning",
@@ -58,9 +58,9 @@ export default {
       axios.get('http://85.14.6.37:16455/api/aggregate/today/')
         .then(response => {
           const data = response.data.today_overview;
-          this.awesomes[0].number = data.min.toFixed(2); // Format to 2 decimal places
-          this.awesomes[1].number = data.max.toFixed(2); // Format to 2 decimal places
-          this.awesomes[2].number = data.avg.toFixed(2); // Format to 2 decimal places
+          this.awesomes[0].number = data.min.toFixed(2) + " kW"; // Format to 2 decimal places
+          this.awesomes[1].number = data.max.toFixed(2) + " kW";
+          this.awesomes[2].number = data.avg.toFixed(2) + " kW"
         })
         .catch(error => {
           console.error('Error fetching data:', error);

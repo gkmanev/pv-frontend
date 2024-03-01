@@ -1,7 +1,7 @@
 <template>
   <b-card class="mb-4">
     <div class="mt-4">
-      <v-chart class="chart" height="250" :option="option" />
+      <v-chart class="chart" height="450" :option="option" autoresize/>
     </div>
   </b-card>
 </template>
@@ -18,7 +18,8 @@ import {
   TooltipComponent,
   LegendComponent,
   ToolboxComponent,
-  GridComponent
+  GridComponent,
+  DataZoomComponent,
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 
@@ -29,7 +30,8 @@ use([
   ToolboxComponent,
   GridComponent,
   LineChart,
-  CanvasRenderer
+  CanvasRenderer,
+  DataZoomComponent,
 ])
 
 var timeLineSet = function(value) {
@@ -60,7 +62,9 @@ export default {
       created_date_or_created: 'created_date',      
       option: {
   title: {
-    text: 'Smartmeters Accumulated Power',
+    text: 'Customer Power',    
+    left:70,
+    top:50,    
     textStyle: {
       fontSize: 16,
       color:'#b2b9bf',
@@ -85,9 +89,7 @@ export default {
             let formattedDateTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
             return formattedDateTime
           }
-          else if(params.axisDimension == "y"){
-            return params.value.toFixed(2)
-          }
+
    
   },
       },    
@@ -96,9 +98,7 @@ export default {
     
 
   },
-  // legend: {
-  //   data: ['Email', 'Union Ads', 'Video Ads', 'Direct', 'Search Engine']
-  // },
+
 
   grid: {
     left: '3%',
@@ -133,6 +133,32 @@ export default {
     },
     
   ],
+  dataZoom: [{
+
+      top: 0,
+      height: 30,
+      handleIcon: "pin",
+      handleSize: "75%",
+      // handleStyle: {
+      //          color: "#9a9a9a",
+      //          borderColor: "rgba(255, 255, 255, 1)",
+      //          opacity: 0.5
+      //  },
+
+      show: true,
+
+      // backgroundColor:'#9a9a9a',
+        //  fillerColor: "rgba(255, 255, 255, 0.1)",
+          dataBackground: {
+              areaStyle: {
+                  color: "#9a9a9a"
+                      }
+                  },
+      start: 0,
+      end: 100
+      },
+
+     ],
   series:[]
 }
       //end option
@@ -227,6 +253,7 @@ export default {
       if (this.lastRouteSegment == 'entra')
       {
         url = `http://85.14.6.37:16455/api/posts/?date_range=${this.dateRange}`    
+        
         //config chart
 
       }
@@ -237,7 +264,7 @@ export default {
           urlForecast = `http://209.38.208.230:8000/api/post_forecast?date_range=${this.dateRange}&dev=${this.selectedDev}F`
         }
       }
-      try{
+      try {
         
         let requestOne = []
         if(url){
@@ -253,7 +280,7 @@ export default {
           
           let devData = responses[0].data
           let forecastData = responses[1].data
-          console.log(devData)
+          
           if(devData){
             const devIds = Array.from(new Set(devData.map((item) => item.devId)));  
             const seriesData = devIds.map((devId) => {

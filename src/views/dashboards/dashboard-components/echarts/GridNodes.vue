@@ -41,7 +41,7 @@
       defaultChartOption() {
         return {
           title: {
-            text: 'TreeChart',
+            text: 'Network',
             left: 'center',
             padding: [1, 1, 1, 1],
             textStyle: {

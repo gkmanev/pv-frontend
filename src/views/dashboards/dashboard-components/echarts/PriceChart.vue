@@ -1,7 +1,7 @@
 <template>
     <b-card class="mb-4">
       <div class="mt-4">
-        <v-chart class="chart" height="250" :option="option" />
+        <v-chart class="chart" height="250" :option="option" autoresize />
       </div>
     </b-card>
   </template>
@@ -80,22 +80,33 @@
         //option
         option: {
           title: {
-          text: 'Exchange Price',
-          textStyle: {
-          fontSize: 16,
-          color:'#b2b9bf',
-          fontFamily: 'Arial',
-          fontWeight: 'normal'
+            text: 'DAM',    
+            left:70,
+            top:50,    
+            textStyle: {
+              fontSize: 16,
+              color:'#b2b9bf',
+              fontFamily: 'Arial',
+              fontWeight: 'normal'
+            },
           },
-        },
           tooltip: {
             trigger: 'axis',
-            axisPointer: {
-              type: 'cross',
-              label: {
-                backgroundColor: '#6a7985'
-              }
+            formatter: function(params){
+              let date = new Date(params[0].axisValueLabel);
+              let year = date.getUTCFullYear();
+              let month = ('0' + (date.getUTCMonth() + 1)).slice(-2); // Months are zero-based (0 = January)
+              let day = ('0' + date.getUTCDate()).slice(-2);
+              let hours = ('0' + date.getUTCHours()).slice(-2);
+              let minutes = ('0' + date.getUTCMinutes()).slice(-2);
+              let formattedDateTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
+              let value = params[0].data[1]
+              const formattedLabel = `<b>Price</b>: ${value} </br> ${formattedDateTime}`
+              
+              return formattedLabel
+              
             }
+            
           },
   
           grid: {
@@ -131,6 +142,32 @@
       },
       
     ],
+    dataZoom: [{
+
+      top: 0,
+      height: 30,
+      handleIcon: "pin",
+      handleSize: "75%",
+      // handleStyle: {
+      //          color: "#9a9a9a",
+      //          borderColor: "rgba(255, 255, 255, 1)",
+      //          opacity: 0.5
+      //  },
+
+      show: true,
+
+      // backgroundColor:'#9a9a9a',
+        //  fillerColor: "rgba(255, 255, 255, 0.1)",
+          dataBackground: {
+              areaStyle: {
+                  color: "#9a9a9a"
+                      }
+                  },
+      start: 0,
+      end: 100
+      },
+
+      ],
     series:[
         {
             name: "price",
@@ -146,7 +183,7 @@
             },
             sampling: 'average',
             data: [],
-            type: 'line'
+            type: 'line',           
             
         },
         {

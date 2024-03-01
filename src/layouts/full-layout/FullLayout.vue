@@ -69,6 +69,7 @@ export default {
   computed: {
     ...mapState(["LayoutType", "Theme", "setHorizontalLayout"]),
     currentRouteName() {
+      
       return this.$route.name;
     },
   },
@@ -85,6 +86,7 @@ export default {
     },
   },
   mounted() {
+   
     //callback once mounted
     this.winWidth();
   },

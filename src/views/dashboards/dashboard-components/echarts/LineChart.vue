@@ -1,7 +1,7 @@
 <template>
   <b-card class="mb-4">
     <div class="mt-4">
-      <v-chart class="chart" height="450" :option="option" autoresize/>
+      <v-chart class="chart" height="450" :option="option" @mouseover="getDataSubset" autoresize/>
     </div>
   </b-card>
 </template>
@@ -22,6 +22,7 @@ import {
   DataZoomComponent,
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
+
 
 use([
   TitleComponent,
@@ -49,7 +50,7 @@ var timeLineSet = function(value) {
   return `${hours}:${minutes}`;
 }
 
-
+var tooltipDisplay = ''
 
 export default {
   name: "HelloWorld",
@@ -61,43 +62,46 @@ export default {
     return {
       created_date_or_created: 'created_date',      
       option: {
-  title: {
-    text: 'Customer Power',    
-    left:70,
-    top:50,    
-    textStyle: {
-      fontSize: 16,
-      color:'#b2b9bf',
-      fontFamily: 'Arial',
-      fontWeight: 'normal'
-    },
-  },
-  tooltip: {
-    trigger: 'item',
-    axisPointer: {
-      type: 'cross',
-      label: {
-        backgroundColor: 'gray',
-        formatter: function(params) {
-          if (params.axisDimension == "x"){
-            let date = new Date(params.value);
-            let year = date.getUTCFullYear();
-            let month = ('0' + (date.getUTCMonth() + 1)).slice(-2); // Months are zero-based (0 = January)
-            let day = ('0' + date.getUTCDate()).slice(-2);
-            let hours = ('0' + date.getUTCHours()).slice(-2);
-            let minutes = ('0' + date.getUTCMinutes()).slice(-2);
-            let formattedDateTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
-            return formattedDateTime
-          }
-
-   
-  },
-      },    
-    },
-    
-    
-
-  },
+        title: {
+          text: 'Customer Power',    
+          left:70,
+          top:50,    
+          textStyle: {
+            fontSize: 16,
+            color:'#b2b9bf',
+            fontFamily: 'Arial',
+            fontWeight: 'normal'
+          },
+        },
+        tooltip: {
+          trigger: 'axis',
+          formatter : () => {
+                return tooltipDisplay;
+          },
+          axisPointer: {
+            type: 'cross',
+            label: {
+              backgroundColor: 'gray',
+              formatter: function(params) {
+                if (params.axisDimension == "x"){
+                  let date = new Date(params.value);
+                  let year = date.getUTCFullYear();
+                  let month = ('0' + (date.getUTCMonth() + 1)).slice(-2); // Months are zero-based (0 = January)
+                  let day = ('0' + date.getUTCDate()).slice(-2);
+                  let hours = ('0' + date.getUTCHours()).slice(-2);
+                  let minutes = ('0' + date.getUTCMinutes()).slice(-2);
+                  let formattedDateTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
+                  return formattedDateTime
+                }
+                else if(params.axisDimension == "y"){
+                  
+                  return ""
+                }       
+             
+              },
+            },    
+          },
+        },
 
 
   grid: {
@@ -194,6 +198,15 @@ export default {
   },
 
   methods: {
+    getDataSubset(params) {
+
+      if(params.seriesType == 'line'){
+        if (params.data){
+          tooltipDisplay = '<div class="tooltip-set" style="text-align:left; padding:0;margin:0;">' + '<ul style="padding-right:0;padding-left:15px;padding-bottom:0px;margin-bottom:0;">' + '<li>' + params.seriesName + "&nbsp;&nbsp;" + "</li>" + "<li>" + "Power: "+ params.data[1] + "</li>" + '</ul>' + '</div>'
+        }
+      }   
+
+    },
 
     setHourlyAxisLabels() {
       // Update xAxis axisLabel formatter and interval

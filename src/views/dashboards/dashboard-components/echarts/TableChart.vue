@@ -48,11 +48,14 @@
         { key: 'status', sortable: true },
         { key: 'customer', sortable:true},
         { key: 'power', sortable: true, label: 'Power kW'},
-        // { key: 'lat', sortable: true, label: 'Latitude' },
+        { key: 'capacity', label: 'Capacity'}, 
+        { key: 'clsA', sortable: true, label: 'Cluster A' },
+        { key: 'clsB', sortable: true, label: 'Cluster B' },
+        { key: 'clsC', sortable: true, label: 'Cluster C' },
         // { key: 'long', sortable: true, label: 'Longitude' },
         // { key: 'type', sortable: true },
         // { key: 'assaignCap', label: 'Asign Capacity'},       
-        { key: 'capacity', label: 'Capacity'},  
+         
         // { key: 'grid', label: 'Grid Node'}  
       ],        
         power: '',

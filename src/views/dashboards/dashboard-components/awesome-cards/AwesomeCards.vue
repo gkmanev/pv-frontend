@@ -9,9 +9,9 @@
         :key="awesome.number"
       >
         <b-card no-body :class="'p-2 mb-4 text-center bg-' + awesome.cardbg">
-          <h1 class="font-weight-light text-white">
+          <h2 class="font-weight-light text-white">
             {{ awesome.number }}
-          </h1>
+          </h2>
           <h6 class="text-white mb-0">{{ awesome.subtitle }}</h6>
         </b-card>
       </b-col>
@@ -47,7 +47,7 @@ export default {
       {
         cardbg: "success",
         number: "5963",
-        subtitle: "Avarage Power",
+        subtitle: "Average Power",
       },
 
     ],

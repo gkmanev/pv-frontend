@@ -160,11 +160,11 @@
           value: 0,
         }));
         
-        
         gridAssignments.forEach(assignment => {
           const device = onlineDevices.find(dev => dev.id === assignment.dev);          
           if (device) {            
             const grid = treeData.find(grid => grid.name === assignment.grid_name);
+            
             if (grid) {
       
               const deviceNode = {
@@ -176,7 +176,15 @@
             }
           }
         });
-        
+        console.log(treeData)
+        treeData.forEach(nd=>{
+          let nodeValueSum = 0
+          const childPowerArray = nd.children
+          childPowerArray.forEach(sm=>{
+            nodeValueSum += parseFloat(sm.value)            
+          })
+          nd.value = nodeValueSum.toFixed(2)
+        })
   
         // treeData.forEach(grid => {
         //   grid.value = grid.children.reduce((acc, child) => acc + child.value, 0).toFixed(2);

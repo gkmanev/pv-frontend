@@ -110,7 +110,7 @@
           },
   
           grid: {
-            left: '3%',
+            left: '5%',
             right: '1%',
             bottom: '13%',
             containLabel: false

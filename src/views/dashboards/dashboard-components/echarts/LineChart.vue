@@ -64,7 +64,7 @@ export default {
       option: {
         title: {
           text: 'Customer Power',    
-          left:70,
+          left:80,
           top:50,    
           textStyle: {
             fontSize: 16,
@@ -74,38 +74,47 @@ export default {
           },
         },
         tooltip: {
+          backgroundColor: '', // Set your desired background color
           trigger: 'axis',
-          formatter : () => {
-                return tooltipDisplay;
+          borderWidth: 0, // Set border width to 0 to remove the border
+          shadowBlur: 0, // Set shadow blur to 0 to remove the shadow
+          shadowOffsetX: 0, // Set shadow offset X to 0
+          shadowOffsetY: 0, // Set shadow offset Y to 0
+          shadowColor: 'transparent', // Set shadow color to transparent
+          formatter: () => {
+              return tooltipDisplay;
           },
-          axisPointer: {
-            type: 'cross',
-            label: {
-              backgroundColor: 'gray',
-              formatter: function(params) {
-                if (params.axisDimension == "x"){
-                  let date = new Date(params.value);
-                  let year = date.getUTCFullYear();
-                  let month = ('0' + (date.getUTCMonth() + 1)).slice(-2); // Months are zero-based (0 = January)
-                  let day = ('0' + date.getUTCDate()).slice(-2);
-                  let hours = ('0' + date.getUTCHours()).slice(-2);
-                  let minutes = ('0' + date.getUTCMinutes()).slice(-2);
-                  let formattedDateTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
-                  return formattedDateTime
-                }
-                else if(params.axisDimension == "y"){
+          // axisPointer: {
+          //   type: 'line',
+          //   snap: true,
+          //   animation: true, // Enable animation
+          //   triggerOn: 'mousemove|click', // Trigger on mousemove and click events
+          //   label: {
+          //     backgroundColor: 'gray',
+          //     formatter: function(params) {
+          //       if (params.axisDimension == "x"){
+          //         let date = new Date(params.value);
+          //         let year = date.getUTCFullYear();
+          //         let month = ('0' + (date.getUTCMonth() + 1)).slice(-2); // Months are zero-based (0 = January)
+          //         let day = ('0' + date.getUTCDate()).slice(-2);
+          //         let hours = ('0' + date.getUTCHours()).slice(-2);
+          //         let minutes = ('0' + date.getUTCMinutes()).slice(-2);
+          //         let formattedDateTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
+          //         return formattedDateTime
+          //       }
+          //       else if(params.axisDimension == "y"){
                   
-                  return ""
-                }       
+          //         return ""
+          //       }       
              
-              },
-            },    
-          },
+          //     },
+          //   },    
+          // },
         },
 
 
   grid: {
-    left: '3%',
+    left: '5%',
     right: '1%',
     bottom: '13%',
     containLabel: false
@@ -202,7 +211,28 @@ export default {
 
       if(params.seriesType == 'line'){
         if (params.data){
-          tooltipDisplay = '<div class="tooltip-set" style="text-align:left; padding:0;margin:0;">' + '<ul style="padding-right:0;padding-left:15px;padding-bottom:0px;margin-bottom:0;">' + '<li>' + params.seriesName + "&nbsp;&nbsp;" + "</li>" + "<li>" + "Power: "+ params.data[1] + "</li>" + '</ul>' + '</div>'
+          tooltipDisplay = '<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">' +
+                    '<div style="vertical-align: middle; color: white; padding-left: 10px;">' + params.seriesName + '</div>' +
+                    '<div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;background-color: #272b34;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">' +
+                      '<ul style="list-style-type: none; margin: 0; padding-left: 0;">' +
+                        '<li>' +
+                          '<div class="color-point" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background-color: ' + params.color + ';"></div>' +
+                          '<span style="color: gray;">Power: </span><span style="color: white;">' + params.data[1] + '</span>'  +
+                        '</li>' +
+                      '</ul>' +
+                    '</div>' +
+                  '</div>';
+
+
+
+
+
+
+
+
+
+
+
         }
       }   
 
@@ -275,6 +305,7 @@ export default {
         {
           url = `http://85.14.6.37:16455/api/posts/?date_range=${this.dateRange}&dev=${this.selectedDev}`
           urlForecast = `http://209.38.208.230:8000/api/post_forecast?date_range=${this.dateRange}&dev=${this.selectedDev}F`
+          console.log(urlForecast)
         }
       }
       try {
@@ -363,6 +394,9 @@ export default {
 </script>
 
 <style scoped>
+
+
+
 .chart {
   height: 450px;
 }

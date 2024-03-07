@@ -75,7 +75,7 @@ export default {
         },
         tooltip: {
           backgroundColor: '', // Set your desired background color
-          trigger: 'item',
+          trigger: 'axis',
           borderWidth: 0, // Set border width to 0 to remove the border
           shadowBlur: 0, // Set shadow blur to 0 to remove the shadow
           shadowOffsetX: 0, // Set shadow offset X to 0

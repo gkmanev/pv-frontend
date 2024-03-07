@@ -1,7 +1,7 @@
 <template>
   <b-card class="mb-4">
     <div class="mt-4">
-      <v-chart class="chart" height="450" :option="option" @mouseover="getDataSubset" autoresize/>
+      <v-chart class="chart" height="450" :option="option" @touchstart="getDataSubset" autoresize/>
     </div>
   </b-card>
 </template>
@@ -50,7 +50,7 @@ var timeLineSet = function(value) {
   return `${hours}:${minutes}`;
 }
 
-var tooltipDisplay = ''
+var tooltipDisplay = 'xyz'
 
 export default {
   name: "HelloWorld",
@@ -75,7 +75,7 @@ export default {
         },
         tooltip: {
           backgroundColor: '', // Set your desired background color
-          trigger: 'axis',
+          trigger: 'item',
           borderWidth: 0, // Set border width to 0 to remove the border
           shadowBlur: 0, // Set shadow blur to 0 to remove the shadow
           shadowOffsetX: 0, // Set shadow offset X to 0
@@ -222,16 +222,6 @@ export default {
                       '</ul>' +
                     '</div>' +
                   '</div>';
-
-
-
-
-
-
-
-
-
-
 
         }
       }   

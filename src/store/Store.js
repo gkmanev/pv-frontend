@@ -8,6 +8,7 @@ export default new Vuex.Store({
   state: {
     selectedDev: '',
     all_devs: [],
+    checkedDevs:[],
     dateRange: 'today',
     Theme: "dark", // theme can be light or dark
     LayoutType: "full-sidebar", // this can be full-sidebar, mini-sidebar
@@ -36,6 +37,10 @@ export default new Vuex.Store({
 
     CREATE_ALL_DEVS(state, create_all) {
       state.all_devs = create_all
+    },
+
+    CREATE_CHECKED_DEVS(state, checked) {
+      state.checkedDevs = checked
     },
 
     SET_DATE_RANGE(state, newRange) {
@@ -92,6 +97,9 @@ export default new Vuex.Store({
     },
     allDevsCreation({ commit }, event) {
       commit("CREATE_ALL_DEVS", event)
+    },
+    checkedDevsCreation({ commit }, event) {
+      commit("CREATE_CHECKED_DEVS", event)
     }
   },
   getters: {},

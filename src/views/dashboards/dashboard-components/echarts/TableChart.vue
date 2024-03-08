@@ -22,11 +22,11 @@
           </template> -->
         </b-table>
 
-        <p class="btn-grp">
+        <!-- <p class="btn-grp">
           <b-button size="sm" variant="outline-primary" @click="selectAllRows">Select all</b-button>
           <b-button size="sm" variant="outline-danger" @click="clearSelected">Clear selected</b-button>
-        </p>
-        <p>Selected Rows:<br />{{ selected }}</p>
+        </p> -->
+        
       </b-card>
     </b-col>
   </b-row>
@@ -35,6 +35,7 @@
   <script>
   import { mapState } from 'vuex';
   import axios from 'axios';
+  import { mapActions } from 'vuex';
   // import { coords } from './coords.js';
   //import PahoMQTT from 'paho-mqtt';
   export default {
@@ -82,11 +83,15 @@
   
     methods: {      
 
+        ...mapActions(['checkedDevsCreation']),
+
+
         async pollData() {
           this.polling = setInterval(async () => {
             await this.createAllDevs();
             await this.capacityLog();
-            await this.asignedNodes();
+            await this.asignedNodes();            
+           
           }, 15000);
         },
         
@@ -160,6 +165,21 @@
 
         onRowSelected(selectedItems) {
         this.selected = selectedItems;
+        
+        const sel = selectedItems.map(item => item.id)
+        const allDevsArr = this.all.map(item => ({ [item.id]: true }));
+        
+        allDevsArr.forEach(el=>{
+          if (sel.includes(Object.keys(el)[0])) {
+            // If it exists, set its value to true
+            el[Object.keys(el)[0]] = true;
+        } else {
+            // If it doesn't exist, set its value to false
+            el[Object.keys(el)[0]] = false;
+        }
+        })
+        this.checkedDevsCreation(allDevsArr)
+          
         },
         selectAllRows() {
         this.$refs.selectableTable.selectAllRows();
@@ -179,7 +199,12 @@
       this.createAllDevs()      
       this.capacityLog()
       this.asignedNodes()
-      this.pollData()
+      this.pollData(),
+      // Call selectAllRows to select all rows by default
+      
+      this.$nextTick(() => {
+        this.$refs.selectableTable.selectAllRows();
+      });
     },
     beforeDestroy () {
          clearInterval(this.polling)

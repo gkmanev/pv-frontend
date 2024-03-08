@@ -176,7 +176,7 @@
             }
           }
         });
-        console.log(treeData)
+       
         treeData.forEach(nd=>{
           let nodeValueSum = 0
           const childPowerArray = nd.children

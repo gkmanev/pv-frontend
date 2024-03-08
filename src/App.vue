@@ -77,7 +77,9 @@ export default {
             customer:'',
             capacity:''            
             };
+           
         });
+        this.allDevsCreation(this.all);
         
 
         // Directly generate ids and forecastIds from the all array

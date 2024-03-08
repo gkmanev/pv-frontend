@@ -73,6 +73,11 @@ export default {
             fontWeight: 'normal'
           },
         },
+        legend: {
+          orient: 'vertical',
+          padding:[-500,100,0,0],
+          //selected:{'sm-0002':false,'sm-0004':false,'sm-00024':false,'sm-0020':false,'sm-0010':false,'sm-0011':false,'sm-0015':false,'sm-0030':false,'sm-0016:':false,'sm-0025':false,'sm-0017':false,'sm-0018':false,'sm-0008':false,'sm-0009':false}
+        },
         tooltip: {
           backgroundColor: '', // Set your desired background color
           trigger: 'axis',
@@ -84,34 +89,10 @@ export default {
           formatter: () => {
               return tooltipDisplay;
           },
-          // axisPointer: {
-          //   type: 'line',
-          //   snap: true,
-          //   animation: true, // Enable animation
-          //   triggerOn: 'mousemove|click', // Trigger on mousemove and click events
-          //   label: {
-          //     backgroundColor: 'gray',
-          //     formatter: function(params) {
-          //       if (params.axisDimension == "x"){
-          //         let date = new Date(params.value);
-          //         let year = date.getUTCFullYear();
-          //         let month = ('0' + (date.getUTCMonth() + 1)).slice(-2); // Months are zero-based (0 = January)
-          //         let day = ('0' + date.getUTCDate()).slice(-2);
-          //         let hours = ('0' + date.getUTCHours()).slice(-2);
-          //         let minutes = ('0' + date.getUTCMinutes()).slice(-2);
-          //         let formattedDateTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
-          //         return formattedDateTime
-          //       }
-          //       else if(params.axisDimension == "y"){
-                  
-          //         return ""
-          //       }       
-             
-          //     },
-          //   },    
-          // },
+         
+        
         },
-
+ 
 
   grid: {
     left: '5%',
@@ -172,6 +153,7 @@ export default {
       },
 
      ],
+  seriesData: [],
   series:[]
 }
       //end option
@@ -184,12 +166,17 @@ export default {
   },
 
   computed: {
-    ...mapState(['dateRange','selectedDev']),
+    ...mapState(['dateRange','selectedDev','checkedDevs']),
 
     lastRouteSegment() {
     const pathArray = this.$route.path.split('/');    
     return pathArray.pop() || pathArray[pathArray.length - 1]; // This handles non-trailing slash URLs
-  }
+  },
+  filteredSeriesData() {
+      return this.seriesData.filter(series => {
+        return this.checkedDevs[series.name]; // Assuming checkedDevs is an object with device names as keys
+      });
+    }
   },
   watch: {
     
@@ -203,10 +190,31 @@ export default {
         this.fetchData();
       }
     },
+    checkedDevs(newRow, oldRow) {
+       if (newRow !== oldRow) {
+       // this.option.legend.selected = {'sm-0002':false,'sm-0004':false,'sm-00024':false,'sm-0020':false,'sm-0010':false,'sm-0011':false,'sm-0015':false,'sm-0030':false,'sm-0016:':false,'sm-0025':false,'sm-0017':false,'sm-0018':false,'sm-0008':false,'sm-0009':false}
+        
+              
+        let objArr = this.checkedDevs.reduce((acc, curr) => {
+          // Extract the key and value from each object in arr1
+          let key = Object.keys(curr)[0];
+          let value = curr[key];
+          // Add the key-value pair to the accumulator object
+          acc[key] = value;
+          return acc;
+        }, {});
+        
+        this.option.legend.selected = objArr
+        this.fetchData();
+       }
+    
+     },
 
   },
 
   methods: {
+
+   
     getDataSubset(params) {
 
       if(params.seriesType == 'line'){
@@ -222,7 +230,6 @@ export default {
                       '</ul>' +
                     '</div>' +
                   '</div>';
-
         }
       }   
 

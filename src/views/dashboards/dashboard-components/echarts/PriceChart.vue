@@ -361,6 +361,7 @@
             priceData.forEach(el =>{
             el = [el.timestamp,el.value]
             this.option.series[0].data.push(el)
+            console.log("series",this.option.series)
             })     
         }
         else{

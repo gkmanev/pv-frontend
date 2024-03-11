@@ -153,7 +153,7 @@ export default {
       },
 
      ],
-  seriesData: [],
+  
   series:[]
 }
       //end option
@@ -203,7 +203,8 @@ export default {
           acc[key] = value;
           return acc;
         }, {});
-        
+        console.log(this.option.series)
+
         this.option.legend.selected = objArr
         this.fetchData();
        }
@@ -309,7 +310,8 @@ export default {
         
         let requestOne = []
         if(url){
-          requestOne = axios.get(url);     
+          requestOne = axios.get(url);  
+           
         }
         let requestTwo = [] 
         if (urlForecast)

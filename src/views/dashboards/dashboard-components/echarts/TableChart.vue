@@ -25,8 +25,8 @@
         <!-- <p class="btn-grp">
           <b-button size="sm" variant="outline-primary" @click="selectAllRows">Select all</b-button>
           <b-button size="sm" variant="outline-danger" @click="clearSelected">Clear selected</b-button>
-        </p> -->
-        
+        </p>
+        <p>Selected Rows:<br />{{ selected }}</p> -->
       </b-card>
     </b-col>
   </b-row>
@@ -179,7 +179,8 @@
         }
         })
         this.checkedDevsCreation(allDevsArr)
-          
+
+
         },
         selectAllRows() {
         this.$refs.selectableTable.selectAllRows();

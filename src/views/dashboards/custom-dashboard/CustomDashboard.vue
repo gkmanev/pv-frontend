@@ -16,7 +16,7 @@
             <TableChart />
         </b-col>
         <b-col cols="12">
-            <HeatMap />
+            <MapCard />
         </b-col>
         <b-col cols="12">
             <GridNodes />
@@ -41,8 +41,9 @@
   import LineChart from "../dashboard-components/echarts/LineChart";
   import PriceChart from "../dashboard-components/echarts/PriceChart";
   import TableChart from "../dashboard-components/echarts/TableChart";
-  import HeatMap from "../dashboard-components/echarts/HeatMap";
+  // import HeatMap from "../dashboard-components/echarts/HeatMap";
   import GridNodes from "../dashboard-components/echarts/GridNodes";
+  import MapCard from '../dashboard-components/echarts/MapCard.vue';
   
 
 
@@ -83,7 +84,7 @@
     LineChart,
     PriceChart,
     TableChart,   
-    HeatMap,
+    MapCard,
     GridNodes 
     
 },

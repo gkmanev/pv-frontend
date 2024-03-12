@@ -203,7 +203,7 @@ export default {
           acc[key] = value;
           return acc;
         }, {});
-        console.log(this.option.series)
+        
 
         this.option.legend.selected = objArr
         this.fetchData();
@@ -303,7 +303,7 @@ export default {
         {
           url = `http://85.14.6.37:16455/api/posts/?date_range=${this.dateRange}&dev=${this.selectedDev}`
           urlForecast = `http://209.38.208.230:8000/api/post_forecast?date_range=${this.dateRange}&dev=${this.selectedDev}F`
-          console.log(urlForecast)
+         
         }
       }
       try {

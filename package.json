@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@maptiler/leaflet-maptilersdk": "^2.0.0",
     "@vue/composition-api": "^1.7.2",
     "@vue/runtime-core": "^3.4.15",
     "algoliasearch": "^4.5.1",

@@ -13,11 +13,11 @@
             <PriceChart />
         </b-col>
         <b-col cols="12">
-            <TableChart />
-        </b-col>
-        <b-col cols="12">
             <MapCard />
         </b-col>
+        <b-col cols="12">
+            <TableChart />
+        </b-col>        
         <b-col cols="12">
             <GridNodes />
         </b-col>

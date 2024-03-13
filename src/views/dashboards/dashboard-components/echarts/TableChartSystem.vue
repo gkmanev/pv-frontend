@@ -8,6 +8,47 @@
            <template #cell(status)="{ item }">
              <span class="led-indicator" :class="getLedClass(item.online)"></span>
            </template>
+           <template #cell(edit)="{ item }">
+            
+            <div v-if="item.online == 'not-ready'" class="d-flex align-items-center">
+              <!-- Button to open modal -->
+                <b-button size="sm" variant="primary" @click="openModal(item.id)">Details</b-button>
+                <!-- Display the cell value -->
+                
+              </div>
+              <!-- Modal for displaying details -->
+              <b-modal :id="'modal_' + item.id" title="Enter Smart Meter Details">
+                <div class="d-flex mb-4">
+                  <!-- Input field -->
+                  <b-form-input v-model="inputGrid" placeholder="Enter Grid Node..." class="mr-2"></b-form-input>
+                  <!-- Send button -->
+                  <b-button @click="sendData">Send</b-button>
+              </div>
+              
+              <div class="d-flex mb-4">
+                  <!-- Input field -->
+                  <b-form-input v-model="inputLat" placeholder="Enter Latitude..." class="mr-2"></b-form-input>
+                  <!-- Send button -->
+                  <b-button @click="sendData">Send</b-button>
+              </div>
+              <div class="d-flex mb-4">
+                  <!-- Input field -->
+                  <b-form-input v-model="inputLong" placeholder="Enter Longitude..." class="mr-2"></b-form-input>
+                  <!-- Send button -->
+                  <b-button @click="sendData">Send</b-button>
+              </div>
+              <div class="d-flex">
+                  <!-- Input field -->
+                  <b-form-input v-model="inputCap" placeholder="Enter Capacity..." class="mr-2"></b-form-input>
+                  <!-- Send button -->
+                  <b-button @click="sendData">Send</b-button>
+              </div>
+                
+                <!-- Add more content as needed -->
+              </b-modal>
+            </template>
+
+           
            <!-- <template #cell(assaignCap)="{ item }">
              <div class="d-flex align-items-center">        
                  <input type="text" class="form-control mr-2" style="width: 50px; height: 32px;" placeholder="#" v-model="item.capacityAssign">
@@ -43,6 +84,10 @@
        return {
          selectMode: 'multi',        
          selected: [],
+         inputGrid:'',
+         inputLat:'',
+         inputLong:'',
+         inputCap:'',
          fields: [
          { key: 'id', sortable: true },
          { key: 'status', sortable: true },
@@ -53,7 +98,8 @@
          { key: 'type', sortable: true },
          // { key: 'assaignCap', label: 'Asign Capacity'},       
          { key: 'capacity', label: 'Capacity'},  
-         { key: 'grid', label: 'Grid Node'}  
+         { key: 'grid', label: 'Grid Node'}, 
+         { key: 'edit', label: 'Edit SM'}  
        ],        
          power: '',
          powerCorr:'',
@@ -77,7 +123,16 @@
        };
      },
    
-     methods: {      
+     methods: {
+          openModal(sm) {
+            console.log(sm)
+            // Open modal based on grid node
+            this.$bvModal.show('modal_' + sm);
+          },      
+
+          sendData(){
+            console.log(this.inputValue)
+          },
  
          async pollData() {
            this.polling = setInterval(async () => {

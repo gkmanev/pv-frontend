@@ -302,7 +302,7 @@ export default {
         if(this.selectedDev)
         {
           url = `http://85.14.6.37:16455/api/posts/?date_range=${this.dateRange}&dev=${this.selectedDev}`
-          urlForecast = `http://209.38.208.230:8000/api/post_forecast?date_range=${this.dateRange}&dev=${this.selectedDev}F`
+          urlForecast = `http://85.14.6.37:16455/api/post_forecast?date_range=${this.dateRange}&dev=${this.selectedDev}F`
          
         }
       }

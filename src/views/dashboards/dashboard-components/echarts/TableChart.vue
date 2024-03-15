@@ -3,7 +3,10 @@
     <b-col cols="12">
       <b-card class="mb-4">
         <h5 class="card-title mb-3">Installed Smartmeters</h5>
-        <b-table :items="all" :fields="fields" :select-mode="selectMode" responsive="sm" ref="selectableTable" selectable @row-selected="onRowSelected">
+        <b-table :items="all" :fields="fields" :select-mode="selectMode" responsive="sm" ref="selectableTable" >
+          <template #cell(selected)="data">
+            <b-form-checkbox v-model="data.item.selected" @change="toggleRowSelection(data.item)"></b-form-checkbox>
+          </template>
           <!-- Scoped slot for the 'online' status -->
           <template #cell(status)="{ item }">
             <span class="led-indicator" :class="getLedClass(item.online)"></span>
@@ -45,6 +48,7 @@
         selectMode: 'multi',        
         selected: [],
         fields: [
+        { key: 'selected', sortable: false },
         { key: 'id', sortable: true },
         { key: 'status', sortable: true },
         { key: 'customer', sortable:true},
@@ -66,13 +70,13 @@
         polling: null,
         newEntries: {},
         singleCorrection:{},
-        checked: {},
+        checked: true,
         allSelected: true,
         activeClass: 'disabled',
         btn_class: 'btn btn-success mb-2',
         all: [],
         posts: [],
-        
+        preparedArrForLineChartsToggle:[],
 
 
         
@@ -83,8 +87,28 @@
   
     methods: {      
 
-        ...mapActions(['checkedDevsCreation']),
-
+        ...mapActions(['checkedDevsCreation','selectBoxDevsCreation']),
+        
+        initializeSelection() {
+          this.all.forEach(item => {
+            item.selected = true;
+          });
+        },
+        toggleRowSelection() {
+         
+          
+          const allDevsArr = this.all.map(item => ({ [item.id]: item.selected }));
+          const mergedObject = allDevsArr.reduce((acc, obj) => {
+          // Get the key (device ID) and value (selected state) from each object in the array
+            const [key, value] = Object.entries(obj)[0];
+            // Merge the key-value pair into the accumulator object
+            acc[key] = value;
+            return acc;
+          }, {});
+    
+          this.selectBoxDevsCreation(mergedObject)  
+ 
+        },
 
         async pollData() {
           this.polling = setInterval(async () => {
@@ -163,22 +187,25 @@
             }
         },
 
-        onRowSelected(selectedItems) {
+        onRowSelected(selectedItems) {       
+          
+          
         this.selected = selectedItems;
         
-        const sel = selectedItems.map(item => item.id)
-        const allDevsArr = this.all.map(item => ({ [item.id]: true }));
-        
-        allDevsArr.forEach(el=>{
-          if (sel.includes(Object.keys(el)[0])) {
-            // If it exists, set its value to true
-            el[Object.keys(el)[0]] = true;
-        } else {
-            // If it doesn't exist, set its value to false
-            el[Object.keys(el)[0]] = false;
-        }
-        })
-        this.checkedDevsCreation(allDevsArr)
+        // const sel = selectedItems.map(item => item.id)
+        // const allDevsArr = this.all.map(item => ({ [item.id]: true }));
+                
+        // allDevsArr.forEach(el=>{
+        //   if (sel.includes(Object.keys(el)[0])) {
+        //     // If it exists, set its value to true
+        //     el[Object.keys(el)[0]] = true;
+        // } else {
+        //     // If it doesn't exist, set its value to false
+        //     el[Object.keys(el)[0]] = false;
+        // }
+        // })
+        // this.preparedArrForLineChartsToggle = allDevsArr
+        // this.checkedDevsCreation(allDevsArr)
 
 
         },
@@ -206,6 +233,9 @@
       this.$nextTick(() => {
         this.$refs.selectableTable.selectAllRows();
       });
+    },
+    mounted() {
+      this.initializeSelection();
     },
     beforeDestroy () {
          clearInterval(this.polling)

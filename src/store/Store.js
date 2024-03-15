@@ -9,6 +9,7 @@ export default new Vuex.Store({
     selectedDev: '',
     all_devs: [],
     checkedDevs:[],
+    selectBoxDevs:[],
     dateRange: 'today',
     Theme: "dark", // theme can be light or dark
     LayoutType: "full-sidebar", // this can be full-sidebar, mini-sidebar
@@ -30,6 +31,10 @@ export default new Vuex.Store({
     ],
   },
   mutations: {
+    CREATE_SELECT_BOX_DEVS(state, payload){
+      
+      state.selectBoxDevs = payload
+    },
 
     SET_SELECTED_DEV(state, payload){
       state.selectedDev = payload
@@ -100,6 +105,9 @@ export default new Vuex.Store({
     },
     checkedDevsCreation({ commit }, event) {
       commit("CREATE_CHECKED_DEVS", event)
+    },
+    selectBoxDevsCreation({ commit }, event) {
+      commit("CREATE_SELECT_BOX_DEVS", event)
     }
   },
   getters: {},

@@ -76,7 +76,7 @@
   
       initializeMap() {
         this.map = L.map('map-canvas').setView(this.initialCenter, 9);
-        L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{continuousWorld: true}).addTo(this.map);
+        L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(this.map);
         this.addData(); // Initialize with initial data
       },
   

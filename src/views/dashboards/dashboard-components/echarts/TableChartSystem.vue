@@ -43,10 +43,15 @@
                   <!-- Send button -->
                   <b-button @click="sendData">Send</b-button>
               </div>
+                          <!-- Modal footer with only the "OK" button -->
+                  <template #modal-footer="{ cancel, ok }">
+                      <b-button @click="ok" variant="primary">Apply changes</b-button>
+                  </template>
                 
                 <!-- Add more content as needed -->
               </b-modal>
             </template>
+
 
            
            <!-- <template #cell(assaignCap)="{ item }">

@@ -166,7 +166,7 @@ export default {
   },
 
   computed: {
-    ...mapState(['dateRange','selectedDev','checkedDevs']),
+    ...mapState(['dateRange','selectedDev','checkedDevs','selectBoxDevs']),
 
     lastRouteSegment() {
     const pathArray = this.$route.path.split('/');    
@@ -179,6 +179,18 @@ export default {
     }
   },
   watch: {
+
+    selectBoxDevs: {
+    handler(newBox, oldBox) {
+      if (newBox !== oldBox) {
+         
+       
+        this.option.legend.selected = newBox
+        this.fetchData();
+      }
+    },
+    deep: true // If selectBoxDevs is an array or object, use deep: true
+  },
     
     dateRange(newRange, oldRange) {
       if (newRange !== oldRange) {
@@ -190,26 +202,23 @@ export default {
         this.fetchData();
       }
     },
-    checkedDevs(newRow, oldRow) {
-       if (newRow !== oldRow) {
-       // this.option.legend.selected = {'sm-0002':false,'sm-0004':false,'sm-00024':false,'sm-0020':false,'sm-0010':false,'sm-0011':false,'sm-0015':false,'sm-0030':false,'sm-0016:':false,'sm-0025':false,'sm-0017':false,'sm-0018':false,'sm-0008':false,'sm-0009':false}
+    // checkedDevs(newRow, oldRow) {
+    //    if (newRow !== oldRow) { 
+    //     console.log(newRow)            
+    //     let objArr = this.checkedDevs.reduce((acc, curr) => {
+    //       // Extract the key and value from each object in arr1
+    //       let key = Object.keys(curr)[0];
+    //       let value = curr[key];
+    //       // Add the key-value pair to the accumulator object
+    //       acc[key] = value;
+    //       return acc;
+    //     }, {});
         
-              
-        let objArr = this.checkedDevs.reduce((acc, curr) => {
-          // Extract the key and value from each object in arr1
-          let key = Object.keys(curr)[0];
-          let value = curr[key];
-          // Add the key-value pair to the accumulator object
-          acc[key] = value;
-          return acc;
-        }, {});
-        
-
-        this.option.legend.selected = objArr
-        this.fetchData();
-       }
-    
-     },
+    //     console.log(objArr)
+    //     this.option.legend.selected = objArr
+    //     this.fetchData();
+    //    }     
+    //  },   
 
   },
 
@@ -220,6 +229,7 @@ export default {
 
       if(params.seriesType == 'line'){
         if (params.data){
+          
           tooltipDisplay = '<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">' +
                     '<div style="vertical-align: middle; color: white; padding-left: 10px;">' + params.seriesName + '</div>' +
                     '<div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;background-color: #272b34;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">' +
@@ -228,6 +238,9 @@ export default {
                           '<div class="color-point" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background-color: ' + params.color + ';"></div>' +
                           '<span style="color: gray;">Power: </span><span style="color: white;">' + params.data[1] + '</span>'  +
                         '</li>' +
+                        '<li>' +
+                          '<span style="color: gray;">Time: </span><span style="color: white;">' + params.data[0].split(":00Z")[0] + '</span>' +
+                        '</li>'+
                       '</ul>' +
                     '</div>' +
                   '</div>';

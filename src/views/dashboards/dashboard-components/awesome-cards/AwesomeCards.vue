@@ -28,6 +28,8 @@ export default {
   },
   data: () => ({
     title: "Awesome Card",
+    moment_power:0,
+    momentDevice:0,
     awesomes: [
       {
         cardbg: "warning",
@@ -73,21 +75,23 @@ export default {
         url = `${url}${this.dateRange}`
         axios.get(url)
         .then(response => {
-          const data = response.data;        
+          const data = response.data;       
+
         if(this.dateRange == 'today'){
           this.awesomes[0].number = data.today_overview.mom["total_value"].toFixed(2) + " kW"; // Format to 2 decimal places
+          this.moment_power = data.today_overview.mom["total_value"].toFixed(2)
           this.awesomes[1].number = data.today_overview.min.toFixed(2) + " kW"; // Format to 2 decimal places
           this.awesomes[2].number = data.today_overview.max.toFixed(2) + " kW";
           this.awesomes[3].number = data.today_overview.avg.toFixed(2) + " kW";
         }
         else if(this.dateRange == 'month'){
-          this.awesomes[0].number = data.month_overview.mom["total_value"].toFixed(2) + " kW"; // Format to 2 decimal places
+          this.awesomes[0].number = this.moment_power + " kW"; // Format to 2 decimal places
           this.awesomes[1].number = data.month_overview.min.toFixed(2) + " kW"; // Format to 2 decimal places
           this.awesomes[2].number = data.month_overview.max.toFixed(2) + " kW";
           this.awesomes[3].number = data.month_overview.avg.toFixed(2) + " kW";
         }
         else if(this.dateRange == 'year'){
-            this.awesomes[0].number = data.year_overview.mom["total_value"].toFixed(2) + " kW"; // Format to 2 decimal places
+            this.awesomes[0].number = this.moment_power + " kW"; // Format to 2 decimal places
             this.awesomes[1].number = data.year_overview.min.toFixed(2) + " kW"; // Format to 2 decimal places
             this.awesomes[2].number = data.year_overview.max.toFixed(2) + " kW";
             this.awesomes[3].number = data.year_overview.avg.toFixed(2) + " kW";
@@ -107,18 +111,19 @@ export default {
           const data = response.data; 
           if(this.dateRange == 'today'){        
           this.awesomes[0].number = data.today_overview_single.mom.toFixed(2) + " kW"; // Format to 2 decimal places
+          this.momentDevice = data.today_overview_single.mom.toFixed(2)
           this.awesomes[1].number = data.today_overview_single.min.toFixed(2) + " kW"; // Format to 2 decimal places
           this.awesomes[2].number = data.today_overview_single.max.toFixed(2) + " kW";
           this.awesomes[3].number = data.today_overview_single.avg.toFixed(2) + " kW";
         }
         else if(this.dateRange == 'month'){
-          this.awesomes[0].number = data.month_overview_single.mom.toFixed(2) + " kW"; // Format to 2 decimal places
+          this.awesomes[0].number = this.momentDevice + " kW"; // Format to 2 decimal places
           this.awesomes[1].number = data.month_overview_single.min.toFixed(2) + " kW"; // Format to 2 decimal places
           this.awesomes[2].number = data.month_overview_single.max.toFixed(2) + " kW";
           this.awesomes[3].number = data.month_overview_single.avg.toFixed(2) + " kW";
         }
         else if(this.dateRange == 'year'){
-          this.awesomes[0].number = data.year_overview_single.mom.toFixed(2) + " kW"; // Format to 2 decimal places
+          this.awesomes[0].number = this.momentDevice + " kW"; // Format to 2 decimal places
           this.awesomes[1].number = data.year_overview_single.min.toFixed(2) + " kW"; // Format to 2 decimal places
           this.awesomes[2].number = data.year_overview_single.max.toFixed(2) + " kW";
           this.awesomes[3].number = data.year_overview_single.avg.toFixed(2) + " kW";

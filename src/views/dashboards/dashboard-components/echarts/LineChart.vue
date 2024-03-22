@@ -74,7 +74,7 @@ export default {
           },
         },
         legend: {
-          orient: 'vertical',
+          orient: 'horizontal',
           padding:[-500,100,0,0],
           //selected:{'sm-0002':false,'sm-0004':false,'sm-00024':false,'sm-0020':false,'sm-0010':false,'sm-0011':false,'sm-0015':false,'sm-0030':false,'sm-0016:':false,'sm-0025':false,'sm-0017':false,'sm-0018':false,'sm-0008':false,'sm-0009':false}
         },
@@ -336,6 +336,7 @@ export default {
           
           let devData = responses[0].data
           let forecastData = responses[1].data
+  
           
           if(devData){
             const devIds = Array.from(new Set(devData.map((item) => item.devId)));  

@@ -12,44 +12,59 @@
             
             <div v-if="item.online == 'not-ready'" class="d-flex align-items-center">
               <!-- Button to open modal -->
-                <b-button size="sm" variant="primary" @click="openModal(item.id)">Details</b-button>
+                <b-button size="sm" variant="primary" @click="openModal(item)">Details</b-button>
                 <!-- Display the cell value -->
                 
               </div>
               <!-- Modal for displaying details -->
-              <b-modal :id="'modal_' + item.id" title="Enter Smart Meter Details">
-                <div class="d-flex mb-4">
+              <b-modal :id="'modal_' + item.id" :title="modalTitle">
+                <b-form-group :label="labelGrid">
+                <div class="d-flex align-items-center mb-3">
                   <!-- Input field -->
                   <b-form-input v-model="inputGrid" placeholder="Enter Grid Node..." class="mr-2"></b-form-input>
-                  <!-- Send button -->
-                  <b-button @click="sendData">Send</b-button>
-              </div>
-              
-              <div class="d-flex mb-4">
-                  <!-- Input field -->
-                  <b-form-input v-model="inputLat" placeholder="Enter Latitude..." class="mr-2"></b-form-input>
-                  <!-- Send button -->
-                  <b-button @click="sendData">Send</b-button>
-              </div>
-              <div class="d-flex mb-4">
-                  <!-- Input field -->
-                  <b-form-input v-model="inputLong" placeholder="Enter Longitude..." class="mr-2"></b-form-input>
-                  <!-- Send button -->
-                  <b-button @click="sendData">Send</b-button>
-              </div>
-              <div class="d-flex">
-                  <!-- Input field -->
-                  <b-form-input v-model="inputCap" placeholder="Enter Capacity..." class="mr-2"></b-form-input>
-                  <!-- Send button -->
-                  <b-button @click="sendData">Send</b-button>
-              </div>
-                          <!-- Modal footer with only the "OK" button -->
-                  <template #modal-footer="{ cancel, ok }">
-                      <b-button @click="ok" variant="primary">Apply changes</b-button>
-                  </template>
-                
-                <!-- Add more content as needed -->
-              </b-modal>
+                  <!-- Flex container for button -->
+                  <div class="d-flex">
+                    <!-- Send button -->
+                    <b-button @click="sendDataGrNode(item.id)" :disabled="inputGrid === ''">Send</b-button>            
+                  </div>
+                </div>
+              </b-form-group>
+              <b-form-group :label="labelLat">
+                <div class="d-flex align-items-center mb-3">
+                <!-- Input field -->
+                <b-form-input v-model="inputLat" placeholder="Enter Latitude..." class="mr-2"></b-form-input>
+                <!-- Send button -->
+                <div class="d-flex">
+                <b-button @click="sendDataLat(item.id)" :disabled="inputLat === ''">Send</b-button>
+                </div>
+                </div>
+              </b-form-group>
+              <b-form-group :label="labelLong">
+                <div class="d-flex align-items-center mb-3">
+                <!-- Input field -->
+                <b-form-input v-model="inputLong" placeholder="Enter Longitude..." class="mr-2"></b-form-input>
+                <!-- Send button -->
+                <div class="d-flex">
+                <b-button @click="sendDataLong(item.id)" :disabled="inputLong === ''">Send</b-button>
+                </div>
+                </div>
+              </b-form-group>
+              <b-form-group :label="labelCap">
+                <div class="d-flex align-items-center mb-3">
+                <!-- Input field -->
+                <b-form-input v-model="inputCap" placeholder="Enter Capacity..." class="mr-2"></b-form-input>
+                <!-- Send button -->
+                <div class="d-flex">
+                <b-button @click="sendDataCap(item.id)" :disabled="inputCap === ''">Send</b-button>
+                </div>
+                </div>
+              </b-form-group>
+              <!-- Modal footer with only the "OK" button -->
+              <template #modal-footer="{ cancel, ok }">
+                <b-button @click="ok" variant="primary">Apply changes</b-button>
+              </template>
+              <!-- Add more content as needed -->
+            </b-modal>
             </template>
 
 
@@ -89,6 +104,10 @@
        return {
          selectMode: 'multi',        
          selected: [],
+         currentGrid:'',      
+         currentLat:'',
+         currentLong:'',
+         currentCap:'',
          inputGrid:'',
          inputLat:'',
          inputLong:'',
@@ -129,14 +148,65 @@
      },
    
      methods: {
-          openModal(sm) {
-            console.log(sm)
+    
+          openModal(sm) {            
             // Open modal based on grid node
-            this.$bvModal.show('modal_' + sm);
+            if(sm.grid){
+              this.currentGrid = sm.grid
+            }
+            if (sm.lat){
+              this.currentLat = sm.lat
+            }
+            if(sm.long){
+              this.currentLong = sm.long
+            }
+            if(sm.capacity){
+              this.currentCap = sm.capacity 
+            }
+   
+            this.$bvModal.show('modal_' + sm.id);
           },      
 
-          sendData(){
-            console.log(this.inputValue)
+          sendDataGrNode(id){
+            console.log(this.inputGrid, id)  
+            axios.post('http://85.14.6.37:16455/api/asign/',     
+            {
+              "dev" : id,
+              "node": this.inputGrid
+            }).then(response =>{
+            
+              this.success = 'Data saved successfully';
+              this.response = JSON.stringify(response, null, 2)
+            }).catch(error => {
+              this.response = 'Error: ' + error.response.status
+            })
+            this.inputGrid = ''      
+
+
+          },
+          sendDataLat(id){
+            console.log(this.inputLat, id)
+          },
+          sendDataLong(id){
+            console.log(this.inputLong, id)
+          },
+          sendDataCap(id){           
+
+            axios.post('http://85.14.6.37:16455/api/capa/', {
+              "dev" : id,
+              "capacity": this.inputCap
+            }).then(response =>{
+              console.log(response.data)
+              this.success = 'Data saved successfully';
+              this.response = JSON.stringify(response, null, 2)
+            }).catch(error => {
+              this.response = 'Error: ' + error.response.status
+            })
+            this.inputCap = ''
+            
+
+
+
           },
  
          async pollData() {
@@ -171,7 +241,7 @@
          async asignedNodes(){
            axios
                .get("http://85.14.6.37:16455/api/grid_asign/")
-               .then(response => response.data.forEach(el=>{        
+               .then(response => response.data.forEach(el=>{                
                
                    let found = this.all.find(element => element.id === el.dev)
                    if (found){
@@ -246,7 +316,23 @@
            return !this.power || !this.countDown;
        },
        ...mapState(['all_devs']),
-     }
+
+      labelGrid() {
+        return `Edit Grid Node (${this.currentGrid})`;
+      },
+      labelLat() {
+        return `Edit Latitude (${this.currentLat})`;
+      },
+      labelLong() {
+        return `Edit Longitude (${this.currentLong})`;
+      },
+      labelCap() {
+        return `Edit Capacity (${this.currentCap})`;
+      },
+      modalTitle() {
+        return `Enter Smart Meter Details `;
+      }
+      }
    
    
    

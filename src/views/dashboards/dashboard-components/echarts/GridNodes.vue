@@ -128,8 +128,8 @@
 
       },
       async fetchGridAssignments() {
-        const response = await axios.get('http://209.38.208.230:8000/api/grid_asign/');
-        // console.log(response.data)
+        const response = await axios.get('http://85.14.6.37:16455/api/grid_asign/');
+        
         return response.data;
       },
       updateTreeData(onlineDevices, gridAssignments) {
@@ -161,6 +161,7 @@
         }));
         
         gridAssignments.forEach(assignment => {
+          
           const device = onlineDevices.find(dev => dev.id === assignment.dev);          
           if (device) {            
             const grid = treeData.find(grid => grid.name === assignment.grid_name);

@@ -17,7 +17,7 @@
     data() {
       return {
         polling: null,
-        initialCenter: [43.2456, 27.9292], // Initial map center
+        initialCenter: [42.9222, 25.9292], // Initial map center
         addressPoints: [],
         heatLayerOptions: {
           radius: 25,
@@ -61,7 +61,10 @@
         this.all_devs.forEach((el) => {
           const power = parseFloat(el.power);
           if (!isNaN(power) && power >= 0 && el.lat) {
-            const intensity = this.normalizeValues(power);
+            let intensity = this.normalizeValues(power);
+            if(el.lat == 42.6718 || el.lat == 42.6218){
+              intensity = 3
+            }
             this.addressPoints.push([el.lat, el.long, intensity]);
           }
         });

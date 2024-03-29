@@ -20,6 +20,7 @@ import {
   ToolboxComponent,
   GridComponent,
   DataZoomComponent,
+
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 
@@ -33,6 +34,7 @@ use([
   LineChart,
   CanvasRenderer,
   DataZoomComponent,
+  
 ])
 
 var timeLineSet = function(value) {
@@ -131,6 +133,7 @@ export default {
 
       top: 0,
       height: 30,
+      
       handleIcon: "pin",
       handleSize: "75%",
       // handleStyle: {
@@ -224,8 +227,21 @@ export default {
 
   methods: {
 
+    CountMisiingData(dataArr){
+      
+      const length = dataArr.length
+      console.log(length)
+      const lastDataPoint = dataArr.slice(-1)[0].created_date
+      const date = new Date(lastDataPoint);
+      const currHour = date.getUTCHours()
+      const min = date.getMinutes()
+      const totalMinutes = currHour*60 + min
+      console.log(totalMinutes)
+    },
+
    
     getDataSubset(params) {
+      
 
       if(params.seriesType == 'line'){
         if (params.data){
@@ -323,8 +339,7 @@ export default {
         
         let requestOne = []
         if(url){
-          requestOne = axios.get(url);  
-           
+          requestOne = axios.get(url);          
         }
         let requestTwo = [] 
         if (urlForecast)
@@ -335,7 +350,10 @@ export default {
         axios.all([requestOne, requestTwo]).then(axios.spread((...responses) => {
           
           let devData = responses[0].data
+          this.CountMisiingData(devData)
+
           let forecastData = responses[1].data
+          console.log(forecastData)
   
           
           if(devData){

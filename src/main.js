@@ -24,6 +24,7 @@ import hljs from "highlight.js";
 //use
 Vue.use(vueHljs, { hljs });
 Vue.use(InstantSearch);
+
 Vue.use(VueGoogleHeatmap, {
     apiKey: 'AIzaSyBOCx0egD3RtmVHKdj_xWTdz0nKiL3l9lw',libraries: ['visualization','places']
   });

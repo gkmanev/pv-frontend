@@ -21,6 +21,9 @@
         <b-col cols="12">
             <GridNodes />
         </b-col>
+        <!-- <b-col cols="12">
+            <HighChartTest />
+        </b-col> -->
 
       <!-- --------------------------------------------------------- 
       Sales Summary
@@ -41,9 +44,10 @@
   import LineChart from "../dashboard-components/echarts/LineChart";
   import PriceChart from "../dashboard-components/echarts/PriceChart";
   import TableChart from "../dashboard-components/echarts/TableChart";
-  // import HeatMap from "../dashboard-components/echarts/HeatMap";
+
   import GridNodes from "../dashboard-components/echarts/GridNodes";
   import MapCard from '../dashboard-components/echarts/MapCard.vue';
+  // import HighChartTest from '../dashboard-components/echarts/HighChartTest.vue';
   
 
 
@@ -85,7 +89,8 @@
     PriceChart,
     TableChart,   
     MapCard,
-    GridNodes 
+    GridNodes,
+    // HighChartTest 
     
 },
     methods: {

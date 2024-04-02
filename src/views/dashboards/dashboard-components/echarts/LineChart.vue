@@ -178,6 +178,7 @@ export default {
   filteredSeriesData() {
       return this.seriesData.filter(series => {
         return this.checkedDevs[series.name]; // Assuming checkedDevs is an object with device names as keys
+        
       });
     }
   },
@@ -185,10 +186,10 @@ export default {
 
     selectBoxDevs: {
     handler(newBox, oldBox) {
-      if (newBox !== oldBox) {
-         
-       
+      if (newBox !== oldBox) {         
+        
         this.option.legend.selected = newBox
+        
         this.fetchData();
       }
     },
@@ -322,8 +323,12 @@ export default {
       
       if (this.lastRouteSegment == 'entra')
       {
-        url = `http://85.14.6.37:16455/api/posts/?date_range=${this.dateRange}`    
-        
+        if (this.dateRange == 'today'){
+          url = `http://85.14.6.37:16455/api/consistance/?date_range=today`    
+        }
+        else{
+          url = `http://85.14.6.37:16455/api/posts/?date_range=${this.dateRange}`
+        }
         //config chart
 
       }
@@ -339,7 +344,8 @@ export default {
         
         let requestOne = []
         if(url){
-          requestOne = axios.get(url);          
+          requestOne = axios.get(url); 
+           
         }
         let requestTwo = [] 
         if (urlForecast)
@@ -349,14 +355,13 @@ export default {
         
         axios.all([requestOne, requestTwo]).then(axios.spread((...responses) => {
           
-          let devData = responses[0].data
-          this.CountMisiingData(devData)
+          let devData = responses[0].data          
 
           let forecastData = responses[1].data
-          console.log(forecastData)
-  
+          
           
           if(devData){
+           
             const devIds = Array.from(new Set(devData.map((item) => item.devId)));  
             const seriesData = devIds.map((devId) => {
               const baseSeriesConfig = {
@@ -364,7 +369,7 @@ export default {
                 type: "line",
                 sampling: "lttb",
                 showSymbol: false,
-                connectNulls: false,                
+                connectNulls: true,                
                 lineStyle: { width: 1 },
 
                 data: devData

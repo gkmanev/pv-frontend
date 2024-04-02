@@ -8,13 +8,16 @@
         </b-col>
         <b-col cols="3">            
             <RangeComponent class="mb-4" />          
-        </b-col>
+        </b-col>        
         <b-col cols="12">
             <LineChart />
-        </b-col>  
+        </b-col>
         <b-col cols="12">
             <PriceChart />
-        </b-col>  
+        </b-col> 
+        <b-col cols="12">
+            <WeatherChart />
+        </b-col>   
     </b-row>
   </template>
   <script>
@@ -24,10 +27,13 @@
   
   import SelectComponent from "../dashboard-components/select-component/SelectComponent";
   import RangeComponent from "../dashboard-components/range-component/RangeComponent";
-  import LineChart from "../dashboard-components/echarts/LineChart";
+  import LineChart from "../dashboard-components/echarts/LineChart";  
   import PriceChart from "../dashboard-components/echarts/PriceChart"; 
+  import WeatherChart from "../dashboard-components/echarts/WeatherChart"; 
   import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
   import { mapState } from 'vuex';
+
+
   
   // -----------------------------------------
   // Export Here
@@ -45,7 +51,9 @@
     SelectComponent,    
     RangeComponent,
     PriceChart,
-    AwesomeCards
+    AwesomeCards,
+    WeatherChart
+    
 },
 
   created(){

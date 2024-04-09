@@ -1,7 +1,7 @@
 <template>
-  <b-card class="mb-4">
+  <b-card class="mb-4 line-chart">
     <div class="mt-4">
-      <v-chart class="chart" height="450" :option="option" @mouseover="getDataSubset" autoresize/>
+      <v-chart class="chart" height="550" :option="option" @mouseover="getDataSubset" autoresize/>
     </div>
   </b-card>
 </template>
@@ -66,8 +66,7 @@ export default {
       option: {
         title: {
           text: 'Customer Power',    
-          left:80,
-          top:50,    
+          left: 'center',   
           textStyle: {
             fontSize: 16,
             color:'#b2b9bf',
@@ -97,9 +96,9 @@ export default {
  
 
   grid: {
-    left: '5%',
-    right: '1%',
-    bottom: '13%',
+    // left: '5%',
+    // right: '1%',
+    bottom: '20%',
     containLabel: false
   },
   xAxis: 
@@ -131,11 +130,11 @@ export default {
   ],
   dataZoom: [{
 
-      top: 0,
+      // bottom: 0,
       height: 30,
       
       handleIcon: "pin",
-      handleSize: "75%",
+      handleSize: "50%",
       // handleStyle: {
       //          color: "#9a9a9a",
       //          borderColor: "rgba(255, 255, 255, 1)",
@@ -227,18 +226,6 @@ export default {
   },
 
   methods: {
-
-    CountMisiingData(dataArr){
-      
-      const length = dataArr.length
-      console.log(length)
-      const lastDataPoint = dataArr.slice(-1)[0].created_date
-      const date = new Date(lastDataPoint);
-      const currHour = date.getUTCHours()
-      const min = date.getMinutes()
-      const totalMinutes = currHour*60 + min
-      console.log(totalMinutes)
-    },
 
    
     getDataSubset(params) {
@@ -433,7 +420,10 @@ export default {
 
 
 
+.line-chart {
+  height: 650px;
+}
 .chart {
-  height: 450px;
+  height: 550px;
 }
 </style>

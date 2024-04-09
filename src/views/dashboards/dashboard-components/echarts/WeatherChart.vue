@@ -195,6 +195,7 @@ export default {
     
     dateRange(newRange, oldRange) {
       if (newRange !== oldRange) {
+        this.option.series[0].data = []
         this.fetchData();
       }
     },
@@ -284,7 +285,7 @@ export default {
     fetchData() {    
 
       if(this.lat && this.long){
-      let url = `http://127.0.0.1:8000/api/weather/?date_range=${this.dateRange}&lat=${this.lat}&long=${this.long}`    
+      let url = `http://85.14.6.37:16456/api/weather/?date_range=${this.dateRange}&lat=${this.lat}&long=${this.long}`    
       if(url){
         console.log(url)
         axios

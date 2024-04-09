@@ -9,8 +9,11 @@
         <b-col cols="3">            
             <RangeComponent class="mb-4" />          
         </b-col>        
-        <b-col cols="12">
+        <b-col cols="9">
             <LineChart />
+        </b-col>
+        <b-col cols="3">
+          <CustomProgress />
         </b-col>
         <b-col cols="12">
             <PriceChart />
@@ -31,7 +34,9 @@
   import PriceChart from "../dashboard-components/echarts/PriceChart"; 
   import WeatherChart from "../dashboard-components/echarts/WeatherChart"; 
   import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
+  import CustomProgress from "../dashboard-components/progress-cards/CustomProgress.vue";
   import { mapState } from 'vuex';
+
 
 
   
@@ -52,7 +57,8 @@
     RangeComponent,
     PriceChart,
     AwesomeCards,
-    WeatherChart
+    WeatherChart,
+    CustomProgress
     
 },
 

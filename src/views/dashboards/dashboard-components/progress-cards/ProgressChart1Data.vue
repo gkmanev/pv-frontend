@@ -1,7 +1,7 @@
 <script>
 export default {
   ProgressAChart: {
-    series: [14, 15],
+    series: [20, 80],
     chartOptions: {
       labels: ["Search Traffic", "Free"],
       dataLabels: {

@@ -1,14 +1,16 @@
 <template>
     <b-row class="justify-content-start">  
-      <b-col v-if="isDevSelected" cols="12">        
-            <AwesomeCards />
-      </b-col>      
+      
         <b-col cols="4">            
             <SelectComponent />
         </b-col>
         <b-col cols="3">            
             <RangeComponent class="mb-4" />          
-        </b-col>        
+        </b-col>      
+        <b-col v-if="isDevSelected" cols="12">        
+            <!-- <AwesomeCards /> -->
+            <SalesCard />
+      </b-col>        
         <b-col cols="9">
             <LineChart />
         </b-col>
@@ -33,9 +35,10 @@
   import LineChart from "../dashboard-components/echarts/LineChart";  
   import PriceChart from "../dashboard-components/echarts/PriceChart"; 
   import WeatherChart from "../dashboard-components/echarts/WeatherChart"; 
-  import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
+  // import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
   import CustomProgress from "../dashboard-components/progress-cards/CustomProgress.vue";
   import { mapState } from 'vuex';
+  import SalesCard from "../dashboard-components/sales-card/SalesCard.vue";
 
 
 
@@ -56,9 +59,10 @@
     SelectComponent,    
     RangeComponent,
     PriceChart,
-    AwesomeCards,
+   // AwesomeCards,
     WeatherChart,
-    CustomProgress
+    CustomProgress,
+    SalesCard
     
 },
 

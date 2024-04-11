@@ -32,6 +32,7 @@ export default {
   },
   data: () => ({
     title: "Sales Card",
+    moment_power: null,
 
     sales: [
       {
@@ -87,6 +88,11 @@ export default {
         this.fetchData()
       }
     },
+    dateRange(newRange, oldRange) {
+      if (newRange !== oldRange) {
+        this.fetchData();
+      }
+    },
   },
 
   methods: {
@@ -128,27 +134,31 @@ export default {
         if (this.selectedDev)
         {
           url = `${url}${this.dateRange}&devId=${this.selectedDev}`
-          axios.get(url)
+          console.log(url)
+          axios.get(url)          
         .then(response => {
-          const data = response.data; 
+          const data = response.data;           
           if(this.dateRange == 'today'){        
-          const moment = data.today_overview_single.mom.toFixed(2)          
+          const moment = data.today_overview_single.mom.toFixed(2) 
+          this.moment_power = moment        
           const min = data.today_overview_single.min.toFixed(2)
           const max = data.today_overview_single.max.toFixed(2)
           const avg = data.today_overview_single.avg.toFixed(2)
           this.calculateCapacityPercentage(moment,min,max,avg)
         }
         else if(this.dateRange == 'month'){
-          this.awesomes[0].number = this.momentDevice + " kW"; // Format to 2 decimal places
-          this.awesomes[1].number = data.month_overview_single.min.toFixed(2) + " kW"; // Format to 2 decimal places
-          this.awesomes[2].number = data.month_overview_single.max.toFixed(2) + " kW";
-          this.awesomes[3].number = data.month_overview_single.avg.toFixed(2) + " kW";
+          const moment = this.moment_power          
+          const min = data.month_overview_single.min.toFixed(2)
+          const max = data.month_overview_single.max.toFixed(2)
+          const avg = data.month_overview_single.avg.toFixed(2)
+          this.calculateCapacityPercentage(moment,min,max,avg)
         }
         else if(this.dateRange == 'year'){
-          this.awesomes[0].number = this.momentDevice + " kW"; // Format to 2 decimal places
-          this.awesomes[1].number = data.year_overview_single.min.toFixed(2) + " kW"; // Format to 2 decimal places
-          this.awesomes[2].number = data.year_overview_single.max.toFixed(2) + " kW";
-          this.awesomes[3].number = data.year_overview_single.avg.toFixed(2) + " kW";
+          const moment = this.moment_power          
+          const min = data.year_overview_single.min.toFixed(2)
+          const max = data.year_overview_single.max.toFixed(2)
+          const avg = data.year_overview_single.avg.toFixed(2)
+          this.calculateCapacityPercentage(moment,min,max,avg)
         }
           
 

@@ -1,5 +1,5 @@
 <template>
-  <b-card class="mb-4">
+  <b-card class="mb-4 line-chart">
     <div class="mt-4">
       <v-chart class="chart" height="450" :option="option" @mouseover="getDataSubset" autoresize/>
     </div>
@@ -66,15 +66,15 @@ export default {
       long: null,
       option: {
         title: {
-          text: 'Temperature',    
-          left:80,
-          top:50,    
+          text: 'Temperature', 
+          left: 'center',   
           textStyle: {
             fontSize: 16,
             color:'#b2b9bf',
             fontFamily: 'Arial',
             fontWeight: 'normal'
-          },
+          },   
+
         },
         legend: {
           orient: 'horizontal',
@@ -98,9 +98,7 @@ export default {
  
 
   grid: {
-    left: '5%',
-    right: '1%',
-    bottom: '13%',
+    bottom: '25%',
     containLabel: false
   },
   xAxis: 
@@ -131,31 +129,18 @@ export default {
     
   ],
   dataZoom: [{
-
-      top: 0,
-      height: 30,
-      
+      height: 30,      
       handleIcon: "pin",
-      handleSize: "75%",
-      // handleStyle: {
-      //          color: "#9a9a9a",
-      //          borderColor: "rgba(255, 255, 255, 1)",
-      //          opacity: 0.5
-      //  },
-
+      handleSize: "50%",
       show: true,
-
-      // backgroundColor:'#9a9a9a',
-        //  fillerColor: "rgba(255, 255, 255, 0.1)",
-          dataBackground: {
-              areaStyle: {
-                  color: "#9a9a9a"
-                      }
-                  },
+      dataBackground: {
+        areaStyle: {
+          color: "#9a9a9a"
+        }
+      },
       start: 0,
       end: 100
       },
-
      ],
   
   series:[
@@ -181,9 +166,14 @@ export default {
     };
   },
 
-  mounted() {
+  mounted() {    
+    const foundObject = this.all_devs.find(obj => obj.id === this.selectedDev); 
+    if (foundObject)
+    {
+      this.lat = foundObject.lat
+      this.long = foundObject.long
+    }    
     this.fetchData();
-
   },
 
   computed: {
@@ -313,7 +303,10 @@ export default {
 
 
 
+.line-chart {
+  height: 480px;
+}
 .chart {
-  height: 450px;
+  height: 400px;
 }
 </style>

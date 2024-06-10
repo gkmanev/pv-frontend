@@ -23,6 +23,9 @@
         <b-col cols="12">
             <WeatherChart />
         </b-col>   
+        <b-col cols="12">
+            <WeatherChartClouds />
+        </b-col>   
     </b-row>
   </template>
   <script>
@@ -39,6 +42,7 @@
   import CustomProgress from "../dashboard-components/progress-cards/CustomProgress.vue";
   import { mapState } from 'vuex';
   import SalesCard from "../dashboard-components/sales-card/SalesCard.vue";
+  import WeatherChartClouds from "../dashboard-components/echarts/WeatherChartClouds.vue";
 
 
 
@@ -62,7 +66,8 @@
    // AwesomeCards,
     WeatherChart,
     CustomProgress,
-    SalesCard
+    SalesCard,
+    WeatherChartClouds
     
 },
 

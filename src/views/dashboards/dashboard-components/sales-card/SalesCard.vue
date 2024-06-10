@@ -79,7 +79,7 @@ export default {
   created() {
 
       this.fetchData()
-      console.log("here")
+      
       
     },
     watch: {

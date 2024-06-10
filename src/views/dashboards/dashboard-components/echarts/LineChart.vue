@@ -1,7 +1,7 @@
 <template>
   <b-card class="mb-4 line-chart">
     <div class="mt-4">
-      <v-chart class="chart" height="550" :option="option" @mouseover="getDataSubset" autoresize/>
+      <v-chart class="chart" height="400" :option="option" @mouseover="getDataSubset" autoresize/>
     </div>
   </b-card>
 </template>
@@ -98,7 +98,7 @@ export default {
   grid: {
     // left: '5%',
     // right: '1%',
-    bottom: '20%',
+    bottom: '25%',
     containLabel: false
   },
   xAxis: 
@@ -129,31 +129,18 @@ export default {
     
   ],
   dataZoom: [{
-
-      // bottom: 0,
-      height: 30,
-      
+      height: 30,      
       handleIcon: "pin",
       handleSize: "50%",
-      // handleStyle: {
-      //          color: "#9a9a9a",
-      //          borderColor: "rgba(255, 255, 255, 1)",
-      //          opacity: 0.5
-      //  },
-
       show: true,
-
-      // backgroundColor:'#9a9a9a',
-        //  fillerColor: "rgba(255, 255, 255, 0.1)",
-          dataBackground: {
-              areaStyle: {
-                  color: "#9a9a9a"
-                      }
-                  },
+      dataBackground: {
+        areaStyle: {
+          color: "#9a9a9a"
+        }
+      },
       start: 0,
       end: 100
       },
-
      ],
   
   series:[]
@@ -421,9 +408,9 @@ export default {
 
 
 .line-chart {
-  height: 650px;
+  height: 480px;
 }
 .chart {
-  height: 550px;
+  height: 400px;
 }
 </style>

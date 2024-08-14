@@ -129,9 +129,8 @@
       
     ],
     dataZoom: [{
-        height: 30,      
-        handleIcon: "pin",
-        handleSize: "50%",
+        height: 20,      
+        handleSize: "75%",        
         show: true,
         dataBackground: {
           areaStyle: {
@@ -279,7 +278,7 @@
         if(this.lat && this.long){
         let url = `http://85.14.6.37:16456/api/weather/?date_range=${this.dateRange}&lat=${this.lat}&long=${this.long}`    
         if(url){
-          console.log(url)
+          
           axios
           .get(url)
           .then((response) => response.data.forEach(el => {

@@ -82,16 +82,15 @@
         //option
         option: {
           title: {
-            text: 'DAM',    
-            left:70,
-            top:50,    
-            textStyle: {
-              fontSize: 16,
-              color:'#b2b9bf',
-              fontFamily: 'Arial',
-              fontWeight: 'normal'
-            },
+          text: 'DAM Price',    
+          left: 'center',   
+          textStyle: {
+            fontSize: 16,
+            color:'#b2b9bf',
+            fontFamily: 'Arial',
+            fontWeight: 'normal'
           },
+        },
           tooltip: {
             backgroundColor: '', // Set your desired background color
             trigger: 'axis',
@@ -106,10 +105,11 @@
           },
   
           grid: {
-            left: '5%',
-            right: '1%',
-            bottom: '13%',
-            containLabel: false
+            // left: '5%',
+            // right: '1%',
+            bottom: '35%',
+            containLabel: false,
+            
           },
           xAxis: 
             {
@@ -140,9 +140,8 @@
     ],
     dataZoom: [{
 
-      top: 0,
-      height: 30,
-      handleIcon: "pin",
+      //top: 0,
+      height: 20,      
       handleSize: "75%",
       // handleStyle: {
       //          color: "#9a9a9a",
@@ -305,8 +304,9 @@
             //this.configureChartForToday(); // Extract chart configuration to a method for better readability
 
             const url1 = `http://85.14.6.37:16455/api/price/?timestamp=&start_date=${start}&end_date=${end}`;
+            console.log(url1)
             const url2 = `http://85.14.6.37:16455/api/price/?timestamp=&start_date=${end}&end_date=${tomorrow}`;
-            
+            console.log(url2)
             try {
                 const [responseOne, responseTwo] = await Promise.all([
                     axios.get(url1),

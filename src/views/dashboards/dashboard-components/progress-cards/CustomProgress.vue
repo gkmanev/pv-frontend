@@ -1,24 +1,24 @@
 <template>
-    <div>
-      <b-row>
-        <b-col cols="12" md="12">
-          <b-card class="mb-4">
-            <b-row class="py-2">
-              <b-col cols="6">
-                <h1 class="font-weight-light">{{ missedData }}</h1>
-                <h6 class="text-muted">% Missing Data Points</h6>
-              </b-col>
-              <b-col cols="6">
-                <div class="position-relative float-right" style="height: 80px">
-                  <i class="mdi mdi-av-timer text-muted display-7 chart-inner-icon"></i>
-                  <vue-apex-charts type="donut" height="90" width="90" :options="ProgressAChart.chartOptions" :series="ProgressAChart.series"></vue-apex-charts>
-                </div>
-              </b-col>
-            </b-row>
-          </b-card>
-        </b-col>
-      </b-row>    
-    </div>
+  <div>
+    <b-row>
+      <b-col cols="12" md="12">
+        <b-card class="mb-4">
+          <b-row class="py-1">
+            <b-col cols="6">
+              <h2 class="font-weight-light">{{ missedData }} %</h2>
+              <h6 class="text-muted">Missing Data Points</h6>
+            </b-col>
+            <b-col cols="6">
+              <div class="position-relative float-right chart-container">
+                <vue-apex-charts type="donut" height="50" width="50" :options="ProgressAChart.chartOptions" :series="ProgressAChart.series"></vue-apex-charts>
+                <i class="mdi mdi-av-timer text-muted display-7 chart-inner-icon centered-icon"></i>
+              </div>
+            </b-col>
+          </b-row>
+        </b-card>
+      </b-col>
+    </b-row>    
+  </div>
   </template>
   
   <script>
@@ -48,7 +48,7 @@
             plotOptions: {
               pie: {
                 donut: {
-                  size: "85px",
+                  size: "50px",
                 },
               },
             },
@@ -96,12 +96,12 @@
 
             
                 let url = `http://85.14.6.37:16455/api/missing/?date_range=${this.dateRange}&devId=${this.selectedDev}`    
-                console.log(url)
+                
                 if(url){                
                 axios
                 .get(url)
                 .then((response) => {
-                  console.log(response)
+                  
                     this.totalData = response.data.missing 
                     const missed = 100 - this.totalData
                     this.missedData = missed.toFixed(2)               
@@ -123,3 +123,19 @@
   };
   </script>
   
+  <style scoped>
+.chart-container {
+  position: relative;
+  width: 50px; /* same as chart width */
+  height: 50px; /* same as chart height */
+}
+
+.centered-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px; /* Adjust size as needed */
+  pointer-events: none; /* Optional: Ensures the icon doesn't interfere with chart interaction */
+}
+</style>

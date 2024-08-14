@@ -134,7 +134,7 @@ export default {
         if (this.selectedDev)
         {
           url = `${url}${this.dateRange}&devId=${this.selectedDev}`
-          console.log(url)
+          
           axios.get(url)          
         .then(response => {
           const data = response.data;           
@@ -144,6 +144,7 @@ export default {
           const min = data.today_overview_single.min.toFixed(2)
           const max = data.today_overview_single.max.toFixed(2)
           const avg = data.today_overview_single.avg.toFixed(2)
+          console.log(data.today_overview_single)
           this.calculateCapacityPercentage(moment,min,max,avg)
         }
         else if(this.dateRange == 'month'){
@@ -174,6 +175,7 @@ export default {
   },
   calculateCapacityPercentage(mom, min, max, avg){
     const found = this.all_devs.find(el => el.id == this.selectedDev)
+    console.log(found)
     let capacity = found.capacity
     let momPercent = (mom/capacity)*100
     let minPercent = (min/capacity)*100

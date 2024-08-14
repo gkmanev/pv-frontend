@@ -1,7 +1,7 @@
 <template>
   <b-card class="mb-4 line-chart">
-    <div class="mt-4">
-      <v-chart class="chart" height="400" :option="option" @mouseover="getDataSubset" autoresize/>
+    <div class="mt-4 test">
+      <v-chart class="chart" :option="option" @mouseover="getDataSubset" autoresize/>
     </div>
   </b-card>
 </template>
@@ -98,8 +98,9 @@ export default {
   grid: {
     // left: '5%',
     // right: '1%',
-    bottom: '25%',
-    containLabel: false
+    bottom: '35%',
+    containLabel: false,
+    
   },
   xAxis: 
     {
@@ -129,13 +130,15 @@ export default {
     
   ],
   dataZoom: [{
-      height: 30,      
-      handleIcon: "pin",
-      handleSize: "50%",
+      type: 'slider',
+      height: 20,      
+      handleSize: "75%",
+      // handleSize: "50%",
       show: true,
+      backgroundColor: '#272b34',
       dataBackground: {
         areaStyle: {
-          color: "#9a9a9a"
+          color: "#009efb"
         }
       },
       start: 0,
@@ -310,7 +313,11 @@ export default {
         if(this.selectedDev)
         {
           url = `http://85.14.6.37:16455/api/posts/?date_range=${this.dateRange}&dev=${this.selectedDev}`
-          urlForecast = `http://85.14.6.37:16455/api/post_forecast?date_range=${this.dateRange}&dev=${this.selectedDev}F`
+          
+          urlForecast = `http://85.14.6.37:16454/api/forecast?date_range=${this.dateRange}&devId=${this.selectedDev}`
+          
+          //urlForecast = `http://127.0.0.1:8000/api/forecast/?devId=${this.selectedDev}`
+          
          
         }
       }
@@ -318,8 +325,7 @@ export default {
         
         let requestOne = []
         if(url){
-          requestOne = axios.get(url); 
-           
+          requestOne = axios.get(url);            
         }
         let requestTwo = [] 
         if (urlForecast)
@@ -367,6 +373,9 @@ export default {
             });
             // Check if lastRouteSegment is not 'entra' and forecastData is not empty
             if (this.lastRouteSegment !== 'entra' && forecastData && forecastData.length > 0) {
+                let test = forecastData.map((item) =>[item.timestamp, item.power.toFixed(2)])
+                
+                console.log(test)
                 // Add another series for forecastData
                 this.option.title.text = "Power kW"
                 seriesData.push({
@@ -377,7 +386,9 @@ export default {
                     
                     connectNulls: false,
                     lineStyle: { width: 1,type: 'dotted', },
-                    data: forecastData.map((item) => [item[this.created_date_or_created], item.value]),
+                    //data: forecastData.map((item) => [item[this.created_date_or_created], item.value]),
+                    data: test
+
                  
                 });
             }
@@ -408,9 +419,12 @@ export default {
 
 
 .line-chart {
-  height: 480px;
+  height: 430px;
 }
 .chart {
-  height: 400px;
+  height: 370px;
+}
+.card-body {
+  padding-top: 0;
 }
 </style>

@@ -32,8 +32,8 @@
           <!-- -----------------------------------------------------------
             Notification Dropdown
           ----------------------------------------------------------- -->
-          <b-nav-item-dropdown left no-caret class="mailbox">
-            <!-- Using 'button-content' slot -->
+          <!-- <b-nav-item-dropdown left no-caret class="mailbox">
+         
             <template #button-content>
               <feather type="message-square"></feather>
               <div class="notify">
@@ -76,13 +76,12 @@
                 <feather type="chevron-right" class="feather-sm"></feather>
               </b-link>
             </b-dropdown-text>
-          </b-nav-item-dropdown>
+          </b-nav-item-dropdown> -->
 
           <!-- -----------------------------------------------------------
             Message Dropdown
           ----------------------------------------------------------- -->
-          <b-nav-item-dropdown left no-caret class="mailbox">
-            <!-- Using 'button-content' slot -->
+          <!-- <b-nav-item-dropdown left no-caret class="mailbox">
             <template #button-content>
               <feather type="inbox"></feather>
               <div class="notify">
@@ -130,7 +129,7 @@
                 <feather type="chevron-right" class="feather-sm"></feather>
               </b-link>
             </b-dropdown-text>
-          </b-nav-item-dropdown>
+          </b-nav-item-dropdown> -->
 
           <!-- -----------------------------------------------------------
             Mega Dropdown
@@ -187,7 +186,7 @@
           <!-- -----------------------------------------------------------
             Language Dropdown
           ----------------------------------------------------------- -->
-          <b-nav-item-dropdown right no-caret>
+          <!-- <b-nav-item-dropdown right no-caret>
             <template #button-content>
               <i :class="getCurrentLanguage.lang"></i>
             </template>
@@ -207,13 +206,13 @@
               ><i class="mr-2 flag-icon flag-icon-gr"></i>
               German</b-dropdown-item
             >
-          </b-nav-item-dropdown>
+          </b-nav-item-dropdown> -->
 
           <!-- -----------------------------------------------------------
             Profile Dropdown
           ----------------------------------------------------------- -->
-          <b-nav-item-dropdown right no-caret class="mailbox">
-            <!-- Using 'button-content' slot -->
+          <!-- <b-nav-item-dropdown right no-caret class="mailbox">
+           
             <template #button-content>
               <img
                 src="../../../assets/images/users/1.jpg"
@@ -259,7 +258,7 @@
               <feather type="log-out" class="feather-sm mr-2 mb-n1"></feather>
               Sign out
             </b-dropdown-item>
-          </b-nav-item-dropdown>
+          </b-nav-item-dropdown> -->
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>
@@ -270,7 +269,7 @@
 import { mapState } from "vuex";
 import LogoDark from "../logo-dark/LogoDark";
 import LogoLight from "../logo-light/LogoLight";
-import VuePerfectScrollbar from "vue-perfect-scrollbar";
+//import VuePerfectScrollbar from "vue-perfect-scrollbar";
 
 import img1 from "../../../assets/images/users/1.jpg";
 import img2 from "../../../assets/images/users/2.jpg";
@@ -348,7 +347,7 @@ export default {
   components: {
     LogoDark,
     LogoLight,
-    VuePerfectScrollbar,
+    //VuePerfectScrollbar,
   },
   computed: {
     ...mapState(["navbarColor", "logoColor", "LayoutType"]),

@@ -11,11 +11,12 @@
             <!-- <AwesomeCards /> -->
             <SalesCard />
       </b-col>        
-        <b-col cols="9">
+        <b-col cols="8">
             <LineChart />
         </b-col>
-        <b-col cols="3">
+        <b-col cols="4">
           <CustomProgress />
+          <CorelationsHeat />
         </b-col>
         <b-col cols="12">
             <PriceChart />
@@ -43,6 +44,7 @@
   import { mapState } from 'vuex';
   import SalesCard from "../dashboard-components/sales-card/SalesCard.vue";
   import WeatherChartClouds from "../dashboard-components/echarts/WeatherChartClouds.vue";
+import CorelationsHeat from "../dashboard-components/echarts/CorelationsHeat.vue";
 
 
 
@@ -67,7 +69,8 @@
     WeatherChart,
     CustomProgress,
     SalesCard,
-    WeatherChartClouds
+    WeatherChartClouds,
+    CorelationsHeat
     
 },
 
@@ -101,3 +104,8 @@
 
     };
   </script>
+
+<style scoped>
+
+/* Add your component-specific styles here */
+</style>

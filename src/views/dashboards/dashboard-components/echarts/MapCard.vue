@@ -22,7 +22,7 @@
         heatLayerOptions: {
           radius: 25,
           blur: 25,
-          maxZoom: 11,
+          maxZoom: 9,
           scaleRadius: true,
           opacity: 0.8,
         },
@@ -80,7 +80,7 @@
       initializeMap() {
         this.map = L.map('map-canvas', {
           scrollWheelZoom: false // Disable scroll wheel zoom
-        }).setView(this.initialCenter, 9);
+        }).setView(this.initialCenter, 7);
         L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
           attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
           subdomains: ['a', 'b', 'c'],

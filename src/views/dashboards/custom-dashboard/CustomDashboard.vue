@@ -7,14 +7,14 @@
             <RangeComponent class="mb-4"  @filter="handleFilter" />          
         </b-col> -->
         <b-col cols="12">
-            <HighChartTest />
+            <StateOfCharge />
         </b-col>
-        <b-col cols="12" v-if="show">
-            <LineChart />
+        <b-col cols="12">
+            <InvertorPower />
         </b-col>
-        <!-- <b-col cols="12">
-            <PriceChart />
-        </b-col> -->
+        <b-col cols="12">
+            <PowerFlow />
+        </b-col>
         <!-- <b-col cols="12">
             <MapCard />
         </b-col> -->
@@ -42,13 +42,14 @@
   // -----------------------------------------
   // import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
   //import RangeComponent from "../dashboard-components/range-component/RangeComponent";
-  import LineChart from "../dashboard-components/echarts/LineChart";
+  import InvertorPower from "../dashboard-components/echarts/InvertorPower.vue";
   // import PriceChart from "../dashboard-components/echarts/PriceChart";
   // import TableChart from "../dashboard-components/echarts/TableChart";
 
   // import GridNodes from "../dashboard-components/echarts/GridNodes";
   // import MapCard from '../dashboard-components/echarts/MapCard.vue';
-  import HighChartTest from '../dashboard-components/echarts/HighChartTest.vue';
+  import StateOfCharge from '../dashboard-components/echarts/StateOfCharge.vue';
+  import PowerFlow from '../dashboard-components/echarts/PowerFlow.vue';
   
 
 
@@ -87,12 +88,13 @@
     components: {
     // AwesomeCards,    
     // RangeComponent,
-    LineChart,
+    InvertorPower,
     //PriceChart,
     //TableChart,   
     //MapCard,
     //GridNodes,
-    HighChartTest 
+    StateOfCharge,
+    PowerFlow 
     
 },
     methods: {

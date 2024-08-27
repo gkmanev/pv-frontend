@@ -32,6 +32,23 @@
     CanvasRenderer,
     DataZoomComponent,
   ]);
+
+  // Copy this function into your second component or a utility file
+  var timeLineSet = function(value) {
+    // Create a Date object from the UTC date string
+    let date = new Date(value);
+
+    // Convert UTC date to local time
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+
+    // Format hours and minutes to ensure two digits
+    hours = ("0" + hours).slice(-2);
+    minutes = ("0" + minutes).slice(-2);
+
+    return `${hours}:${minutes}`;
+};
+
   
   export default {
     name: "PowerFlow",
@@ -105,17 +122,19 @@
           xAxis: {
             type: 'time',
             axisLabel: {
-              rotate: 40,
-              margin: 5,
-              textStyle: {
+                rotate: 40,
+                margin: 5,
+                textStyle: {
                 color: '#9a9a9a'
-              },
+                },
+                formatter: timeLineSet,
             },
             axisLine: {
-              show: true,
+                show: true,
             },
-            boundaryGap: true, // Allows some gap between bars and axis
-          },
+            boundaryGap: false,  // Ensure this matches the `StateOfCharge` component
+            splitNumber: 24
+            },
           yAxis: [
             {
               type: 'value',
@@ -183,10 +202,44 @@
     },
   
     methods: {
-      setAxisTimeRange() {
-        // Same function as before, used to set the x-axis range
-        // No change needed here
-      },
+
+        setAxisTimeRange() {
+            const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+            let start = new Date(today);
+            let end = new Date(today);
+
+            if (this.dateRange === 'today') {
+                end.setHours(22, 59, 59); // Ensure the end time covers the whole day
+                this.option.xAxis.axisLabel.formatter = timeLineSet;
+                this.option.xAxis.splitNumber = 24;
+            } else if (this.dateRange === 'month') {
+                start.setDate(1);
+                end.setMonth(end.getMonth() + 1, 0);
+                end.setHours(23, 59, 59);
+                this.option.xAxis.axisLabel.formatter = (value) => {
+                const date = new Date(value);
+                return `${date.getDate()}/${date.getMonth() + 1}`;
+                };
+                this.option.xAxis.splitNumber = end.getDate();
+            } else if (this.dateRange === 'year') {
+                start.setMonth(0, 1);
+                end.setFullYear(end.getFullYear(), 11, 31);
+                end.setHours(23, 59, 59);
+                this.option.xAxis.axisLabel.formatter = (value) => {
+                const date = new Date(value);
+                return `${date.getMonth() + 1}/${date.getFullYear()}`;
+                };
+                this.option.xAxis.splitNumber = 12;
+            }
+
+            this.option.xAxis.min = start.getTime();
+            this.option.xAxis.max = end.getTime();
+
+            // Update the chart
+            this.$refs.chart && this.$refs.chart.refresh(); 
+            },
+
+
   
       fetchData() {
         let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today`

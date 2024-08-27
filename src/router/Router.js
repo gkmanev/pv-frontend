@@ -14,7 +14,7 @@ const router = new Router({
       component: () => import("@/layouts/full-layout/FullLayout"),
       children: [
         {
-          name: "Energy Dashboard",
+          name: "Battery Fleet",
           path: '/dashboard/entra',          
           component: () =>
             import(

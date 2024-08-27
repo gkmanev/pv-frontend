@@ -10,7 +10,7 @@
     <!-- Logo text -->
     <span class="logo-text ml-2">
       <!-- dark Logo text -->
-      <img src="../../../assets/images/Untitled.png" alt="homepage" />
+      <!-- <img src="../../../assets/images/Untitled.png" alt="homepage" /> -->
       <!-- <h4 class="mt-4">Energy Platform 2.0</h4> -->
     </span>
   </b-navbar-brand>

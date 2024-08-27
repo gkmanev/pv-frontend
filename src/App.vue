@@ -7,7 +7,7 @@
 <script>
 
 // import { mapActions } from 'vuex';
-import { coords } from './coords.js';
+
 import PahoMQTT from 'paho-mqtt';
 import { mapActions } from 'vuex';
 export default {  
@@ -27,7 +27,7 @@ export default {
           clientId: "emqx_vue_" + Math.random().toString(16).substring(2, 8),
         },
         subscription: {
-          topic: "ping/+",
+          topic: "battery_scada/+",
           qos: 0,
         },
         client: {
@@ -36,8 +36,7 @@ export default {
         subscribeSuccess: false,
         connecting: false,
         retryTimes: 0,
-        sm_coeff: [{"sm-0001":120},{"sm-0002":320},{"sm-0003":400},{"sm-0004":200},{"sm-0006":200},{"sm-0008":200},{"sm-0009":80},
-                   {"sm-0010":60},{"sm-0011":60},{"sm-0015":60},{"sm-0016":250},{"sm-0017":200},{"sm-0018":400},{"sm-0019":500},{"sm-0020":500},{"sm-0025":200}],  
+        
     }
   },
   components: {
@@ -57,25 +56,18 @@ export default {
     
     createAllDevs() {
         // Generate device IDs upfront with the correct format
-        const deviceIds = Array.from({ length: 31 }, (_, i) =>
-            `sm-${(i + 1).toString().padStart(4, '0')}`
+        const deviceIds = Array.from({ length: 2 }, (_, i) =>
+            `batt-${(i + 1).toString().padStart(4, '0')}`
         );
 
         // Map device IDs to device objects, incorporating coords data
-        this.all = deviceIds.map(id => {
-            // Find coordinates for the current device, if available
-            const coord = coords.find(coord => coord[id]);
-            const deviceType = ['sm-0001', 'sm-0016'].includes(id) ? 'Producer' : 'Consumer';
-            
+        this.all = deviceIds.map(id => {          
             return {
             id: id,
             online: 'offline', // Default state
-            power: 'N/A',
-            lat: coord ? coord[id].lat : undefined,
-            long: coord ? coord[id].long : undefined,                  
-            type: deviceType,
-            customer:'',
-            capacity:''            
+            soc: 0,
+            flow_last_min: 0,
+            invertor: 0                   
             };
            
         });
@@ -140,52 +132,22 @@ export default {
 
           // Process the incoming message here
           const parsedPayload = JSON.parse(payload);
+          
           let dev = topic.split("/")[1]
-          let pow = parsedPayload.payload.power
+          let soc = parsedPayload.soc
+          let flow_min = parsedPayload.flow_last_min
+          let invertor = parsedPayload.invertor
 
-          this.sm_coeff.forEach(el=>{
-            let keyId = Object.keys(el);                
-              if(keyId[0] === dev){
-                if(keyId[0] === "sm-0001" || keyId[0] === "sm-0016")
-                {
-                  pow *=-1
-                }
-                pow *=el[keyId[0]]
-              }
-          })
-          let devObj = {
-            "dev":dev,
-            "power":pow.toFixed(2),
-            "ready":parsedPayload.payload.gridReady,
-            "providing":parsedPayload.payload.providing                
-          }
-          let found = this.all.find(element => element.id === devObj.dev)
+   
+          let found = this.all.find(element => element.id === dev)
+          console.log(found)
           if(found){              
-            found.power = devObj.power
-            found.providing = devObj.providing
-            found.online = 'online'
-            found.ready = devObj.ready
-            found.customer = parsedPayload.payload.blynkName
-            if (found.ready == 1)
-            {
-              if (found.providing == 0)
-              {
-              found.online = 'ready'
-              }
-              else if (found.providing == 1)
-              {
-                found.online = 'providing'
-              }
-            }
-            else if (found.ready == 0)
-            {
-              found.online = 'not-ready'
-            }
-            else{
-              found.online = 'offline'
-            }          
-            
-          }          
+              found.soc = soc
+              found.flow_last_min = flow_min
+              found.online = 'online'
+              found.invertor = invertor         
+          } 
+                   
           this.allDevsCreation(this.all);
         } catch (error) {
           console.error('Error processing MQTT message:', error);

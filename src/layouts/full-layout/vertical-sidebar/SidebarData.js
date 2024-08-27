@@ -13,12 +13,12 @@ export default [
     title: "Client",     
     to: "/dashboard/client"
   },
-  {
-    id:"1202",
-    icon: "bar-chart",
-    title: "System",     
-    to: "/dashboard/system"
-  },
+  // {
+  //   id:"1202",
+  //   icon: "bar-chart",
+  //   title: "System",     
+  //   to: "/dashboard/system"
+  // },
   // {
   //   id: "1",
   //   icon: "crosshair",

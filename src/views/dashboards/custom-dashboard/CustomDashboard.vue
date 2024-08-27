@@ -1,29 +1,29 @@
 <template>
     <b-row class="justify-content-start">        
-        <b-col cols="12">        
+        <!-- <b-col cols="12">        
             <AwesomeCards />
-        </b-col>
-        <b-col cols="3">            
+        </b-col> -->
+        <!-- <b-col cols="3">            
             <RangeComponent class="mb-4"  @filter="handleFilter" />          
-        </b-col>
+        </b-col> -->
         <b-col cols="12">
             <HighChartTest />
         </b-col>
         <b-col cols="12" v-if="show">
             <LineChart />
         </b-col>
-        <b-col cols="12">
+        <!-- <b-col cols="12">
             <PriceChart />
-        </b-col>
-        <b-col cols="12">
+        </b-col> -->
+        <!-- <b-col cols="12">
             <MapCard />
-        </b-col>
-        <b-col cols="12">
+        </b-col> -->
+        <!-- <b-col cols="12">
             <TableChart />
-        </b-col>        
-        <b-col cols="12">
+        </b-col>         -->
+        <!-- <b-col cols="12">
             <GridNodes />
-        </b-col>
+        </b-col> -->
 
 
       <!-- --------------------------------------------------------- 
@@ -40,14 +40,14 @@
   // -----------------------------------------
   // Import Components Here
   // -----------------------------------------
-  import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
-  import RangeComponent from "../dashboard-components/range-component/RangeComponent";
+  // import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
+  //import RangeComponent from "../dashboard-components/range-component/RangeComponent";
   import LineChart from "../dashboard-components/echarts/LineChart";
-  import PriceChart from "../dashboard-components/echarts/PriceChart";
-  import TableChart from "../dashboard-components/echarts/TableChart";
+  // import PriceChart from "../dashboard-components/echarts/PriceChart";
+  // import TableChart from "../dashboard-components/echarts/TableChart";
 
-  import GridNodes from "../dashboard-components/echarts/GridNodes";
-  import MapCard from '../dashboard-components/echarts/MapCard.vue';
+  // import GridNodes from "../dashboard-components/echarts/GridNodes";
+  // import MapCard from '../dashboard-components/echarts/MapCard.vue';
   import HighChartTest from '../dashboard-components/echarts/HighChartTest.vue';
   
 
@@ -85,13 +85,13 @@
       ],
     }),
     components: {
-    AwesomeCards,    
-    RangeComponent,
+    // AwesomeCards,    
+    // RangeComponent,
     LineChart,
-    PriceChart,
-    TableChart,   
-    MapCard,
-    GridNodes,
+    //PriceChart,
+    //TableChart,   
+    //MapCard,
+    //GridNodes,
     HighChartTest 
     
 },

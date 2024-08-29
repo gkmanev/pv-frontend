@@ -6,21 +6,28 @@
         </b-col>
         <!-- <b-col cols="3">            
             <RangeComponent class="mb-4" />          
-        </b-col>      
-        <b-col v-if="isDevSelected" cols="12">        
-           
-            <SalesCard />
-      </b-col>        
-        <b-col cols="8">
+        </b-col>  -->    
+        <b-col class="mt-3" v-if="isDevSelected" cols="12">          
+            <StateOfCharge />
+        </b-col>     
+        <b-col class="mt-3" v-if="isDevSelected" cols="12">          
+          <InvertorPower />
+        </b-col> 
+        <b-col class="mt-3" v-if="isDevSelected" cols="12">          
+          <PowerFlow />
+        </b-col>    
+        <b-col cols="12" v-if="isDevSelected" class="mt-3">
+            <PriceChart />
+        </b-col>    
+        <!--
+         <b-col cols="8">
             <LineChart />
         </b-col>
         <b-col cols="4">
           <CustomProgress />
           <CorelationsHeat />
         </b-col>
-        <b-col cols="12">
-            <PriceChart />
-        </b-col> 
+        
         <b-col cols="12">
             <WeatherChart />
         </b-col>   
@@ -36,9 +43,10 @@
   
   import SelectComponent from "../dashboard-components/select-component/SelectComponent";
   // import RangeComponent from "../dashboard-components/range-component/RangeComponent";
-  // import LineChart from "../dashboard-components/echarts/LineChart";  
-  // import PriceChart from "../dashboard-components/echarts/PriceChart"; 
-  // import WeatherChart from "../dashboard-components/echarts/WeatherChart"; 
+  import StateOfCharge from "../dashboard-components/echarts/StateOfCharge";  
+  import PriceChart from "../dashboard-components/echarts/PriceChart"; 
+  import InvertorPower from "../dashboard-components/echarts/InvertorPower.vue";
+  import PowerFlow from '../dashboard-components/echarts/PowerFlow.vue';
   // // import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
   // import CustomProgress from "../dashboard-components/progress-cards/CustomProgress.vue";
   import { mapState } from 'vuex';
@@ -63,8 +71,11 @@
    
     // LineChart,
      SelectComponent,    
-   // RangeComponent,
-  //  PriceChart,
+    StateOfCharge,
+    InvertorPower,
+    PowerFlow,
+ // RangeComponent,
+    PriceChart,
    // AwesomeCards,
    // WeatherChart,
    // CustomProgress,

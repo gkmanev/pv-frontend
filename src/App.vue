@@ -140,7 +140,7 @@ export default {
 
    
           let found = this.all.find(element => element.id === dev)
-          console.log(found)
+          
           if(found){              
               found.soc = soc
               found.flow_last_min = flow_min

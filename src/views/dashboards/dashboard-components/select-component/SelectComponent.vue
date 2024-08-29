@@ -35,19 +35,19 @@
       setSelected(sel) {
         this.updateSelected(sel);
       },
-      populateOptions() {       
+      populateOptions() {     
+        
         const devOptions = this.all_devs.map(dev =>         
         ({                    
           value: dev.id, 
-          text: dev.id,  
-          online: dev.online                  
-        }));        
+          text: dev.id,                              
+        }));   
+        
         devOptions.forEach(el => {        
           if (el.online !== 'offline') {   
-                this.options.push(el);             
-        
+                this.options.push(el);        
         }
-        });
+        });        
       },
     },
   }

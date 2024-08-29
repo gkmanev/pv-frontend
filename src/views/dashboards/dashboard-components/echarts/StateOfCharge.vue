@@ -63,8 +63,7 @@
   
     data() {
       return {
-        lat: null,
-        long: null,
+        
         option: {
           title: {
             text: 'State of Charge', 
@@ -137,7 +136,7 @@
         type: 'time',
         axisLabel: {
           rotate:40,
-          margin:5,
+          margin:25,
           textStyle: {
               color: '#9a9a9a'
           },
@@ -176,7 +175,7 @@
     series:[
     
     {
-              name: "Batt 1",
+              name: "Battery",
               smooth: true,            
               stack: 'Total',
               lineStyle:{
@@ -238,13 +237,16 @@
       };
     },
   
-    mounted() {    
-      const foundObject = this.all_devs.find(obj => obj.id === this.selectedDev); 
-      if (foundObject)
-      {
-        console.log("FoundedObject", foundObject)
-      }    
-      this.fetchData();
+    mounted() { 
+        
+        this.fetchData();
+
+    //  const foundObject = this.all_devs.find(obj => obj.id === this.selectedDev);      
+    //   if (foundObject)
+    //   {
+       
+    //   }    
+      //this.fetchData();
     },
   
     computed: {
@@ -273,9 +275,12 @@
     },
   
     methods: {
-     
 
-  
+        lastRouteSegment() {
+            const pathArray = this.$route.path.split('/');    
+            return pathArray.pop() || pathArray[pathArray.length - 1]; // This handles non-trailing slash URLs
+        },
+
       setHourlyAxisLabels() {
         // Update xAxis axisLabel formatter and interval
         this.option.xAxis.axisLabel = {
@@ -330,32 +335,53 @@
 
   
       fetchData() {  
-       
-        let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today`
+
+        let updateCurrentPath = this.lastRouteSegment()        
+
+        if(updateCurrentPath == 'entra')
+        {
+            let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today`
         
-        if(url){
-          
-          axios
-          .get(url)
-          .then((response) => response.data.forEach(el => {
-            if(el.devId == "batt-0001"){
-                this.option.series[0].data.push([el.timestamp, el.state_of_charge])
-                
+            if(url){          
+                axios
+                .get(url)
+                .then((response) => response.data.forEach(el => {
+                    if(el.devId == "batt-0001"){
+                        this.option.series[0].data.push([el.timestamp, el.state_of_charge])
+                        
+                    }
+                    if(el.devId == "batt-0002"){
+                        this.option.series[1].data.push([el.timestamp, el.state_of_charge])
+                        
+                    }
+                    this.setAxisTimeRange()
+                })        
+                )      
+                .catch((error) => console.log(error))      
             }
-            if(el.devId == "batt-0002"){
-                this.option.series[1].data.push([el.timestamp, el.state_of_charge])
-                
-            }
-            this.setAxisTimeRange()
-          })
-          
-          
-          
-          )      
-          .catch((error) => console.log(error))      
-        }
        
-    }
+        }
+        if(updateCurrentPath == 'client')
+        {
+            this.option.series[0].data = []
+            this.option.series[1].data = []
+            this.option.series[0].stack = ''
+            this.option.series[1].stack = ''
+
+            let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today&devId=${this.selectedDev}`
+            console.log(url)
+            if(url){          
+                axios
+                .get(url)
+                .then((response) => response.data.forEach(el => {                    
+                    this.option.series[0].data.push([el.timestamp, el.state_of_charge]) 
+                    this.setAxisTimeRange()
+                })        
+                )      
+                .catch((error) => console.log(error))      
+            }
+        }
+      }
     }
   
   };

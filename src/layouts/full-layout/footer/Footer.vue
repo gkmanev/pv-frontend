@@ -1,7 +1,7 @@
 <template>
   <footer class="p-4 text-center">
-    © {{ new Date().getFullYear() }} — Monster Admin by
-    <a href="https://www.wrappixel.com/">wrappixel.com</a>
+    © {{ new Date().getFullYear() }} — Entra Energy 
+   
   </footer>
 </template>
 

@@ -15,6 +15,9 @@
         <b-col cols="12">
             <PowerFlow />
         </b-col>
+        <b-col cols="12">
+            <PriceChart />
+        </b-col>
         <!-- <b-col cols="12">
             <HighChartTest />
         </b-col> -->
@@ -43,7 +46,7 @@
   // import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
   //import RangeComponent from "../dashboard-components/range-component/RangeComponent";
   import InvertorPower from "../dashboard-components/echarts/InvertorPower.vue";
-  // import PriceChart from "../dashboard-components/echarts/PriceChart";
+  import PriceChart from "../dashboard-components/echarts/PriceChart";
   // import TableChart from "../dashboard-components/echarts/TableChart";
 
   // import GridNodes from "../dashboard-components/echarts/GridNodes";
@@ -92,7 +95,7 @@
     // RangeComponent,
     InvertorPower,
     //HighChartTest,
-    //PriceChart,
+    PriceChart,
     //TableChart,   
     //MapCard,
     //GridNodes,

@@ -235,12 +235,12 @@ import * as echarts from 'echarts';
     },
   
     mounted() {    
-      const foundObject = this.all_devs.find(obj => obj.id === this.selectedDev); 
-      if (foundObject)
-      {
-        this.lat = foundObject.lat
-        this.long = foundObject.long
-      }    
+    //   const foundObject = this.all_devs.find(obj => obj.id === this.selectedDev); 
+    //   if (foundObject)
+    //   {
+    //     this.lat = foundObject.lat
+    //     this.long = foundObject.long
+    //   }    
       this.fetchData();
     },
   
@@ -270,22 +270,27 @@ import * as echarts from 'echarts';
   
     methods: {     
 
+        
+        lastRouteSegment() {
+            const pathArray = this.$route.path.split('/');    
+            return pathArray.pop() || pathArray[pathArray.length - 1]; // This handles non-trailing slash URLs
+        },
   
-      setHourlyAxisLabels() {
-        // Update xAxis axisLabel formatter and interval
-        this.option.xAxis.axisLabel = {
-          ...this.option.xAxis.axisLabel, // Preserve existing axisLabel properties
-          formatter: function(value) {
-            const date = new Date(value);
-            return `${date.getHours()}:00`;
-          }
-        };
-  
-        this.option.xAxis.interval = 3600 * 1000; // One hour in milliseconds
-  
-      },  
-  
-      setAxisTimeRange() {
+        setHourlyAxisLabels() {
+            // Update xAxis axisLabel formatter and interval
+            this.option.xAxis.axisLabel = {
+            ...this.option.xAxis.axisLabel, // Preserve existing axisLabel properties
+            formatter: function(value) {
+                const date = new Date(value);
+                return `${date.getHours()}:00`;
+            }
+            };
+    
+            this.option.xAxis.interval = 3600 * 1000; // One hour in milliseconds
+    
+        },  
+    
+        setAxisTimeRange() {
             // Create a new Date object for today's date (in local time)
             const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
             let start = new Date(today); // Initialized with today's date
@@ -324,31 +329,54 @@ import * as echarts from 'echarts';
     },
 
   
-      fetchData() {  
-       
-        let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today`
-        
-        if(url){
-          
-          axios
-          .get(url)
-          .then((response) => response.data.forEach(el => {
-            if (el.devId == "batt-0001"){
-                this.option.series[0].data.push([el.timestamp, el.invertor_power])
+    fetchData() {  
+
+        let updateCurrentPath = this.lastRouteSegment()        
+
+        if(updateCurrentPath == 'entra')
+        {
+            let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today`
+
+            if(url){          
+                axios
+                .get(url)
+                .then((response) => response.data.forEach(el => {
+                    if(el.devId == "batt-0001"){
+                        this.option.series[0].data.push([el.timestamp, el.invertor_power])
+                        
+                    }
+                    if(el.devId == "batt-0002"){
+                        this.option.series[1].data.push([el.timestamp, el.invertor_power])
+                        
+                    }
+                    this.setAxisTimeRange()
+                })        
+                )      
+                .catch((error) => console.log(error))      
             }
-            if (el.devId == "batt-0002"){
-                this.option.series[1].data.push([el.timestamp, el.invertor_power])
-            }
-            this.setAxisTimeRange()
-          })
-          
-          
-          
-          )      
-          .catch((error) => console.log(error))      
+
         }
-       
-    }
+        if(updateCurrentPath == 'client')
+        {
+            this.option.series[0].data = []
+            this.option.series[1].data = []
+            this.option.series[0].stack = ''
+            this.option.series[1].stack = ''
+
+            let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today&devId=${this.selectedDev}`
+            console.log(url)
+            if(url){          
+                axios
+                .get(url)
+                .then((response) => response.data.forEach(el => {                    
+                    this.option.series[0].data.push([el.timestamp, el.invertor_power]) 
+                    this.setAxisTimeRange()
+                })        
+                )      
+                .catch((error) => console.log(error))      
+            }
+        }
+        }
     }
   
   };

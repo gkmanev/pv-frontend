@@ -1,7 +1,7 @@
 <template>
     <b-card class="mb-4">
       <div class="mt-4">
-        <v-chart class="chart" height="250" :option="option" @mouseover="getDataSubset" autoresize />
+        <v-chart class="chart" height="250" :option="option" autoresize />
       </div>
     </b-card>
   </template>
@@ -47,7 +47,7 @@
     return `${hours}:${minutes}`;
   }  
 
-  var tooltipDisplay = ''
+
 
 //   var toolTipSet = function (params) {
 //   let chartdate = new Date(params[0].value[0])
@@ -99,9 +99,34 @@
             shadowOffsetX: 0, // Set shadow offset X to 0
             shadowOffsetY: 0, // Set shadow offset Y to 0
             shadowColor: 'transparent', // Set shadow color to transparent
-            formatter: () => {
-                return tooltipDisplay;
-            },            
+            formatter: (params) => {
+                    if (params && params.length) {
+                    let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
+                    
+                    // Loop over each series data point
+                    params.forEach(param => {
+                        tooltipContent += `
+                        <div style="vertical-align: middle; color: white; padding-left: 10px;">
+                            ${param.seriesName}
+                        </div>
+                        <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;background-color: #272b34;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
+                            <ul style="list-style-type: none; margin: 0; padding-left: 0;">
+                            <li>
+                                <div class="color-point" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background-color: ${param.color};"></div>
+                                <span style="color: gray;"></span><span style="color: white;">${param.data[1]}</span>
+                            </li>
+                            <li>
+                                <span style="color: gray;">Time: </span><span style="color: white;">${param.data[0].split(":00Z")[0]}</span>
+                            </li>
+                            </ul>
+                        </div>`;
+                    });
+
+                    tooltipContent += `</div>`;
+                    return tooltipContent;
+                    }
+                    return ''; // Return an empty string if there's no data to show
+                }
           },
   
           grid: {
@@ -229,24 +254,7 @@
     },
   
     methods: {
-      getDataSubset(params) {
 
-        if(params.seriesType == 'line'){
-          if (params.data){
-            tooltipDisplay = '<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">' +
-                      '<div style="vertical-align: middle; color: white; padding-left: 10px;">' + params.seriesName + '</div>' +
-                      '<div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;background-color: #272b34;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">' +
-                        '<ul style="list-style-type: none; margin: 0; padding-left: 0;">' +
-                          '<li>' +
-                            '<div class="color-point" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background-color: ' + params.color + ';"></div>' +
-                            '<span style="color: gray;">Price: </span><span style="color: white;">' + params.data[1] + '</span>'  +
-                          '</li>' +
-                        '</ul>' +
-                      '</div>' +
-                    '</div>';
-          }
-        }
-      },
   
       setHourlyAxisLabels() {
         // Update xAxis axisLabel formatter and interval

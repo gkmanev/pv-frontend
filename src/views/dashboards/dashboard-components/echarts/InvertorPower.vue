@@ -7,7 +7,7 @@
   </template>
   
   <script>
-  
+import * as echarts from 'echarts';
   import VChart from "vue-echarts";
   import axios from 'axios';
   import { mapState } from 'vuex';
@@ -95,28 +95,30 @@
                 shadowOffsetY: 0, // Set shadow offset Y to 0
                 shadowColor: 'transparent', // Set shadow color to transparent
                 formatter: (params) => {
-                    // Assuming params is an array of series data because trigger is 'axis'
                     if (params && params.length) {
-                    const firstParam = params[0];
-                    if (firstParam.seriesType === 'line' && firstParam.data) {
-                        return `
-                        <div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">
-                            <div style="vertical-align: middle; color: white; padding-left: 10px;">
-                            ${firstParam.seriesName}
-                            </div>
-                            <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;background-color: #272b34;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
+                    let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
+                    
+                    // Loop over each series data point
+                    params.forEach(param => {
+                        tooltipContent += `
+                        <div style="vertical-align: middle; color: white; padding-left: 10px;">
+                            ${param.seriesName}
+                        </div>
+                        <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;background-color: #272b34;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
                             <ul style="list-style-type: none; margin: 0; padding-left: 0;">
-                                <li>
-                                <div class="color-point" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background-color: ${firstParam.color};"></div>
-                                <span style="color: gray;">Invertor Power: </span><span style="color: white;">${firstParam.data[1]}</span>
-                                </li>
-                                <li>
-                                <span style="color: gray;">Time: </span><span style="color: white;">${firstParam.data[0].split(":00Z")[0]}</span>
-                                </li>
+                            <li>
+                                <div class="color-point" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background-color: ${param.color};"></div>
+                                <span style="color: gray;">Invertor: </span><span style="color: white;">${param.data[1]}</span>
+                            </li>
+                            <li>
+                                <span style="color: gray;">Time: </span><span style="color: white;">${param.data[0].split(":00Z")[0]}</span>
+                            </li>
                             </ul>
-                            </div>
                         </div>`;
-                    }
+                    });
+
+                    tooltipContent += `</div>`;
+                    return tooltipContent;
                     }
                     return ''; // Return an empty string if there's no data to show
                 }
@@ -171,9 +173,9 @@
     
     series:[
     {
-              name: "Invertor Power",
+              name: "Invertor Batt 1",
               smooth: true,            
-              
+              stack: "Total",
               lineStyle:{
                 width:1
               },
@@ -183,9 +185,49 @@
               sampling: 'average',
               data: [],
               type: 'line',
-              showSymbol: false,           
+              showSymbol: false,    
+              areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    {
+                        offset: 0,
+                        color: 'rgb(0, 16, 208)'
+                    },
+                    {
+                        offset: 1,
+                        color: 'rgb(102, 16, 140)'
+                    }
+                ])
+            },        
               
-          },
+    },
+    {
+              name: "Invertor Batt 2",
+              smooth: true,            
+              stack: "Total",
+              lineStyle:{
+                width:1
+              },
+              itemStyle: {
+                  color: '#83c439'
+              },
+              sampling: 'average',
+              data: [],
+              type: 'line',
+              showSymbol: false, 
+              areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    {
+                        offset: 0,
+                        color: 'rgb(0, 6, 108)'
+                    },
+                    {
+                        offset: 1,
+                        color: 'rgb(102, 16, 14)'
+                    }
+                ])
+            },           
+              
+    },
     ]
   }
         //end option
@@ -218,9 +260,8 @@
       selectedDev(newDev, oldDev) {
         if (newDev !== oldDev) {
           this.option.series[0].data = []
-          const foundObject = this.all_devs.find(obj => obj.id === newDev);        
-          this.lat = parseInt(foundObject.lat)        
-          this.long = parseInt(foundObject.long)        
+          //const foundObject = this.all_devs.find(obj => obj.id === newDev);        
+      
           this.fetchData();
         }
       },   
@@ -292,8 +333,12 @@
           axios
           .get(url)
           .then((response) => response.data.forEach(el => {
-            
-            this.option.series[0].data.push([el.timestamp, el.invertor_power])
+            if (el.devId == "batt-0001"){
+                this.option.series[0].data.push([el.timestamp, el.invertor_power])
+            }
+            if (el.devId == "batt-0002"){
+                this.option.series[1].data.push([el.timestamp, el.invertor_power])
+            }
             this.setAxisTimeRange()
           })
           

@@ -16,7 +16,7 @@
             <PowerFlow />
         </b-col>
         <!-- <b-col cols="12">
-            <MapCard />
+            <HighChartTest />
         </b-col> -->
         <!-- <b-col cols="12">
             <TableChart />
@@ -50,6 +50,8 @@
   // import MapCard from '../dashboard-components/echarts/MapCard.vue';
   import StateOfCharge from '../dashboard-components/echarts/StateOfCharge.vue';
   import PowerFlow from '../dashboard-components/echarts/PowerFlow.vue';
+  //import HighChartTest from '../dashboard-components/echarts/HighChartTest.vue';
+
   
 
 
@@ -89,12 +91,14 @@
     // AwesomeCards,    
     // RangeComponent,
     InvertorPower,
+    //HighChartTest,
     //PriceChart,
     //TableChart,   
     //MapCard,
     //GridNodes,
     StateOfCharge,
-    PowerFlow 
+    PowerFlow,
+    //LineChart
     
 },
     methods: {

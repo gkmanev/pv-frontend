@@ -230,7 +230,7 @@ export default {
                       '<ul style="list-style-type: none; margin: 0; padding-left: 0;">' +
                         '<li>' +
                           '<div class="color-point" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background-color: ' + params.color + ';"></div>' +
-                          '<span style="color: gray;">Power: </span><span style="color: white;">' + params.data[1] + '</span>'  +
+                          '<span style="color: gray;">Soc: </span><span style="color: white;">' + params.data[1] + '</span>'  +
                         '</li>' +
                         '<li>' +
                           '<span style="color: gray;">Time: </span><span style="color: white;">' + params.data[0].split(":00Z")[0] + '</span>' +
@@ -288,122 +288,67 @@ export default {
 
 
     fetchData() {
-      if(this.dateRange == 'today')
-      {
-        this.created_date_or_created = 'created_date'
-      }
-      else{
-        this.created_date_or_created = 'created'
-      }
-      let url = ''
-      let urlForecast = ''
+
+      let url = '';
+  let urlForecast = '';
+  
+  if (this.lastRouteSegment == 'entra') {
+    if (this.dateRange == 'today'){
+      url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today`;    
+    } else {
+      url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`;
+    }
+  } else {
+    if (this.selectedDev) {
+      url = `http://85.14.6.37:16455/api/posts/?date_range=${this.dateRange}&dev=${this.selectedDev}`;
+      urlForecast = `http://85.14.6.37:16454/api/forecast?date_range=${this.dateRange}&devId=${this.selectedDev}`;
+    }
+  }
+  
+  try {
+    let requestOne = [];
+    if (url) {
+      requestOne = axios.get(url);            
+    }
+    let requestTwo = [];
+    if (urlForecast) {
+      requestTwo = axios.get(urlForecast); 
+    }
+    
+    axios.all([requestOne, requestTwo]).then(axios.spread((...responses) => {
       
-      if (this.lastRouteSegment == 'entra')
-      {
-        if (this.dateRange == 'today'){
-          url = `http://85.14.6.37:16455/api/consistance/?date_range=today`    
-        }
-        else{
-          url = `http://85.14.6.37:16455/api/posts/?date_range=${this.dateRange}`
-        }
-        //config chart
-
-      }
-      else{
-        if(this.selectedDev)
-        {
-          url = `http://85.14.6.37:16455/api/posts/?date_range=${this.dateRange}&dev=${this.selectedDev}`
-          
-          urlForecast = `http://85.14.6.37:16454/api/forecast?date_range=${this.dateRange}&devId=${this.selectedDev}`
-          
-          //urlForecast = `http://127.0.0.1:8000/api/forecast/?devId=${this.selectedDev}`
-          
-         
-        }
-      }
-      try {
+      let devData = responses[0].data;
+      
+      if (devData) {
+        const devIds = Array.from(new Set(devData.map((item) => item.devId)));  
         
-        let requestOne = []
-        if(url){
-          requestOne = axios.get(url);            
-        }
-        let requestTwo = [] 
-        if (urlForecast)
-        {
-          requestTwo = axios.get(urlForecast); 
-        }
-        
-        axios.all([requestOne, requestTwo]).then(axios.spread((...responses) => {
-          
-          let devData = responses[0].data          
+        const seriesData = devIds.map((devId) => {
+          return {
+            name: devId,
+            type: "line",
+            sampling: "lttb",
+            //showSymbol: false,
+            //connectNulls: true,
+            lineStyle: { width: 1 },
+            stack: "Total", // Ensure this is the same for all series you want to stack
+            areaStyle: {},  // Add `areaStyle` for a stacked area chart
+            data: devData
+              .filter((item) => item.devId === devId)
+              .map((item) => [item.timestamp, item.state_of_charge]),
+          };
+        });
 
-          let forecastData = responses[1].data
-          
-          
-          if(devData){
-           
-            const devIds = Array.from(new Set(devData.map((item) => item.devId)));  
-            const seriesData = devIds.map((devId) => {
-              const baseSeriesConfig = {
-                name: devId,
-                type: "line",
-                sampling: "lttb",
-                showSymbol: false,
-                connectNulls: true,                
-                lineStyle: { width: 1 },
+        // Apply the stack to the series that need to be stacked
+        this.option.series = seriesData;
+        console.log("Series",this.option.series)
 
-                data: devData
-                    .filter((item) => item.devId === devId)
-                    .map((item) => [item[this.created_date_or_created], item.value]),
-            };
-           
-            if (this.lastRouteSegment == 'entra') {
-                return {
-                    ...baseSeriesConfig,
-                    emphasis: { focus: 'series' },
-                    stack: "Total",
-                    areaStyle: {},            
-                };
-            } else {
-                return {
-                  ...baseSeriesConfig,
-                  itemStyle: {color:'#009efb'},
-                }
-            }
-            });
-            // Check if lastRouteSegment is not 'entra' and forecastData is not empty
-            if (this.lastRouteSegment !== 'entra' && forecastData && forecastData.length > 0) {
-                let test = forecastData.map((item) =>[item.timestamp, item.power.toFixed(2)])
-                
-                console.log(test)
-                // Add another series for forecastData
-                this.option.title.text = "Power kW"
-                seriesData.push({
-                    name: 'Forecast',
-                    type: "line",
-                    sampling: "lttb",
-                    showSymbol: false,
-                    
-                    connectNulls: false,
-                    lineStyle: { width: 1,type: 'dotted', },
-                    //data: forecastData.map((item) => [item[this.created_date_or_created], item.value]),
-                    data: test
-
-                 
-                });
-            }
-
-            this.setAxisTimeRange()          
-            this.option.series = seriesData
-          
-          }
-
-
-        })) 
-
-      }catch(error){
-        console.log(error)
-      }    
+        this.setAxisTimeRange();
+      }
+      
+    }));
+  } catch (error) {
+    console.log(error);
+  }
                     
    
     }

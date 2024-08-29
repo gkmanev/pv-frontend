@@ -80,7 +80,7 @@
           legend: {
             orient: 'horizontal',
             padding:[-500,100,0,0],
-            //selected:{'sm-0002':false,'sm-0004':false,'sm-00024':false,'sm-0020':false,'sm-0010':false,'sm-0011':false,'sm-0015':false,'sm-0030':false,'sm-0016:':false,'sm-0025':false,'sm-0017':false,'sm-0018':false,'sm-0008':false,'sm-0009':false}
+           
           },
           tooltip: {
                 trigger: 'axis', // Tooltip triggered by axis, not just data points
@@ -97,32 +97,34 @@
                 shadowOffsetY: 0, // Set shadow offset Y to 0
                 shadowColor: 'transparent', // Set shadow color to transparent
                 formatter: (params) => {
-                    // Assuming params is an array of series data because trigger is 'axis'
                     if (params && params.length) {
-                    const firstParam = params[0];
-                    if (firstParam.seriesType === 'line' && firstParam.data) {
-                        return `
-                        <div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">
-                            <div style="vertical-align: middle; color: white; padding-left: 10px;">
-                            ${firstParam.seriesName}
-                            </div>
-                            <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;background-color: #272b34;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
+                    let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
+                    
+                    // Loop over each series data point
+                    params.forEach(param => {
+                        tooltipContent += `
+                        <div style="vertical-align: middle; color: white; padding-left: 10px;">
+                            ${param.seriesName}
+                        </div>
+                        <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;background-color: #272b34;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
                             <ul style="list-style-type: none; margin: 0; padding-left: 0;">
-                                <li>
-                                <div class="color-point" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background-color: ${firstParam.color};"></div>
-                                <span style="color: gray;">SoC: </span><span style="color: white;">${firstParam.data[1]}</span>
-                                </li>
-                                <li>
-                                <span style="color: gray;">Time: </span><span style="color: white;">${firstParam.data[0].split(":00Z")[0]}</span>
-                                </li>
+                            <li>
+                                <div class="color-point" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background-color: ${param.color};"></div>
+                                <span style="color: gray;">SoC: </span><span style="color: white;">${param.data[1]}</span>
+                            </li>
+                            <li>
+                                <span style="color: gray;">Time: </span><span style="color: white;">${param.data[0].split(":00Z")[0]}</span>
+                            </li>
                             </ul>
-                            </div>
                         </div>`;
-                    }
+                    });
+
+                    tooltipContent += `</div>`;
+                    return tooltipContent;
                     }
                     return ''; // Return an empty string if there's no data to show
                 }
-     },
+            },
    
   
     grid: {
@@ -172,10 +174,11 @@
        ],
     
     series:[
+    
     {
-              name: "State of Charge",
+              name: "Batt 1",
               smooth: true,            
-              
+              stack: 'Total',
               lineStyle:{
                 width:1
               },
@@ -196,10 +199,39 @@
                         offset: 1,
                         color: 'rgb(102, 16, 240)'
                     }
-            ])
-      },        
+                ])
+            },        
               
-          },
+    },
+    {
+              name: "Batt 2",
+              smooth: true,            
+              stack: 'Total',
+              lineStyle:{
+                width:1
+              },
+              itemStyle: {
+                  color: '#FFBC34'
+              },
+              sampling: 'average',
+              data: [],
+              type: 'line',
+              showSymbol: false,   
+              areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    {
+                        offset: 0,
+                        color: 'rgb(0, 16, 208)'
+                    },
+                    {
+                        offset: 1,
+                        color: 'rgb(102, 16, 140)'
+                    }
+                ])
+            },        
+              
+    },
+
     ]
   }
         //end option
@@ -210,8 +242,7 @@
       const foundObject = this.all_devs.find(obj => obj.id === this.selectedDev); 
       if (foundObject)
       {
-        this.lat = foundObject.lat
-        this.long = foundObject.long
+        console.log("FoundedObject", foundObject)
       }    
       this.fetchData();
     },
@@ -307,8 +338,14 @@
           axios
           .get(url)
           .then((response) => response.data.forEach(el => {
-            
-            this.option.series[0].data.push([el.timestamp, el.state_of_charge])
+            if(el.devId == "batt-0001"){
+                this.option.series[0].data.push([el.timestamp, el.state_of_charge])
+                
+            }
+            if(el.devId == "batt-0002"){
+                this.option.series[1].data.push([el.timestamp, el.state_of_charge])
+                
+            }
             this.setAxisTimeRange()
           })
           

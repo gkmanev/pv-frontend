@@ -89,29 +89,32 @@
             shadowOffsetY: 0,
             shadowColor: 'transparent',
             formatter: (params) => {
-              if (params && params.length) {
-                const firstParam = params[0];
-                if (firstParam.seriesType === 'bar' && firstParam.data) {
-                  return `
-                    <div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">
-                      <div style="vertical-align: middle; color: white; padding-left: 10px;">
-                        ${firstParam.seriesName}
-                      </div>
-                      <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;background-color: #272b34;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
-                        <ul style="list-style-type: none; margin: 0; padding-left: 0;">
-                          <li>
-                            <div class="color-point" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background-color: ${firstParam.color};"></div>
-                            <span style="color: gray;">Power Flow: </span><span style="color: white;">${firstParam.data[1]}</span>
-                          </li>
-                          <li>
-                            <span style="color: gray;">Time: </span><span style="color: white;">${firstParam.data[0].split(":00Z")[0]}</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>`;
-                }
-              }
-              return ''; 
+                    if (params && params.length) {
+                    let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
+                    
+                    // Loop over each series data point
+                    params.forEach(param => {
+                        tooltipContent += `
+                        <div style="vertical-align: middle; color: white; padding-left: 10px;">
+                            ${param.seriesName}
+                        </div>
+                        <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;background-color: #272b34;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
+                            <ul style="list-style-type: none; margin: 0; padding-left: 0;">
+                            <li>
+                                <div class="color-point" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background-color: ${param.color};"></div>
+                                <span style="color: gray;">SoC: </span><span style="color: white;">${param.data[1]}</span>
+                            </li>
+                            <li>
+                                <span style="color: gray;">Time: </span><span style="color: white;">${param.data[0].split(":00Z")[0]}</span>
+                            </li>
+                            </ul>
+                        </div>`;
+                    });
+
+                    tooltipContent += `</div>`;
+                    return tooltipContent;
+                    }
+                    return ''; // Return an empty string if there's no data to show
             }
           },
           grid: {
@@ -157,11 +160,22 @@
           }],
           series: [
             {
-              name: "Power Flow",
+              name: "Battery 1",
               type: 'bar', // Changed from 'line' to 'bar'
               itemStyle: {
                 color: '#FFBC34'
               },
+              stack: 'Ad',
+              data: [], // Initialize with empty data
+              barWidth: '60%', // Customize bar width (optional)
+            },
+            {
+              name: "Battery 2",
+              type: 'bar', // Changed from 'line' to 'bar'
+              itemStyle: {
+                color: '#321dd1'
+              },
+              stack: 'Ad',
               data: [], // Initialize with empty data
               barWidth: '60%', // Customize bar width (optional)
             },
@@ -247,7 +261,12 @@
           axios
             .get(url)
             .then((response) => response.data.forEach(el => {
-              this.option.series[0].data.push([el.timestamp, el.flow_last_min])
+              if(el.devId == "batt-0001"){
+                this.option.series[0].data.push([el.timestamp, el.flow_last_min])
+              }
+              if(el.devId == "batt-0002"){
+                this.option.series[1].data.push([el.timestamp, el.flow_last_min])
+              }
               this.setAxisTimeRange()
             }))
             .catch((error) => console.log(error))

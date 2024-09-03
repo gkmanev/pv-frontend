@@ -47,7 +47,6 @@
 
     // Convert UTC date to local time
     let hours = date.getHours();
-    
     let minutes = date.getMinutes();
 
     // Format hours and minutes to ensure two digits
@@ -356,14 +355,15 @@
                     const response = await axios.get(url); 
                        
                     response.data.forEach(el => {
-                        if(el.devId == "batt-0001"){
-                            this.option.series[0].data.push([el.timestamp, el.state_of_charge])
-                           
-                            
+                        let date = new Date(el.timestamp);
+                        // Convert UTC time to local time if needed
+                        date = new Date(date.getTime() - (3 * 60 * 60 * 1000)); // Adjust for UTC+3
+                        
+                        if (el.devId === "batt-0001") {
+                            this.option.series[0].data.push([date.toISOString(), el.state_of_charge]);
                         }
-                        if(el.devId == "batt-0002"){
-                            this.option.series[1].data.push([el.timestamp, el.state_of_charge])
-                            
+                        if (el.devId === "batt-0002") {
+                            this.option.series[1].data.push([date.toISOString(), el.state_of_charge]);
                         }
                     this.setAxisTimeRange()
                 })
@@ -393,8 +393,12 @@
                 try {
                     const response = await axios.get(url);  
                                      
-                    response.data.forEach(el => {                        
-                            this.option.series[0].data.push([el.timestamp, el.state_of_charge])                      
+                    response.data.forEach(el => {
+                        let date = new Date(el.timestamp);
+                        // Convert UTC time to local time if needed
+                        date = new Date(date.getTime() - (3 * 60 * 60 * 1000)); // Adjust for UTC+3   
+
+                        this.option.series[0].data.push([date.toISOString(), el.state_of_charge])                      
                     this.setAxisTimeRange()
                 })
                 } catch (error) {

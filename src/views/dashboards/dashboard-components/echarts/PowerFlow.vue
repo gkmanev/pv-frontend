@@ -269,12 +269,15 @@
                         axios
                         .get(url)
                         .then((response) => response.data.forEach(el => {
+                            let date = new Date(el.timestamp);
+                            // Convert UTC time to local time if needed
+                            date = new Date(date.getTime() - (3 * 60 * 60 * 1000)); // Adjust for UTC+3     
                             if(el.devId == "batt-0001"){
-                                this.option.series[0].data.push([el.timestamp, el.flow_last_min])
+                                this.option.series[0].data.push([date.toISOString(), el.flow_last_min])
                                 
                             }
                             if(el.devId == "batt-0002"){
-                                this.option.series[1].data.push([el.timestamp, el.flow_last_min])
+                                this.option.series[1].data.push([date.toISOString(), el.flow_last_min])
                                 
                             }
                             this.setAxisTimeRange()
@@ -296,8 +299,11 @@
                     if(url){          
                         axios
                         .get(url)
-                        .then((response) => response.data.forEach(el => {                    
-                            this.option.series[0].data.push([el.timestamp, el.flow_last_min]) 
+                        .then((response) => response.data.forEach(el => {           
+                            let date = new Date(el.timestamp);
+                            // Convert UTC time to local time if needed
+                            date = new Date(date.getTime() - (3 * 60 * 60 * 1000)); // Adjust for UTC+3              
+                            this.option.series[0].data.push([date.toISOString(), el.flow_last_min]) 
                             this.setAxisTimeRange()
                         })        
                         )      

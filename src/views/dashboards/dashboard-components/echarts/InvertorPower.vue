@@ -342,12 +342,16 @@ import * as echarts from 'echarts';
                 axios
                 .get(url)
                 .then((response) => response.data.forEach(el => {
+                    let date = new Date(el.timestamp);
+                        // Convert UTC time to local time if needed
+                    date = new Date(date.getTime() - (3 * 60 * 60 * 1000)); // Adjust for UTC+3
+
                     if(el.devId == "batt-0001"){
-                        this.option.series[0].data.push([el.timestamp, el.invertor_power])
+                        this.option.series[0].data.push([date.toISOString(), el.invertor_power])
                         
                     }
                     if(el.devId == "batt-0002"){
-                        this.option.series[1].data.push([el.timestamp, el.invertor_power])
+                        this.option.series[1].data.push([date.toISOString(), el.invertor_power])
                         
                     }
                     this.setAxisTimeRange()
@@ -369,8 +373,11 @@ import * as echarts from 'echarts';
             if(url){          
                 axios
                 .get(url)
-                .then((response) => response.data.forEach(el => {                    
-                    this.option.series[0].data.push([el.timestamp, el.invertor_power]) 
+                .then((response) => response.data.forEach(el => {    
+                    let date = new Date(el.timestamp);
+                        // Convert UTC time to local time if needed
+                    date = new Date(date.getTime() - (3 * 60 * 60 * 1000)); // Adjust for UTC+3                
+                    this.option.series[0].data.push([date.toISOString(), el.invertor_power]) 
                     this.setAxisTimeRange()
                 })        
                 )      

@@ -10,19 +10,33 @@
   
   <script>
   import { mapActions } from 'vuex';
-
+  import { mapState } from 'vuex';
   export default {
     data() {
       return {
         selectedPeriod: 'today',
       };
     },
+
+    computed: {
+      ...mapState(['dateRange']),    
+  
+    },
+    mounted() { 
+
+      this.selectedPeriod = this.dateRange
+
+    },
+  
     methods: {
 
       ...mapActions(['updateDateRange']),
+      
 
       filterContent(period) {
+        
         this.selectedPeriod = period
+        // console.log(period)
         this.updateDateRange(period)
        
         //this.$emit('filter', period);          

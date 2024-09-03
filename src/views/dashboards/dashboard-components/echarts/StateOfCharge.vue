@@ -1,7 +1,10 @@
 <template>
     <b-card class="mb-4 line-chart">
       <div class="mt-4">
+        <div v-if="loading">Loading...</div>
+        <div v-else>
         <v-chart class="chart" height="450" width="100%" :option="option" autoresize/>
+        </div>
       </div>
     </b-card>
   </template>
@@ -44,6 +47,7 @@
 
     // Convert UTC date to local time
     let hours = date.getHours();
+    
     let minutes = date.getMinutes();
 
     // Format hours and minutes to ensure two digits
@@ -62,7 +66,9 @@
     },
   
     data() {
+      
       return {
+        loading: false,
         
         option: {
           title: {
@@ -298,7 +304,7 @@
       setAxisTimeRange() {
             // Create a new Date object for today's date (in local time)
             const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
-            let start = new Date(today); // Initialized with today's date
+            let start = new Date(today); // Initialized with today's date            
             let end = new Date(today);   // Initialized with today's date
 
             if (this.dateRange === 'today') {
@@ -327,6 +333,7 @@
 
             // Update xAxis min and max properties
             this.option.xAxis.min = start.getTime();
+            
             this.option.xAxis.max = end.getTime();
 
             // If needed, force an update to the chart to apply these changes
@@ -334,35 +341,44 @@
     },
 
   
-      fetchData() {  
-
+    async fetchData() {  
+        this.loading = true
         let updateCurrentPath = this.lastRouteSegment()        
 
         if(updateCurrentPath == 'entra')
         {
             this.option.series[0].data = []
             this.option.series[1].data = []
-            let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`
+            let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`            
         
-            if(url){          
-                axios
-                .get(url)
-                .then((response) => response.data.forEach(el => {
-                    if(el.devId == "batt-0001"){
-                        this.option.series[0].data.push([el.timestamp, el.state_of_charge])
-                        
-                    }
-                    if(el.devId == "batt-0002"){
-                        this.option.series[1].data.push([el.timestamp, el.state_of_charge])
-                        
-                    }
+            if(url){
+                try {
+                    const response = await axios.get(url); 
+                       
+                    response.data.forEach(el => {
+                        if(el.devId == "batt-0001"){
+                            this.option.series[0].data.push([el.timestamp, el.state_of_charge])
+                           
+                            
+                        }
+                        if(el.devId == "batt-0002"){
+                            this.option.series[1].data.push([el.timestamp, el.state_of_charge])
+                            
+                        }
                     this.setAxisTimeRange()
-                })        
-                )      
-                .catch((error) => console.log(error))      
+                })
+                } catch (error) {
+                    console.error('Error fetching battery data:', error);
+                }
+                finally {
+                    
+                    this.loading = false;
+                }           
+                   
             }
        
         }
+        
         if(updateCurrentPath == 'client')
         {
             this.option.series[0].data = []
@@ -372,18 +388,29 @@
 
             let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`
             
-            if(url){          
-                axios
-                .get(url)
-                .then((response) => response.data.forEach(el => {                    
-                    this.option.series[0].data.push([el.timestamp, el.state_of_charge]) 
+            if(url){
+
+                try {
+                    const response = await axios.get(url);  
+                                     
+                    response.data.forEach(el => {                        
+                            this.option.series[0].data.push([el.timestamp, el.state_of_charge])                      
                     this.setAxisTimeRange()
-                })        
-                )      
-                .catch((error) => console.log(error))      
+                })
+                } catch (error) {
+                    console.error('Error fetching battery data:', error);
+                }
+                finally {
+                    console.log("Finally")
+                    this.loading = false;
+                }           
+                   
             }
+
         }
-      }
+
+    }
+
     }
   
   };

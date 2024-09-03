@@ -3,8 +3,8 @@ export default [
   {
     id:"1200",
     icon: "zap",
-    title: "Entra Dash",
-    i18n: "Entra Dash", 
+    title: "Battery Dashboard",
+    i18n: "Battery Dashboard", 
     to: "/dashboard/entra"
   },  
   {

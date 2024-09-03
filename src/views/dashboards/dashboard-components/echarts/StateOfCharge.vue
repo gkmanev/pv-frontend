@@ -340,7 +340,9 @@
 
         if(updateCurrentPath == 'entra')
         {
-            let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today`
+            this.option.series[0].data = []
+            this.option.series[1].data = []
+            let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`
         
             if(url){          
                 axios
@@ -368,8 +370,8 @@
             this.option.series[0].stack = ''
             this.option.series[1].stack = ''
 
-            let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today&devId=${this.selectedDev}`
-            console.log(url)
+            let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`
+            
             if(url){          
                 axios
                 .get(url)

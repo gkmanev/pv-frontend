@@ -257,51 +257,55 @@
   
             fetchData() { 
 
-                // Build the query string based on the selectedDev and dateRange
-                
-                // Construct the URL with the query parameters
-                let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`;
-                if(this.lastRouteSegment() == "entra"){
-                    axios.get(url)
-                    .then((response) => {                   
-                            response.data.forEach(el => {
-                            if (el.devId == "batt-0001") {
-                                this.option.series[0].data.push([el.timestamp, el.flow_last_min]);
-                            } else if (el.devId == "batt-0002") {
-                                this.option.series[1].data.push([el.timestamp, el.flow_last_min]);
-                            } else {
-                                // Handle cases for other devices if needed
+                let updateCurrentPath = this.lastRouteSegment()        
+
+                if(updateCurrentPath == 'entra')
+                {
+                    this.option.series[0].data = []
+                    this.option.series[1].data = []
+                    let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`
+
+                    if(url){          
+                        axios
+                        .get(url)
+                        .then((response) => response.data.forEach(el => {
+                            if(el.devId == "batt-0001"){
+                                this.option.series[0].data.push([el.timestamp, el.flow_last_min])
+                                
                             }
-                        });
-                        this.setAxisTimeRange();
-                    })
-                    .catch((error) => console.error(error));         
-                } 
-                if(this.lastRouteSegment() == "client"){
-                    if(this.selectedDev){
-                        url += `&devId=${this.selectedDev}`
-                        this.option.series[0].data = []
-                        this.option.series[1].data = []
-                        axios.get(url)
-                        .then((response) => {                   
-                            response.data.forEach(el => {
-                            if (el.devId == "batt-0001") {
-                                this.option.series[0].data.push([el.timestamp, el.flow_last_min]);
-                            } else if (el.devId == "batt-0002") {
-                                this.option.series[1].data.push([el.timestamp, el.flow_last_min]);
-                            } else {
-                                // Handle cases for other devices if needed
+                            if(el.devId == "batt-0002"){
+                                this.option.series[1].data.push([el.timestamp, el.flow_last_min])
+                                
                             }
-                        });
-                        this.setAxisTimeRange();
-                        })
-                        .catch((error) => console.error(error)); 
+                            this.setAxisTimeRange()
+                        })        
+                        )      
+                        .catch((error) => console.log(error))      
+                    }
+
+                }
+                if(updateCurrentPath == 'client')
+                {
+                    this.option.series[0].data = []
+                    this.option.series[1].data = []
+                    this.option.series[0].stack = ''
+                    this.option.series[1].stack = ''
+
+                    let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`
+                    
+                    if(url){          
+                        axios
+                        .get(url)
+                        .then((response) => response.data.forEach(el => {                    
+                            this.option.series[0].data.push([el.timestamp, el.flow_last_min]) 
+                            this.setAxisTimeRange()
+                        })        
+                        )      
+                        .catch((error) => console.log(error))      
                     }
                 }
                 
-                // Make a single API request
                       
-                            
                             
 
             }

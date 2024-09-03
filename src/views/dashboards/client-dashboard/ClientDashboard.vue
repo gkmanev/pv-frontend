@@ -4,9 +4,9 @@
         <b-col cols="4">            
             <SelectComponent />
         </b-col>
-        <!-- <b-col cols="3">            
+        <b-col cols="3">            
             <RangeComponent class="mb-4" />          
-        </b-col>  -->    
+        </b-col>  
         <b-col class="mt-3" v-if="isDevSelected" cols="12">          
             <StateOfCharge />
         </b-col>     
@@ -42,7 +42,7 @@
   // -----------------------------------------
   
   import SelectComponent from "../dashboard-components/select-component/SelectComponent";
-  // import RangeComponent from "../dashboard-components/range-component/RangeComponent";
+  import RangeComponent from "../dashboard-components/range-component/RangeComponent";
   import StateOfCharge from "../dashboard-components/echarts/StateOfCharge";  
   import PriceChart from "../dashboard-components/echarts/PriceChart"; 
   import InvertorPower from "../dashboard-components/echarts/InvertorPower.vue";
@@ -70,11 +70,11 @@
     components: {
    
     // LineChart,
-     SelectComponent,    
+    SelectComponent,    
     StateOfCharge,
     InvertorPower,
     PowerFlow,
- // RangeComponent,
+    RangeComponent,
     PriceChart,
    // AwesomeCards,
    // WeatherChart,

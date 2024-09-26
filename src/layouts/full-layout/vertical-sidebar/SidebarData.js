@@ -3,14 +3,13 @@ export default [
   {
     id:"1200",
     icon: "zap",
-    title: "Battery Dashboard",
-    i18n: "Battery Dashboard", 
+    title: "Fleet",    
     to: "/dashboard/entra"
   },  
   {
     id:"1201",
     icon: "bar-chart",
-    title: "Client",     
+    title: "Asset",     
     to: "/dashboard/client"
   },
   // {

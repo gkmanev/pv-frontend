@@ -14,7 +14,7 @@
     </div>
     
       <VuePerfectScrollbar class="scrlbar" >
-      <ul class="nav flex-column mb-0">
+      <ul class="nav flex-column mb-0">        
         <template v-for="(route, i) in routes">
           <!---Menu Title -->
           <li class="nav-item" :key="route.header" v-if="route.header">
@@ -52,6 +52,8 @@
           </li>
         </template>
       </ul>
+    
+    
     </VuePerfectScrollbar>
   </aside>
 </template>
@@ -81,7 +83,7 @@ export default {
       return console.log(this.$router.history.current);
     }
   },
-  methods: {
+  methods: {    
     showMobileSidebar() {
       this.$store.commit("SET_SIDEBAR_DRAWER", false);
       

@@ -275,7 +275,7 @@
           let start = new Date(todayUTC); // Initialized with todayUTC
           let end = new Date(todayUTC); // Initialized with todayUTC
   
-          if (this.dateRange === 'today') {
+          if (this.dateRange === 'today' || this.dateRange == 'dam') {
             end.setUTCHours(23, 0, 0);
             this.option.xAxis.axisLabel.formatter = timeLineSet//'{HH}:{mm}'
             this.option.xAxis.splitNumber = 23
@@ -301,20 +301,20 @@
   
   
     async fetchData() {
-        const queryParam = this.dateRange;
+        let queryParam = this.dateRange;
         const start = this.currDate;
         const end = this.currTime;
         const tomorrow = new Date(new Date(start).setDate(new Date(start).getDate() + 1)).toISOString();
         
 
         // Configuration based on dateRange
-        if (queryParam === 'today') {
+        if (queryParam === 'today' || queryParam == 'dam') {
             //this.configureChartForToday(); // Extract chart configuration to a method for better readability
 
             const url1 = `http://85.14.6.37:16455/api/price/?timestamp=&start_date=${start}&end_date=${end}`;
-            console.log(url1)
+            
             const url2 = `http://85.14.6.37:16455/api/price/?timestamp=&start_date=${end}&end_date=${tomorrow}`;
-            console.log(url2)
+            
             try {
                 const [responseOne, responseTwo] = await Promise.all([
                     axios.get(url1),
@@ -328,9 +328,15 @@
             }
         }
         else{
+          if(queryParam == 'dam')
+          {
+            queryParam = 'today'
+          }
           const url = `http://85.14.6.37:16455/api/price/?date_range=${queryParam}`;
+
+          
           axios.get(url)
-                 .then(response => response.data.forEach(el=>{
+                 .then(response => response.data.forEach(el=>{                 
                     this.option.series[0].data.push([el.timestamp,el.value])
                  }))
                 .catch(errors => {

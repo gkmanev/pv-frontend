@@ -134,7 +134,7 @@
           <!-- -----------------------------------------------------------
             Mega Dropdown
           ----------------------------------------------------------- -->
-          <b-nav-item-dropdown left no-caret class="two-column-dd">
+          <!-- <b-nav-item-dropdown left no-caret class="two-column-dd">
             <template #button-content>
               <feather type="grid"></feather>
             </template>
@@ -176,7 +176,12 @@
                 </b-dropdown-item>
               </b-col>
             </b-row>
-          </b-nav-item-dropdown>
+          </b-nav-item-dropdown> -->
+
+          <!-- Logout -->
+          <b-button variant="danger" @click="logout" size="sm" class="mr-2">
+            Logout
+          </b-button>
         </b-navbar-nav>
 
         <!-- -----------------------------------------------------------
@@ -361,6 +366,15 @@ export default {
     },
   },
   methods: {
+    logout() {
+      // Remove tokens from localStorage
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+
+      // Optionally redirect the user to the login page or another route
+      this.$router.push('/authentication/fulllogin');
+      
+    },
     showMobileSidebar() {
       this.$store.commit("SET_SIDEBAR_DRAWER", true);
     },

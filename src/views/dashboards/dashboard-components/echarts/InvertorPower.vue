@@ -333,6 +333,36 @@
   
     methods: {  
 
+
+        aggregateData(data){
+          const aggregated = {};
+
+          data.forEach(entry => {
+              const key = entry.timestamp;
+
+              if (!aggregated[key]) {
+                  aggregated[key] = {
+                      timestamp: key,
+                      state_of_charge: 0,
+                      flow_last_min: 0,
+                      invertor_power: 0
+                  };
+              }
+
+              aggregated[key].state_of_charge += entry.state_of_charge;
+              aggregated[key].flow_last_min += entry.flow_last_min;
+              aggregated[key].invertor_power += entry.invertor_power;
+          });
+
+          return Object.values(aggregated).map(entry => ({
+                timestamp: entry.timestamp,
+                state_of_charge: parseFloat(entry.state_of_charge.toFixed(2)),
+                flow_last_min: parseFloat(entry.flow_last_min.toFixed(2)),
+                invertor_power: parseFloat(entry.invertor_power.toFixed(2))
+            }));
+        },
+
+
         lastRouteSegment() {
             const pathArray = this.$route.path.split('/');    
             return pathArray.pop() || pathArray[pathArray.length - 1]; // This handles non-trailing slash URLs
@@ -447,7 +477,7 @@
                           }
                       })
                   ]);
-                  this.processData(response.data);
+                  this.processData(response.data);                  
                   this.processCumulative(cumulativeResponse.data)
 
               } 
@@ -528,6 +558,7 @@
         },
             //Today, Month, Year
           processData(data) {
+            console.log(data)
               data.forEach(el => {
                   let date = new Date(el.timestamp);
                   // Convert UTC time to local time (UTC+3 adjustment)
@@ -543,15 +574,33 @@
               
           },
 
-          processCumulative(stackData){    
+          processCumulative(stackData){  
+            
+
             if (stackData){ 
-              stackData.forEach(el => {
+              let aggregated = []
+              if(this.dateRange == 'month' || this.dateRange == 'year')
+              {
+                aggregated = this.aggregateData(stackData)
+                aggregated.forEach(el => {
+                    let date = new Date(el.timestamp);
+                    // Convert UTC time to local time (UTC+3 adjustment)
+                    date = new Date(date.getTime() - (3 * 60 * 60 * 1000));          
+                        this.option.series[4].data.push([date.toISOString(), el.invertor_power]);
+                  
+                });
+              }
+              else{
+                aggregated = stackData
+              }
+              aggregated.forEach(el => {
                     let date = new Date(el.timestamp);
                     // Convert UTC time to local time (UTC+3 adjustment)
                     date = new Date(date.getTime() - (3 * 60 * 60 * 1000));          
                         this.option.series[4].data.push([date.toISOString(), el.cumulative_invertor_power]);
                   
                 });
+
             }
             this.setAxisTimeRange()
           },

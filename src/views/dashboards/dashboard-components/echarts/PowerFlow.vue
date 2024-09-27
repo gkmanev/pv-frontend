@@ -152,7 +152,16 @@
               name: "Flow Batt1",
               type: 'bar', // Changed from 'line' to 'bar'
               itemStyle: {
-                color: '#FFBC34'
+                color: function(params) {
+                  let value = params.value[1]
+                  if(value < 0)
+                  {
+                    return '#ff5c5c'                    
+                  }
+                  else{
+                    return 'blue'
+                  }                  
+                }
               },
               //stack: 'Ad',
               data: [], // Initialize with empty data
@@ -162,7 +171,16 @@
               name: "Flow Batt2",
               type: 'bar', // Changed from 'line' to 'bar'
               itemStyle: {
-                color: '#321dd1'
+                color: function(params) {
+                  let value = params.value[1]
+                  if(value < 0)
+                  {
+                    return 'red'                    
+                  }
+                  else{
+                    return 'orange'
+                  }                  
+                }
               },
               showSymbol: false, 
        
@@ -203,23 +221,50 @@
           },
           {
               name: "Flow Batt1 DAM",
-              type: 'bar', // Changed from 'line' to 'bar'
+              type: 'bar', 
               itemStyle: {
-                color: '#FFBC34'
+                color: function(params) {
+                  let value = params.value[1]
+                  if(value < 0)
+                  {
+                    return '#ff5c5c'                    
+                  }
+                  else{
+                    return 'blue'
+                  }                  
+                },
+                shadowBlur: 20,
+                shadowColor: 'rgba(0, 0, 0, 0.5)',
+                shadowOffsetX: 3,
+                shadowOffsetY: 3
               },
-              //stack: 'Ad',
+
               data: [], // Initialize with empty data
               barWidth: '100%', // Customize bar width (optional)
             },
             {
               name: "Flow Batt2 DAM",
-              type: 'bar', // Changed from 'line' to 'bar'
+              type: 'bar',              
               itemStyle: {
-                color: '#321dd1'
-              },
-              //stack: 'Ad',
+                color: function(params) {
+                  let value = params.value[1]
+                  if(value < 0)
+                  {
+                    return 'red'                    
+                  }
+                  else{
+                    return 'orange'
+                  }                  
+                }
+              },       
+              shadowBlur: 20,
+              shadowColor: 'rgba(0, 0, 0, 0.5)',
+              shadowOffsetX: 3,
+              shadowOffsetY: 3,       
               data: [], // Initialize with empty data
               barWidth: '100%', // Customize bar width (optional)
+
+              
             },
             {
               name: "Stacked DAM Before",
@@ -235,18 +280,20 @@
           },
           {
               name: "Flow Batt1 DAM Before",
-              type: 'line', // Changed from 'line' to 'bar'
-              lineStyle:{
-                width:0,                         
-              },               
+              type: 'bar', // Changed from 'line' to 'bar'
+              
+              itemStyle: {               
+                opacity: 0
+              },          
               data: [], // Initialize with empty data            
           },
           {
               name: "Flow Batt2 DAM Before",
-              type: 'line', // Changed from 'line' to 'bar'
-              lineStyle:{
-                width:0,                         
-              },               
+              type: 'bar', // Changed from 'line' to 'bar'
+              itemStyle: {                
+                opacity: 0
+              },        
+                    
               data: [], // Initialize with empty data            
           },
 
@@ -363,6 +410,9 @@
                   this.option.series[3].data = [];
                   this.option.series[4].data = [];
                   this.option.series[5].data = [];
+                  this.option.series[6].data = [];
+                  this.option.series[7].data = [];
+                  this.option.series[8].data = [];
                   
                   let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`;
                   let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam`;
@@ -456,8 +506,8 @@
                         //this.processCumulative(responseCumulative.data);
                         //this.processCumulativeDam(responseCumulativeDam.data);
                         this.processData(response.data);
-                        console.log(responseDam,responseCumulative,responseCumulativeDam)
-                        //this.processScheduleData(responseDam.data);
+                        console.log(responseDam,responseCumulative,responseCumulativeDam, response)
+                        this.processScheduleData(responseDam.data);
 
                          
                       }
@@ -551,32 +601,30 @@
           },
 
           processScheduleData(scheduleData) {
-           // let currentDate = new Date();
+            let currentDate = new Date();
             scheduleData.forEach(el => {
                               
                       let date = new Date(el.timestamp);
                       // Convert UTC time to local time if needed
                       date = new Date(date.getTime() - (3 * 60 * 60 * 1000)); // Adjust for UTC+3
                       
-                      if (el.devId === "batt1") { 
-                        this.option.series[4].data.push([date.toISOString(), el.flow]);
-                          // if(date <= currentDate){
-                          //  // this.option.series[7].data.push([date.toISOString(), el.flow]);
-                          // } 
-                          // else{
-                          //   this.option.series[4].data.push([date.toISOString(), el.flow]); 
-                          // }
+                      if (el.devId === "batt1") {                         
+                          if(date <= currentDate){
+                            this.option.series[7].data.push([date.toISOString(), el.flow]);
+                          } 
+                          else{
+                            this.option.series[4].data.push([date.toISOString(), el.flow]); 
+                          }
                                             
                       }              
                       if (el.devId === "batt2") {    
-                        this.option.series[5].data.push([date.toISOString(), el.flow]);
-                        // if(date <= currentDate){
                         
-                        // }
-                        // else{
-                          
-                        // }                     
-                          
+                        if(date <= currentDate){
+                          this.option.series[8].data.push([date.toISOString(), el.flow]);
+                        }
+                        else{
+                          this.option.series[5].data.push([date.toISOString(), el.flow]);
+                        }                         
                     }
                   this.setAxisTimeRange()
             })

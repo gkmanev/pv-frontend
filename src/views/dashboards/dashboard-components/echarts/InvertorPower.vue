@@ -558,7 +558,7 @@
         },
             //Today, Month, Year
           processData(data) {
-            console.log(data)
+           
               data.forEach(el => {
                   let date = new Date(el.timestamp);
                   // Convert UTC time to local time (UTC+3 adjustment)

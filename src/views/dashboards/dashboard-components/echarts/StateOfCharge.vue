@@ -389,6 +389,7 @@
             const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
             let start = new Date(today); // Initialized with today's date            
             let end = new Date(today);   // Initialized with today's date
+            
 
             if (this.dateRange === 'today') {
                 end.setHours(23, 59, 59); // Set end time to the end of the day                
@@ -396,8 +397,9 @@
 
             } 
             else if (this.dateRange === 'dam') {
+
               start.setHours(0, 0, 0); // Start of today at 00:00
-              end.setDate(end.getDate() + 2); // Move to the day after tomorrow
+              end.setDate(end.getDate() + 3); // Move to the day after tomorrow
               end.setHours(1, 0, 0); // Set end time to 01:00 of the day after tomorrow             
               this.option.xAxis.splitNumber = 48; // 48 half-hour intervals in 24 hours
 
@@ -553,7 +555,7 @@
 
     },
 
-    processScheduleData(scheduleData) {
+    processScheduleData(scheduleData) {      
       let currentDate = new Date();
       scheduleData.forEach(el => {
 

@@ -56,6 +56,7 @@
 //     return `${hours}:${minutes}`;
 // };
   
+ 
 
   
   export default {
@@ -71,7 +72,7 @@
         
         option: {
           title: {
-            text: 'State of Charge', 
+            text: 'State of Charge [MW/h]', 
             left: 'center',   
             textStyle: {
               fontSize: 16,
@@ -105,20 +106,26 @@
                     let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
                     //let cumulativeValue = 0;
                     let localTime;
+                    let sumValue = null
                     // Loop over each series data point
                     params.forEach(param => {
                         //const socValue = param.data[1];
+                        
                         //cumulativeValue += socValue; // Add current SoC value to cumulative total
                         const utcTime = new Date(param.data[0]);
-                        const options = {
-                            day: '2-digit', 
-                            month: '2-digit', 
-                            year: '2-digit', 
-                            hour: '2-digit', 
-                            minute: '2-digit', 
-                            hour12: false
-                        };
-                        localTime = utcTime.toLocaleString([], options).replace(',', ''); // Removing the comma   
+                        const hours = utcTime.getHours().toString().padStart(2, '0');
+                        const minutes = utcTime.getMinutes().toString().padStart(2, '0');
+                        const day = utcTime.getDate().toString().padStart(2, '0');
+                        const month = (utcTime.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
+                        const year = utcTime.getFullYear();
+
+                        // Construct time in the desired format: 13:13 | 01.10.2024
+                        localTime = `${hours}:${minutes} | ${day}.${month}.${year}`;
+
+                        if (param.seriesName === 'SUM' || param.seriesName === 'SUM Day Ahead') {
+                            sumValue = param.data[1]; // Capture the sum value
+                            return;
+                        }
                         tooltipContent += `
                         <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
                             <ul style="list-style-type: none; margin: 0; padding-left: 0;">
@@ -133,7 +140,7 @@
                     // Add the total cumulative SoC to the tooltip content at the end
                     tooltipContent += `
                     <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
-                        <strong>Time: </strong> <span style="color: white;">${localTime}</span>
+                        <strong>Total ${sumValue}  </strong> at: <strong></strong> <span style="color: white;">${localTime}</span>
                     </div>`;
                     tooltipContent += `</div>`;
                     return tooltipContent;
@@ -161,8 +168,9 @@
         show: true,
         onZero: true
       },
+
   
-        boundaryGap: false,    
+      boundaryGap: false,    
         
       },
     
@@ -201,15 +209,13 @@
               itemStyle: {
                   color: '#009BCB'
               },
-              
+                     
               data: [],
               type: 'line',
               showSymbol: false,   
               areaStyle: {                
               },
-              emphasis: {
-                focus: 'series'
-              },        
+      
               
     },
     {
@@ -230,7 +236,7 @@
               
     },
     {
-              name: "Batt1 Day Ahead",
+              name: "Batt1",
               smooth: true,            
               stack: 'Dam',
               lineStyle:{
@@ -249,7 +255,7 @@
               
     },
     {
-              name: "Batt2 Day Ahead",
+              name: "Batt2",
               smooth: true,            
               stack: 'Dam',
               lineStyle:{
@@ -272,7 +278,7 @@
                         
               },
     {
-              name: "Stacked",
+              name: "SUM",
               smooth: true,             
               lineStyle:{
                 width:2,               
@@ -287,6 +293,7 @@
               showSymbol: false,                        
                         
     },
+    
     {
               name: "Batt1 Day Ahead Before",
               smooth: true,            
@@ -313,6 +320,40 @@
               type: 'line',
               showSymbol: false,             
               
+    },
+    {
+              name: "SUM Day Ahead",
+              smooth: true,             
+              lineStyle:{
+                width:2,  
+                type:"dashed"                             
+              },
+              itemStyle: {
+                  color: 'yellow'
+              },
+              sampling: 'average',
+              data: [],
+              type: 'line',
+              
+              showSymbol: false,           
+                        
+    },
+    {
+              name: "SUM Day Ahead Before",
+              smooth: true,             
+              lineStyle:{
+                width:0,   
+                type:'dashed'            
+              },
+              itemStyle: {
+                  color: 'yellow'
+              },
+              sampling: 'average',
+              data: [],
+              type: 'line',
+              
+              showSymbol: false,           
+                        
     },
 
 
@@ -399,9 +440,9 @@
             else if (this.dateRange === 'dam') {
 
               start.setHours(0, 0, 0); // Start of today at 00:00
-              end.setDate(end.getDate() + 3); // Move to the day after tomorrow
+              end.setDate(end.getDate() + 2); // Move to the day after tomorrow
               end.setHours(1, 0, 0); // Set end time to 01:00 of the day after tomorrow             
-              this.option.xAxis.splitNumber = 48; // 48 half-hour intervals in 24 hours
+              this.option.xAxis.splitNumber = 24; // 48 half-hour intervals in 24 hours
 
             } else if (this.dateRange === 'month') {
                 start.setDate(1); // Start of the month
@@ -428,24 +469,28 @@
     },
 
     async displayData() {
-    // Clear the existing data
-          this.option.series[0].data = [];
-          this.option.series[1].data = [];
-          this.option.series[2].data = [];
-          this.option.series[3].data = [];
-          this.option.series[4].data = [];
-          this.option.series[5].data = [];
-          this.option.series[6].data = [];
+      let updateCurrentPath = this.lastRouteSegment()
+      let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam`;
+      let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`;
+      this.option.series[0].data = [];
+      this.option.series[1].data = [];
+      this.option.series[2].data = [];
+      this.option.series[3].data = [];
+      this.option.series[4].data = [];
+      this.option.series[5].data = [];
+      this.option.series[6].data = [];
+      this.option.series[7].data = [];
+      this.option.series[8].data = [];
+      if(updateCurrentPath == 'entra') { 
 
-          let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam`;
-          let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`;
+                    
           let url_cumulative = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&cumulative=true`
-
+          let url_cumulative_dam = `http://85.14.6.37:16543/api/schedule/?date_range=dam&cumulative=true`
           try {
               if (this.dateRange === "today") {
                   
                 
-                  const [response, cumulativeResponse] = await Promise.all([
+                  const [response, cumulativeResponse, scheduleResponse, cumulativeDamResponse] = await Promise.all([
                       axios.get(url, {
                           headers: {
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
@@ -455,10 +500,24 @@
                           headers: {
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                           }
-                      })
+                      }),
+                      axios.get(url_schedule, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),
+                      axios.get(url_cumulative_dam, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),
+                      
                   ]);
                   this.processData(response.data);
-                  this.processCumulative(cumulativeResponse.data)
+                  this.processCumulative(cumulativeResponse.data);
+                  this.processScheduleData(scheduleResponse.data);
+                  this.processCumulativeDam(cumulativeDamResponse.data);
+                  
 
               }
               else if (this.dateRange === "month"){
@@ -504,7 +563,8 @@
               else if (this.dateRange === "dam") {
                   // Fetch both url and url_schedule
                   url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today`;
-                  const [response, scheduleResponse] = await Promise.all([
+                  url_cumulative=`http://85.14.6.37:16543/api/state_of_charge/?date_range=today&cumulative=true`
+                  const [response, scheduleResponse, cumulativeResponse, cumulativeDamResponse] = await Promise.all([
                       axios.get(url, {
                           headers: {
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
@@ -514,78 +574,141 @@
                           headers: {
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                           }
+                      }),
+                      axios.get(url_cumulative, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),
+                      axios.get(url_cumulative_dam, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
                       })
                   ]);
                   this.processData(response.data);
                   this.processScheduleData(scheduleResponse.data);
+                  this.processCumulative(cumulativeResponse.data);
+                  this.processCumulativeDam(cumulativeDamResponse.data)
+                   
               }
           } catch (error) {
               console.error('Error fetching data:', error);
           } finally {
               this.loading = false;
           }
+    }
+    if(updateCurrentPath == 'client') { 
+      let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam&devId=${this.selectedDev}`;
+      let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`;
+      try {
+              if (this.dateRange === "today") {               
+                  const [response, scheduleResponse] = await Promise.all([
+                      axios.get(url, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),
+
+                      axios.get(url_schedule, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),                      
+                  ]);
+                  this.processData(response.data);                  
+                  this.processScheduleData(scheduleResponse.data);                  
+                }
+      } catch (error) {
+          console.error('Error fetching data:', error);
+      } finally {
+          this.loading = false;
+      }
+    }
     },
+  
     //Today, Month, Year
     processData(data) {
+        
+        
         data.forEach(el => {
             let date = new Date(el.timestamp);
-            // Convert UTC time to local time (UTC+3 adjustment)
-            date = new Date(date.getTime() - (3 * 60 * 60 * 1000));
+            // Convert UTC time to local time (UTC+3 adjustment)  
+            date = new Date(date.getTime() - (3 * 60 * 60 * 1000));           
+              if (el.devId === "batt-0001") {
+                  this.option.series[0].data.push([date.toISOString(), el.state_of_charge]);
+              }
+              if (el.devId === "batt-0002") {
+                  this.option.series[1].data.push([date.toISOString(), el.state_of_charge]);
+              }
             
-            if (el.devId === "batt-0001") {
-                this.option.series[0].data.push([date.toISOString(), el.state_of_charge]);
-            }
-            if (el.devId === "batt-0002") {
-                this.option.series[1].data.push([date.toISOString(), el.state_of_charge]);
-            }
+      
         });
         this.setAxisTimeRange();
     },
 
-    processCumulative(stackData){    
-      if (stackData){ 
+    processCumulative(stackData){         
+      if (stackData){         
         stackData.forEach(el => {
               let date = new Date(el.timestamp);
               // Convert UTC time to local time (UTC+3 adjustment)
               date = new Date(date.getTime() - (3 * 60 * 60 * 1000));          
-                  this.option.series[4].data.push([date.toISOString(), el.cumulative_soc]);
+              this.option.series[4].data.push([date.toISOString(), el.cumulative_soc]);
             
-          });
+          });          
       }
-
+    },
+    processCumulativeDam(stackData){    
+      let currentDate = new Date();     
+      if (stackData){         
+        stackData.forEach(el => {
+              let date = new Date(el.timestamp);
+              // Convert UTC time to local time (UTC+3 adjustment)
+              date = new Date(date.getTime() - (3 * 60 * 60 * 1000));  
+              if (date >= currentDate){        
+                this.option.series[7].data.push([date.toISOString(), el.cumulative_soc]);
+              //this.option.series[8].data.push([date.toISOString(), el.cumulative_soc]);
+              }
+              // else{
+              //   this.option.series[7].data.push([date.toISOString(), el.cumulative_soc]);
+              // }
+            
+          }); 
+        this.setAxisTimeRange()         
+      }
     },
 
-    processScheduleData(scheduleData) {      
+    processScheduleData(scheduleData) {  
+        
       let currentDate = new Date();
       scheduleData.forEach(el => {
-
                 let date = new Date(el.timestamp);                         
                 date = new Date(date.getTime() - (3 * 60 * 60 * 1000));
-                
-                if (el.devId === "batt1") {  
-                    if (date <= currentDate){
-                      this.option.series[5].data.push([date.toISOString(), el.soc]); 
-                    }
-                    else{
+               
+                if (el.devId === "batt-0001") {  
+                    if (date >= currentDate){
                       this.option.series[2].data.push([date.toISOString(), el.soc]); 
+                      //this.option.series[5].data.push([date.toISOString(), el.soc]); 
                     }
-                                   
-                                                
-              
-                    
-                }             
-                if (el.devId === "batt2") {
-                  if (date <= currentDate){
-                      this.option.series[6].data.push([date.toISOString(), el.soc]); 
-                    }
-                    else{
+                    // else{
+                    //   this.option.series[2].data.push([date.toISOString(), el.soc]); 
+                    // }                                 
+                }         
+                  
+                if (el.devId === "batt-0002") {
+                  if (date >= currentDate){
                       this.option.series[3].data.push([date.toISOString(), el.soc]); 
                     }
+                    // else{
+                    //   this.option.series[3].data.push([date.toISOString(), el.soc]); 
+                    // }
                    
                }
+       
               this.setAxisTimeRange()
               
       })
+      
     
   },    
 

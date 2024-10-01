@@ -48,7 +48,7 @@
         long: null,
         option: {
           title: {
-            text: 'Power Flow',
+            text: 'Power Flow [MW]',
             left: 'center',
             textStyle: {
               fontSize: 16,
@@ -163,6 +163,8 @@
                   }                  
                 }
               },
+
+              stack:"one",
               //stack: 'Ad',
               data: [], // Initialize with empty data
               barWidth: '100%', // Customize bar width (optional)
@@ -184,7 +186,7 @@
               },
               showSymbol: false, 
        
-              //stack: 'Ad',
+              stack:"one",
               data: [], // Initialize with empty data
               barWidth: '100%', // Customize bar width (optional)
             },
@@ -236,8 +238,11 @@
                 shadowBlur: 20,
                 shadowColor: 'rgba(0, 0, 0, 0.5)',
                 shadowOffsetX: 3,
-                shadowOffsetY: 3
+                shadowOffsetY: 3,
               },
+              // stack: function(params) {
+              //   return params.value[1] >= 0 ? 'stack1' : 'stack2'; // Stack positive and negative values separately
+              // },
 
               data: [], // Initialize with empty data
               barWidth: '100%', // Customize bar width (optional)
@@ -256,7 +261,10 @@
                     return 'orange'
                   }                  
                 }
-              },       
+              },     
+              // stack: function(params) {
+              //   return params.value[1] >= 0 ? 'stack1' : 'stack2'; // Stack positive and negative values separately
+              // },  
               shadowBlur: 20,
               shadowColor: 'rgba(0, 0, 0, 0.5)',
               shadowOffsetX: 3,
@@ -369,7 +377,7 @@
               start.setHours(0, 0, 0); // Start of today at 00:00
               end.setDate(end.getDate() + 2); // Move to the day after tomorrow
               end.setHours(1, 0, 0); // Set end time to 01:00 of the day after tomorrow             
-              this.option.xAxis.splitNumber = 48; // 48 half-hour intervals in 24 hours
+              this.option.xAxis.splitNumber = 24; // 48 half-hour intervals in 24 hours
 
             } else if (this.dateRange === 'month') {
                 start.setDate(1); // Start of the month
@@ -423,7 +431,7 @@
                       this.loading = true;
                       if (this.dateRange === "today") {                  
                         
-                          const [response, cumulativeResponse] = await Promise.all([
+                          const [response, cumulativeResponse, cumulativeDamResponse] = await Promise.all([
                               axios.get(url, {
                                   headers: {
                                       'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
@@ -433,10 +441,17 @@
                                   headers: {
                                       'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                                   }
-                              })
+                              }),
+                              axios.get(url_cumulative_dam, {
+                                  headers: {
+                                      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                                  }
+                              }),
                           ]);                         
                          this.processData(response.data);                  
                          this.processCumulative(cumulativeResponse.data)
+                         this.processCumulativeDam(cumulativeDamResponse.data)
+                         
 
                       }
                       else if (this.dateRange === "month"){
@@ -503,10 +518,10 @@
                               }),
                           ]);
                         
-                        //this.processCumulative(responseCumulative.data);
-                        //this.processCumulativeDam(responseCumulativeDam.data);
+                        this.processCumulative(responseCumulative.data);
+                        this.processCumulativeDam(responseCumulativeDam.data);
                         this.processData(response.data);
-                        console.log(responseDam,responseCumulative,responseCumulativeDam, response)
+                        console.log("From POwerFlow",responseCumulative,responseCumulativeDam)
                         this.processScheduleData(responseDam.data);
 
                          
@@ -586,12 +601,12 @@
                 let date = new Date(el.timestamp);
                 // Convert UTC time to local time (UTC+3 adjustment)
                 date = new Date(date.getTime() - (3 * 60 * 60 * 1000));          
-                if(date <= currentDate){
-                  this.option.series[6].data.push([date.toISOString(), el.cumulative_flow_last_min]);
-                }
-                else{
+                if(date >= currentDate){
                   this.option.series[3].data.push([date.toISOString(), el.cumulative_flow_last_min]);
                 }
+                // else{
+                //   this.option.series[3].data.push([date.toISOString(), el.cumulative_flow_last_min]);
+                // }
                 
                   
                 });

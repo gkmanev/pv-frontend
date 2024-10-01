@@ -51,7 +51,7 @@
 
         option: {
           title: {
-            text: 'Cumulative Invertor Power', 
+            text: 'Invertor Power [MW]', 
             left: 'center',   
             textStyle: {
               fontSize: 16,
@@ -85,20 +85,26 @@
                     let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
                     //let cumulativeValue = 0;
                     let localTime;
+                    let sumValue = null
                     // Loop over each series data point
                     params.forEach(param => {
                         //const socValue = param.data[1];
+                        
                         //cumulativeValue += socValue; // Add current SoC value to cumulative total
                         const utcTime = new Date(param.data[0]);
-                        const options = {
-                            day: '2-digit', 
-                            month: '2-digit', 
-                            year: '2-digit', 
-                            hour: '2-digit', 
-                            minute: '2-digit', 
-                            hour12: false
-                        };
-                        localTime = utcTime.toLocaleString([], options).replace(',', ''); // Removing the comma   
+                        const hours = utcTime.getHours().toString().padStart(2, '0');
+                        const minutes = utcTime.getMinutes().toString().padStart(2, '0');
+                        const day = utcTime.getDate().toString().padStart(2, '0');
+                        const month = (utcTime.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
+                        const year = utcTime.getFullYear();
+
+                        // Construct time in the desired format: 13:13 | 01.10.2024
+                        localTime = `${hours}:${minutes} | ${day}.${month}.${year}`;
+
+                        if (param.seriesName === 'SUM' || param.seriesName === 'SUM Day Ahead') {
+                            sumValue = param.data[1]; // Capture the sum value
+                            return;
+                        }
                         tooltipContent += `
                         <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
                             <ul style="list-style-type: none; margin: 0; padding-left: 0;">
@@ -113,7 +119,7 @@
                     // Add the total cumulative SoC to the tooltip content at the end
                     tooltipContent += `
                     <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
-                        <strong>Time: </strong> <span style="color: white;">${localTime}</span>
+                        <strong>Total ${sumValue}  </strong> at <strong>Time: </strong> <span style="color: white;">${localTime}</span>
                     </div>`;
                     tooltipContent += `</div>`;
                     return tooltipContent;
@@ -170,7 +176,7 @@
     
     series:[
     {
-              name: "Invertor Batt 1",
+              name: "Batt 1",
               smooth: true,
               
               lineStyle:{
@@ -187,7 +193,7 @@
               
     },
     {
-              name: "Invertor Batt 2",
+              name: "Batt 2",
               smooth: true,   
               
               lineStyle:{
@@ -204,11 +210,11 @@
               
     },
     {
-              name: "Day Ahead Inv Batt 1",
+              name: "Batt1 Day Ahead",
               smooth: true,
               
               lineStyle:{
-                width:1,
+                width:0,
                 type: 'dashed'
               },
               itemStyle: {
@@ -224,11 +230,11 @@
               
     },
     {
-              name: "Day Ahead Inv Batt 2",
+              name: "Batt2 Day Ahead",
               smooth: true,   
               
               lineStyle:{
-                width:1,
+                width:0,
                 type: 'dashed'
               },
               itemStyle: {
@@ -243,7 +249,7 @@
               
     },
     {
-              name: "Stacked",
+              name: "SUM",
               smooth: true,             
               lineStyle:{
                 width:2,               
@@ -260,7 +266,7 @@
                         
     },
     {
-              name: "Stacked DAM",
+              name: "SUM Day Ahead",
               smooth: true,             
               lineStyle:{
                 width:2,
@@ -335,6 +341,9 @@
 
 
         aggregateData(data){
+
+          this.option.series[5].data = [];
+          this.option.series[6].data = [];
           const aggregated = {};
 
           data.forEach(entry => {
@@ -397,7 +406,7 @@
               start.setHours(0, 0, 0); // Start of today at 00:00
               end.setDate(end.getDate() + 2); // Move to the day after tomorrow
               end.setHours(1, 0, 0); // Set end time to 01:00 of the day after tomorrow             
-              this.option.xAxis.splitNumber = 48; // 48 half-hour intervals in 24 hours
+              this.option.xAxis.splitNumber = 24; // 48 half-hour intervals in 24 hours
 
             } else if (this.dateRange === 'month') {
                 start.setDate(1); // Start of the month
@@ -429,6 +438,10 @@
 
 
         let updateCurrentPath = this.lastRouteSegment()
+        let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`;
+        let url_cumulative = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&cumulative=true`
+        let url_cumulative_dam = "http://85.14.6.37:16543/api/schedule/?date_range=dam&cumulative=true"
+        let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam`;
         if(updateCurrentPath == 'entra') {     
 
           this.option.series[0].data = [];
@@ -440,14 +453,12 @@
           this.option.series[6].data = [];
 
          
-          let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`;
-          let url_cumulative = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&cumulative=true`
-          let url_cumulative_dam = "http://85.14.6.37:16543/api/schedule/?date_range=dam&cumulative=true"
+          
 
           try {
               if (this.dateRange === "today") {                  
                 
-                  const [response, cumulativeResponse] = await Promise.all([
+                  const [response, cumulativeResponse, cumulativeDamResponse, scheduleResponse] = await Promise.all([
                       axios.get(url, {
                           headers: {
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
@@ -457,10 +468,22 @@
                           headers: {
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                           }
-                      })
+                      }),
+                      axios.get(url_cumulative_dam, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),
+                      axios.get(url_schedule, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),
                   ]);
                   this.processData(response.data);                  
                   this.processCumulative(cumulativeResponse.data)
+                  this.processCumulativeDam(cumulativeDamResponse.data)
+                  this.processScheduleData(scheduleResponse.data)
 
               }
               else if (this.dateRange === "month"){
@@ -506,8 +529,15 @@
 
                   
                   url_cumulative = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today&cumulative=true`
-                  const [responseCumulative, responseCumulativeDam] = await Promise.all([
-                      axios.get(url_cumulative, {
+                  const [response, cumulativeResponse, cumulativeDamResponse, scheduleResponse] = await Promise.all([
+                      
+                    axios.get(url, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),
+                  
+                    axios.get(url_cumulative, {
                           headers: {
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                           }
@@ -516,11 +546,19 @@
                           headers: {
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                           }
-                      })
+                      }),
+                      axios.get(url_schedule, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),
                   ]);
                   
-                  this.processCumulative(responseCumulative.data);
-                  this.processCumulativeDam(responseCumulativeDam.data);
+                  this.processData(response.data);                  
+                  this.processCumulative(cumulativeResponse.data)
+                  this.processCumulativeDam(cumulativeDamResponse.data)
+                  this.processScheduleData(scheduleResponse.data)
+
               }
           } catch (error) {
               console.error('Error fetching data:', error);
@@ -593,6 +631,7 @@
               else{
                 aggregated = stackData
               }
+
               aggregated.forEach(el => {
                     let date = new Date(el.timestamp);
                     // Convert UTC time to local time (UTC+3 adjustment)
@@ -612,12 +651,12 @@
                 let date = new Date(el.timestamp);
                 // Convert UTC time to local time (UTC+3 adjustment)
                 date = new Date(date.getTime() - (3 * 60 * 60 * 1000));
-                if(date <= currentDate){
-                  this.option.series[6].data.push([date.toISOString(), el.cumulative_invertor_power]);
-                }
-                else{
+                if(date >= currentDate){
                   this.option.series[5].data.push([date.toISOString(), el.cumulative_invertor_power]);
-                }          
+                }
+                // else{
+                //   this.option.series[5].data.push([date.toISOString(), el.cumulative_invertor_power]);
+                // }          
                 
                   
                 });
@@ -627,20 +666,23 @@
           },
 
           processScheduleData(scheduleData) {
-            
+            let currentDate = new Date();
             scheduleData.forEach(el => {
                               
                       let date = new Date(el.timestamp);
                       // Convert UTC time to local time if needed
                       date = new Date(date.getTime() - (3 * 60 * 60 * 1000)); // Adjust for UTC+3
                       
-                      if (el.devId === "batt1") {  
-                          
-                          this.option.series[2].data.push([date.toISOString(), el.invertor]);                             
+                      if (el.devId === "batt-0001") {  
+                          if (date >= currentDate){
+                            this.option.series[2].data.push([date.toISOString(), el.invertor]);    
+                          }                         
                     
                       }              
-                      if (el.devId === "batt2") {                          
+                      if (el.devId === "batt-0002") { 
+                        if (date >= currentDate){                         
                           this.option.series[3].data.push([date.toISOString(), el.invertor]);
+                        }
                     }
                   this.setAxisTimeRange()
             })

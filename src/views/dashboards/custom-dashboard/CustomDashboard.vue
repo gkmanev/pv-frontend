@@ -1,8 +1,8 @@
 <template>
     <b-row class="justify-content-start">        
-        <!-- <b-col cols="12">        
-            <AwesomeCards />
-        </b-col> -->
+        <b-col cols="12">        
+            <BatteryChart />
+        </b-col>
         <b-col cols="3">            
             <RangeComponent class="mb-4"  @filter="handleFilter" />          
         </b-col>
@@ -53,6 +53,9 @@
   // import MapCard from '../dashboard-components/echarts/MapCard.vue';
   import StateOfCharge from '../dashboard-components/echarts/StateOfCharge.vue';
   import PowerFlow from '../dashboard-components/echarts/PowerFlow.vue';
+
+import BatteryChart from "../dashboard-components/echarts/BatteryChart.vue";
+
   //import HighChartTest from '../dashboard-components/echarts/HighChartTest.vue';
 
   
@@ -101,6 +104,7 @@
     //GridNodes,
     StateOfCharge,
     PowerFlow,
+    BatteryChart
     //LineChart
     
 },

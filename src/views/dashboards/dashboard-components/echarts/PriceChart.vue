@@ -151,6 +151,7 @@
           },
   
           boundaryGap: false,    
+          data:[]
         
       },
     
@@ -189,6 +190,7 @@
 
       ],
     series:[
+      
         {
             name: "price",
             smooth: true,
@@ -197,7 +199,6 @@
             lineStyle:{
               width:1
             },
-
             itemStyle: {
                 color: '#39c449'
             },
@@ -275,11 +276,17 @@
           let start = new Date(todayUTC); // Initialized with todayUTC
           let end = new Date(todayUTC); // Initialized with todayUTC
   
-          if (this.dateRange === 'today' || this.dateRange == 'dam') {
+          if (this.dateRange === 'today') {
             end.setUTCHours(23, 0, 0);
             this.option.xAxis.axisLabel.formatter = timeLineSet//'{HH}:{mm}'
             this.option.xAxis.splitNumber = 23
-          } else if (this.dateRange === 'month') {
+          } else if (this.dateRange === 'dam'){
+              start.setHours(0, 0, 0); // Start of today at 00:00
+              end.setDate(end.getDate() + 2); // Move to the day after tomorrow
+              end.setHours(1, 0, 0); // Set end time to 01:00 of the day after tomorrow             
+              this.option.xAxis.splitNumber = 24; // 48 half-hour intervals in 24 hours
+          }
+           else if (this.dateRange === 'month') {
             start.setUTCDate(1); // Start of the month
             end.setUTCMonth(end.getUTCMonth() + 1, 0); // Last day of the month
             end.setUTCHours(23, 0, 0);
@@ -380,8 +387,8 @@
         }
         else{
             priceData.forEach(el =>{
-            el = [el.timestamp,el.value]
-            this.option.series[1].data.push(el)
+              el = [el.timestamp,el.value]
+              this.option.series[1].data.push(el)
             })   
 
         }

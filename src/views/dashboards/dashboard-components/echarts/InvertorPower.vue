@@ -105,6 +105,12 @@
                             sumValue = param.data[1]; // Capture the sum value
                             return;
                         }
+                        if (param.seriesName === 'Batt1 Day Ahead')
+                        {   
+                          param.seriesName = 'Batt1'
+                        }else if(param.seriesName === 'Batt2 Day Ahead'){
+                          param.seriesName = 'Batt2'
+                        }
                         tooltipContent += `
                         <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
                             <ul style="list-style-type: none; margin: 0; padding-left: 0;">
@@ -176,15 +182,15 @@
     
     series:[
     {
-              name: "Batt 1",
+              name: "Batt1",
               smooth: true,
               
               lineStyle:{
                 width:0
               },
-              // itemStyle: {
-              //     color: '#fffddd'
-              // },
+              itemStyle: {
+                opacity:0,
+              },
               sampling: 'average',
               data: [],
               type: 'line',
@@ -193,15 +199,15 @@
               
     },
     {
-              name: "Batt 2",
+              name: "Batt2",
               smooth: true,   
               
               lineStyle:{
                 width:0
               },
-              // itemStyle: {
-              //     color: '#672b34'
-              // },
+              itemStyle: {
+                opacity:0,
+              },
               sampling: 'average',
               data: [],
               type: 'line',
@@ -252,13 +258,18 @@
               name: "SUM",
               smooth: true,             
               lineStyle:{
-                width:2,               
+                width:2, 
+                color:"yellow"
+                
               },
               itemStyle: {
-                  color: 'yellow'
+                opacity:0,               
               },
               sampling: 'average',
               data: [],
+              areaStyle:{
+                color: '#20C997'
+              },
               type: 'line',
               
               showSymbol: false,   
@@ -278,6 +289,11 @@
               sampling: 'average',
               data: [],
               type: 'line',
+              areaStyle:{
+                 color:'#20C997',
+                 opacity:'0.3'
+                
+              },
               
               showSymbol: false,                         
                         
@@ -295,7 +311,8 @@
               type: 'line',
               showSymbol: false,            
               
-    },
+    },  
+
 
     ]
   }
@@ -639,6 +656,7 @@
                         this.option.series[4].data.push([date.toISOString(), el.cumulative_invertor_power]);
                   
                 });
+                
 
             }
             this.setAxisTimeRange()

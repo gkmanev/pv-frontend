@@ -126,6 +126,12 @@
                             sumValue = param.data[1]; // Capture the sum value
                             return;
                         }
+                        if (param.seriesName === 'Batt1 Day Ahead')
+                        {   
+                          param.seriesName = 'Batt1'
+                        }else if(param.seriesName === 'Batt2 Day Ahead'){
+                          param.seriesName = 'Batt2'
+                        }
                         tooltipContent += `
                         <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
                             <ul style="list-style-type: none; margin: 0; padding-left: 0;">
@@ -236,11 +242,11 @@
               
     },
     {
-              name: "Batt1",
+              name: "Batt1 Day Ahead",
               smooth: true,            
               stack: 'Dam',
               lineStyle:{
-                width:1,
+                width:0,
                 type: 'dashed'
               },
               itemStyle: {
@@ -250,16 +256,16 @@
               data: [],
               type: 'line',
               showSymbol: false,   
-              areaStyle: {opacity: 0.1},            
+              areaStyle: {opacity: 0.3},            
              
               
     },
     {
-              name: "Batt2",
+              name: "Batt2 Day Ahead",
               smooth: true,            
               stack: 'Dam',
               lineStyle:{
-                width:1,
+                width:0,
                 type: 'dashed'
               },
               itemStyle: {
@@ -271,8 +277,7 @@
               
               showSymbol: false,   
               areaStyle: {
-                opacity: 0.1
-
+                opacity: 0.3
               }
               
                         
@@ -284,7 +289,8 @@
                 width:2,               
               },
               itemStyle: {
-                  color: 'yellow'
+                  color: 'yellow',
+                  opacity: 0
               },
               sampling: 'average',
               data: [],

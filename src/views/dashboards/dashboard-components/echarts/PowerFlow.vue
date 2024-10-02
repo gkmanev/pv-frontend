@@ -78,12 +78,34 @@
                 formatter: (params) => {
                     if (params && params.length) {
                     let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
-                    
+                    //let cumulativeValue = 0;
                     let localTime;
+                    let sumValue = null
                     // Loop over each series data point
-                    params.forEach(param => {                       
+                    params.forEach(param => {
+                        //const socValue = param.data[1];
+                        
+                        //cumulativeValue += socValue; // Add current SoC value to cumulative total
                         const utcTime = new Date(param.data[0]);
-                        localTime = utcTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });           
+                        const hours = utcTime.getHours().toString().padStart(2, '0');
+                        const minutes = utcTime.getMinutes().toString().padStart(2, '0');
+                        const day = utcTime.getDate().toString().padStart(2, '0');
+                        const month = (utcTime.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
+                        const year = utcTime.getFullYear();
+
+                        // Construct time in the desired format: 13:13 | 01.10.2024
+                        localTime = `${hours}:${minutes} | ${day}.${month}.${year}`;
+
+                        if (param.seriesName === 'SUM' || param.seriesName === 'SUM Day Ahead') {
+                            sumValue = param.data[1]; // Capture the sum value
+                            return;
+                        }
+                        if (param.seriesName === 'Batt1 Day Ahead')
+                        {   
+                          param.seriesName = 'Batt1'
+                        }else if(param.seriesName === 'Batt2 Day Ahead'){
+                          param.seriesName = 'Batt2'
+                        }
                         tooltipContent += `
                         <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
                             <ul style="list-style-type: none; margin: 0; padding-left: 0;">
@@ -97,8 +119,8 @@
                     // Append cumulative SoC value at the end of the tooltip
                     // Add the total cumulative SoC to the tooltip content at the end
                     tooltipContent += `
-                    <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                            
-                        <strong>Time: </strong> <span style="color: white;">${localTime}</span>
+                    <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
+                        <strong>Total ${sumValue}  </strong> at <strong>Time: </strong> <span style="color: white;">${localTime}</span>
                     </div>`;
                     tooltipContent += `</div>`;
                     return tooltipContent;
@@ -149,7 +171,7 @@
           }],
           series: [
             {
-              name: "Flow Batt1",
+              name: "Batt1",
               type: 'bar', // Changed from 'line' to 'bar'
               itemStyle: {
                 color: function(params) {
@@ -159,7 +181,7 @@
                     return '#ff5c5c'                    
                   }
                   else{
-                    return 'blue'
+                    return '#bf9d36'
                   }                  
                 }
               },
@@ -170,7 +192,7 @@
               barWidth: '100%', // Customize bar width (optional)
             },
             {
-              name: "Flow Batt2",
+              name: "Batt2",
               type: 'bar', // Changed from 'line' to 'bar'
               itemStyle: {
                 color: function(params) {
@@ -180,7 +202,7 @@
                     return 'red'                    
                   }
                   else{
-                    return 'orange'
+                    return '#0c7a9d'
                   }                  
                 }
               },
@@ -191,8 +213,9 @@
               barWidth: '100%', // Customize bar width (optional)
             },
             {
-              name: "Stacked",
-              smooth: true,             
+              name: "SUM",
+              smooth: false,         
+              step: 'start',                  
               lineStyle:{
                 width:2,               
               },
@@ -206,7 +229,7 @@
               showSymbol: false,                              
           },
           {
-              name: "Stacked DAM",
+              name: "SUM Day Ahead",
               smooth: true,             
               lineStyle:{
                 width:2, 
@@ -222,8 +245,9 @@
               showSymbol: false,                              
           },
           {
-              name: "Flow Batt1 DAM",
+              name: "Batt1 Day Ahead",
               type: 'bar', 
+              stack:'three',
               itemStyle: {
                 color: function(params) {
                   let value = params.value[1]
@@ -239,17 +263,15 @@
                 shadowColor: 'rgba(0, 0, 0, 0.5)',
                 shadowOffsetX: 3,
                 shadowOffsetY: 3,
-              },
-              // stack: function(params) {
-              //   return params.value[1] >= 0 ? 'stack1' : 'stack2'; // Stack positive and negative values separately
-              // },
+              },  
 
               data: [], // Initialize with empty data
               barWidth: '100%', // Customize bar width (optional)
             },
             {
-              name: "Flow Batt2 DAM",
-              type: 'bar',              
+              name: "Batt2 Day Ahead",
+              type: 'bar',        
+              stack:'three',      
               itemStyle: {
                 color: function(params) {
                   let value = params.value[1]
@@ -275,7 +297,7 @@
               
             },
             {
-              name: "Stacked DAM Before",
+              name: "SUM DAM Before",
               smooth: true,             
               lineStyle:{
                 width:0,                         

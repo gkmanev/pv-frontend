@@ -123,10 +123,19 @@
                     });
                     // Append cumulative SoC value at the end of the tooltip
                     // Add the total cumulative SoC to the tooltip content at the end
-                    tooltipContent += `
-                    <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
-                        <strong>Total ${sumValue}  </strong> at <strong>Time: </strong> <span style="color: white;">${localTime}</span>
-                    </div>`;
+                    let footer = ''
+                    if(sumValue){
+                      footer = `
+                      <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
+                          <strong>Total ${sumValue}  </strong> at <strong>Time: </strong> <span style="color: white;">${localTime}</span>
+                      </div>`;
+                    }else{
+                      footer = `
+                      <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
+                          <strong>Time: </strong> <span style="color: white;">${localTime}</span>
+                      </div>`;
+                    }
+                    tooltipContent += footer
                     tooltipContent += `</div>`;
                     return tooltipContent;
                     }
@@ -189,8 +198,9 @@
                 width:0
               },
               itemStyle: {
-                opacity:0,
+                  color: '#009BCB'
               },
+
               sampling: 'average',
               data: [],
               type: 'line',
@@ -200,13 +210,13 @@
     },
     {
               name: "Batt2",
-              smooth: true,   
+              smooth: false,   
               
               lineStyle:{
                 width:0
               },
               itemStyle: {
-                opacity:0,
+                color: '#FFBC34'
               },
               sampling: 'average',
               data: [],
@@ -224,8 +234,7 @@
                 type: 'dashed'
               },
               itemStyle: {
-                  color: '#fffddd',
-                  
+                  color: '#009BCB'
               },
               sampling: 'average',
               data: [],
@@ -244,8 +253,7 @@
                 type: 'dashed'
               },
               itemStyle: {
-                  color: '#672b34',
-                  
+                  color: '#FFBC34'
               },
               sampling: 'average',
               data: [],
@@ -459,19 +467,14 @@
         let url_cumulative = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&cumulative=true`
         let url_cumulative_dam = "http://85.14.6.37:16543/api/schedule/?date_range=dam&cumulative=true"
         let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam`;
+        this.option.series[0].data = [];
+        this.option.series[1].data = [];
+        this.option.series[2].data = [];
+        this.option.series[3].data = [];
+        this.option.series[4].data = [];
+        this.option.series[5].data = [];
+        this.option.series[6].data = [];
         if(updateCurrentPath == 'entra') {     
-
-          this.option.series[0].data = [];
-          this.option.series[1].data = [];
-          this.option.series[2].data = [];
-          this.option.series[3].data = [];
-          this.option.series[4].data = [];
-          this.option.series[5].data = [];
-          this.option.series[6].data = [];
-
-         
-          
-
           try {
               if (this.dateRange === "today") {                  
                 
@@ -500,7 +503,8 @@
                   this.processData(response.data);                  
                   this.processCumulative(cumulativeResponse.data)
                   this.processCumulativeDam(cumulativeDamResponse.data)
-                  this.processScheduleData(scheduleResponse.data)
+                  this.processSchedule(scheduleResponse.data)
+               
 
               }
               else if (this.dateRange === "month"){
@@ -574,7 +578,7 @@
                   this.processData(response.data);                  
                   this.processCumulative(cumulativeResponse.data)
                   this.processCumulativeDam(cumulativeDamResponse.data)
-                  this.processScheduleData(scheduleResponse.data)
+                  this.processSchedule(scheduleResponse.data)
 
               }
           } catch (error) {
@@ -586,47 +590,76 @@
           
 
         }
-        // if(updateCurrentPath == 'client')
-        // {
-        //     this.option.series[0].data = []
-        //     this.option.series[1].data = []
-        //     this.option.series[0].stack = ''
-        //     this.option.series[1].stack = ''
-        //     if (this.dateRange == "today" || this.dateRange == "month" || this.dateRange == "year"){
-        //             let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`
-                    
-        //             if(url){          
-        //                 axios
-        //                 .get(url)
-        //                 .then((response) => response.data.forEach(el => {    
-        //                     let date = new Date(el.timestamp);
-        //                         // Convert UTC time to local time if needed
-        //                     date = new Date(date.getTime() - (3 * 60 * 60 * 1000)); // Adjust for UTC+3                
-        //                     this.option.series[0].data.push([date.toISOString(), el.invertor_power]) 
-        //                     this.setAxisTimeRange()
-        //                 })        
-        //                 )      
-        //                 .catch((error) => console.log(error))      
-        //             }
-        //           }
-        // }   
+        if(updateCurrentPath == 'client')
+        {
+          
+          let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`;
+          let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam&devId=${this.selectedDev}`;
+          
+
+          try {
+              if (this.dateRange === "today" || this.dateRange === 'dam') {               
+                  const [response, scheduleResponse] = await Promise.all([
+                      axios.get(url, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),
+
+                      axios.get(url_schedule, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),      
+        
+                  ]);
+                  this.processData(response.data); 
+                  this.processSchedule(scheduleResponse.data);                
+                  
+                  this.option.series[0].lineStyle.width = 1
+                  this.option.series[0].areaStyle = {}
+                  this.option.series[0].lineStyle.color
+                  this.option.series[1].lineStyle.width = 1
+                  this.option.series[1].areaStyle = {}
+                  this.option.series[2].lineStyle.width = 1
+                  this.option.series[2].lineStyle.type = 'dashed'
+                  this.option.series[2].areaStyle = {'opacity':0.25}
+                  this.option.series[3].lineStyle.width = 1
+                  this.option.series[3].lineStyle.type = 'dashed'
+                  this.option.series[3].areaStyle = {'opacity':0.25}
+                }
+
+              // if (this.dateRange === "dam") {  
+
+              // }
+              
+      } catch (error) {
+          console.error('Error fetching data:', error);
+      } finally {
+          this.loading = false;
+      }
+        }   
         },
             //Today, Month, Year
-          processData(data) {
-           
-              data.forEach(el => {
-                  let date = new Date(el.timestamp);
-                  // Convert UTC time to local time (UTC+3 adjustment)
-                  date = new Date(date.getTime() - (3 * 60 * 60 * 1000));
-                  
-                  if (el.devId === "batt-0001") {
-                      this.option.series[0].data.push([date.toISOString(), el.invertor_power]);
-                  }
-                  if (el.devId === "batt-0002") {
-                      this.option.series[1].data.push([date.toISOString(), el.invertor_power]);
-                  }
-              });
+          processData(data) {           
+            if(data){
+              let devIdToSeriesIndex = {};
+              this.all_devs.forEach((dev, index) => {
+                  devIdToSeriesIndex[dev.id] = index;
+              });       
               
+              data.forEach(el => {               
+                  let date = new Date(el.timestamp);
+                  // Convert UTC time to local time (UTC+3 adjustment)  
+                  date = new Date(date.getTime() - (3 * 60 * 60 * 1000));           
+                  let seriesIndex = devIdToSeriesIndex[el.devId];
+                  if (seriesIndex !== undefined) {
+                    this.option.series[seriesIndex].data.push([date.toISOString(), el.invertor_power]);                
+                  }            
+              }); 
+        }       
+
+        this.setAxisTimeRange();         
           },
 
           processCumulative(stackData){  
@@ -683,7 +716,7 @@
 
           },
 
-          processScheduleData(scheduleData) {
+          processSchedule(scheduleData) {
             let currentDate = new Date();
             scheduleData.forEach(el => {
                               

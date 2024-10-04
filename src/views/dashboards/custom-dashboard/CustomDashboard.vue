@@ -1,11 +1,26 @@
 <template>
-    <b-row class="justify-content-start">        
-        <b-col cols="12">        
-            <BatteryChart />
+  <div>
+    <b-card class="mb-4">
+      <b-row class="justify-content-start"> 
+        <b-col cols="4">
+          <div class="battery-container d-flex justify-content-between"> <!-- Use d-flex to arrange items horizontally -->
+            <BatteryChart class="battery-chart" style="flex: 1;" />
+            <BatteryGauge class="battery-gauge" style="flex: 1;" />
+          </div>  
+        </b-col> 
+        <b-col cols="4">
         </b-col>
-        <b-col cols="3">            
-            <RangeComponent class="mb-4"  @filter="handleFilter" />          
+        <b-col cols="4">
+          <DigiClock />
         </b-col>
+      </b-row>
+  </b-card>
+    <b-row class="mb-4"> 
+      <b-col cols="3">            
+        <RangeComponent @filter="handleFilter" />          
+      </b-col>
+    </b-row>
+    <b-row>
         <b-col cols="12">
             <StateOfCharge />
         </b-col>
@@ -18,26 +33,9 @@
         <b-col cols="12">
             <PriceChart />
         </b-col>
-        <!-- <b-col cols="12">
-            <HighChartTest />
-        </b-col> -->
-        <!-- <b-col cols="12">
-            <TableChart />
-        </b-col>         -->
-        <!-- <b-col cols="12">
-            <GridNodes />
-        </b-col> -->
-
-
-      <!-- --------------------------------------------------------- 
-      Sales Summary
-      --------------------------------------------------------- -->
-      <!-- <b-col cols="12">
-        <b-card class="mb-4" no-body>
-          <RevenueStatistics />
-        </b-card>
-      </b-col>      -->
-    </b-row>
+    </b-row>    
+  </div>  
+  
   </template>
   <script>
   // -----------------------------------------
@@ -55,6 +53,8 @@
   import PowerFlow from '../dashboard-components/echarts/PowerFlow.vue';
 
 import BatteryChart from "../dashboard-components/echarts/BatteryChart.vue";
+import BatteryGauge from "../dashboard-components/echarts/BatteryGauge.vue";
+import DigiClock from "../dashboard-components/echarts/DigiClock.vue";
 
   //import HighChartTest from '../dashboard-components/echarts/HighChartTest.vue';
 
@@ -104,7 +104,9 @@ import BatteryChart from "../dashboard-components/echarts/BatteryChart.vue";
     //GridNodes,
     StateOfCharge,
     PowerFlow,
-    BatteryChart
+    BatteryChart,
+    BatteryGauge,
+    DigiClock
     //LineChart
     
 },
@@ -122,3 +124,15 @@ import BatteryChart from "../dashboard-components/echarts/BatteryChart.vue";
     },
     };
   </script>
+
+<style scoped>
+.battery-container {
+  display: flex;
+  justify-content: space-between; /* Align items next to each other */
+  max-height: 220px;
+}
+.battery-chart{
+  max-width: 120px;
+
+}
+</style>

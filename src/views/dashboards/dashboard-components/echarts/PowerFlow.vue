@@ -118,11 +118,21 @@
                     });
                     // Append cumulative SoC value at the end of the tooltip
                     // Add the total cumulative SoC to the tooltip content at the end
-                    tooltipContent += `
-                    <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
-                        <strong>Total ${sumValue}  </strong> at <strong>Time: </strong> <span style="color: white;">${localTime}</span>
-                    </div>`;
-                    tooltipContent += `</div>`;
+
+                    let footer = ''
+                    if(sumValue){
+                      footer = `
+                      <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
+                          <strong>Total ${sumValue}  </strong> at <strong>Time: </strong> <span style="color: white;">${localTime}</span>
+                      </div>`;
+                    }else{
+                      footer = `
+                      <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
+                          <strong>Time: </strong> <span style="color: white;">${localTime}</span>
+                      </div>`;
+                    }
+                    tooltipContent += footer
+
                     return tooltipContent;
                     }
                     return ''; // Return an empty string if there's no data to show
@@ -181,7 +191,7 @@
                     return '#ff5c5c'                    
                   }
                   else{
-                    return '#bf9d36'
+                    return '#009BCB'
                   }                  
                 }
               },
@@ -202,7 +212,7 @@
                     return 'red'                    
                   }
                   else{
-                    return '#0c7a9d'
+                    return '#FFBC34'
                   }                  
                 }
               },
@@ -248,6 +258,7 @@
               name: "Batt1 Day Ahead",
               type: 'bar', 
               stack:'three',
+
               itemStyle: {
                 color: function(params) {
                   let value = params.value[1]
@@ -256,13 +267,10 @@
                     return '#ff5c5c'                    
                   }
                   else{
-                    return 'blue'
+                    return '#009BCB'
                   }                  
                 },
-                shadowBlur: 20,
-                shadowColor: 'rgba(0, 0, 0, 0.5)',
-                shadowOffsetX: 3,
-                shadowOffsetY: 3,
+
               },  
 
               data: [], // Initialize with empty data
@@ -280,7 +288,7 @@
                     return 'red'                    
                   }
                   else{
-                    return 'orange'
+                    return '#FFBC34'
                   }                  
                 }
               },     
@@ -430,11 +438,8 @@
   
            async fetchData() { 
 
-                let updateCurrentPath = this.lastRouteSegment()        
-
-                if(updateCurrentPath == 'entra')
-                {
-                  this.option.series[0].data = [];
+                let updateCurrentPath = this.lastRouteSegment()  
+                this.option.series[0].data = [];
                   this.option.series[1].data = [];
                   this.option.series[2].data = [];
                   this.option.series[3].data = [];
@@ -442,7 +447,11 @@
                   this.option.series[5].data = [];
                   this.option.series[6].data = [];
                   this.option.series[7].data = [];
-                  this.option.series[8].data = [];
+                  this.option.series[8].data = [];      
+
+                if(updateCurrentPath == 'entra')
+                {
+
                   
                   let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`;
                   let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam`;
@@ -556,31 +565,65 @@
                     }
 
                 }
-                if(updateCurrentPath == 'client')
-                {
-                    this.option.series[0].data = []
-                    this.option.series[1].data = []
+                if(updateCurrentPath == 'client'){
+                  
                     this.option.series[0].stack = ''
                     this.option.series[1].stack = ''
-                    if (this.dateRange == "today" || this.dateRange == "month" || this.dateRange == "year"){
+                    if (this.dateRange == "today" || this.dateRange == "dam"){
 
-                      let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`
-                      
-                      if(url){          
-                          axios
-                          .get(url)
-                          .then((response) => response.data.forEach(el => {           
-                              let date = new Date(el.timestamp);
-                              // Convert UTC time to local time if needed
-                              date = new Date(date.getTime() - (3 * 60 * 60 * 1000)); // Adjust for UTC+3              
-                              this.option.series[0].data.push([date.toISOString(), el.flow_last_min]) 
-                              this.setAxisTimeRange()
-                          })        
-                          )      
-                          .catch((error) => console.log(error))      
-                      }
-                    }
-                }          
+                      let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`;
+                      let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam&devId=${this.selectedDev}`;
+                      try {          
+                          const [response, scheduleResponse] = await Promise.all([
+                          axios.get(url, {
+                              headers: {
+                                  'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                              }
+                          }),
+
+                          axios.get(url_schedule, {
+                              headers: {
+                                  'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                              }
+                          }),      
+            
+                      ]);
+                  this.processData(response.data); 
+                  this.processSchedule(scheduleResponse.data); 
+                  this.option.series[4].stack = 'none'  
+                  // this.option.series[4].itemStyle.color = function(params) {
+                  //                                   let value = params.value[1]
+                  //                                   if(value < 0)
+                  //                                   {
+                  //                                     return '#ff5c5c'                    
+                  //                                   }
+                  //                                   else{
+                  //                                     return '#bf9d36'
+                  //                                   }                  
+                  //                                 }
+                                                           
+                  
+                  // this.option.series[0].lineStyle.width = 1
+                  // this.option.series[0].areaStyle = {}
+                  // this.option.series[0].lineStyle.color
+                  // this.option.series[1].lineStyle.width = 1
+                  // this.option.series[1].areaStyle = {}
+                  // this.option.series[2].lineStyle.width = 1
+                  // this.option.series[2].lineStyle.type = 'dashed'
+                  // this.option.series[2].areaStyle = {'opacity':0.25}
+                  // this.option.series[3].lineStyle.width = 1
+                  // this.option.series[3].lineStyle.type = 'dashed'
+                  // this.option.series[3].areaStyle = {'opacity':0.25}               
+
+              
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                } finally {
+                    this.loading = false;
+                }
+
+              }
+            }          
     
             },
             
@@ -637,7 +680,8 @@
 
           },
 
-          processScheduleData(scheduleData) {
+          processSchedule(scheduleData) {
+            
             let currentDate = new Date();
             scheduleData.forEach(el => {
                               
@@ -645,7 +689,7 @@
                       // Convert UTC time to local time if needed
                       date = new Date(date.getTime() - (3 * 60 * 60 * 1000)); // Adjust for UTC+3
                       
-                      if (el.devId === "batt1") {                         
+                      if (el.devId === "batt-0001") {                         
                           if(date <= currentDate){
                             this.option.series[7].data.push([date.toISOString(), el.flow]);
                           } 
@@ -654,7 +698,7 @@
                           }
                                             
                       }              
-                      if (el.devId === "batt2") {    
+                      if (el.devId === "batt-0002") {    
                         
                         if(date <= currentDate){
                           this.option.series[8].data.push([date.toISOString(), el.flow]);

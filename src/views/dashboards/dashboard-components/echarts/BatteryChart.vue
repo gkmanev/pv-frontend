@@ -1,33 +1,50 @@
 <template>
     <div>
       <b-row>
-        <b-col cols="4" md="4">
-          <b-card class="mb-4">
-            <div class="modern-battery-indicator">
-              <div class="glossy-overlay"></div>
-              <div class="modern-battery-level" :style="{ width: batteryLevel + '%' }">
-                <div class="battery-percentage-text">{{ batteryLevel }}%</div>
-                <div class="pulse"></div>
+        <b-col cols="12" md="12">
+          <!-- <b-card class="mb-4 battery-card"> -->
+            <div class="modern-battery-indicator-vertical mt-4">
+                <div class="pulse-vertical" :style="{ backgroundColor: pulseColor }"></div>
+              <div class="modern-battery-terminal-vertical"></div> <!-- Terminal on top -->
+              <div class="glossy-overlay-vertical"></div>
+              <div class="modern-battery-level-vertical" :style="{ height: batteryLevel + '%' }">
+                <div class="battery-percentage-text-vertical">{{ batteryLevel }}%</div>
+                
               </div>
-              <div class="modern-battery-terminal"></div>
             </div>
-          </b-card>
+          <!-- </b-card> -->
         </b-col>
       </b-row>
     </div>
   </template>
   
   <script>
-  import { mapState } from "vuex";
+  import axios from "axios";
+import { mapState } from "vuex";
+
   export default {
-    name: "ModernBatteryChart",
+    name: "BatteryChart",
     data() {
       return {
         batteryLevel: 85, // Example charge level
+        charging: true,
       };
+    },
+    mounted (){
+        this.fetchData()
     },
     computed: {
       ...mapState(["dateRange", "selectedDev"]),
+
+      pulseColor() {
+     
+      if (this.charging == true) {
+        return '#00ff85';     
+      }
+      else {
+        return '#ff0000'; 
+      }
+    },
     },
     watch: {
       dateRange(newRange, oldRange) {
@@ -37,99 +54,131 @@
       },
     },
     methods: {
-      fetchData() {
-        // let url = `http://85.14.6.37:16455/api/missing/?date_range=${this.dateRange}&devId=${this.selectedDev}`;
-  
-        // if (url) {
-        //   axios
-        //     .get(url)
-        //     .then((response) => {
-        //       this.batteryLevel = 100 - response.data.missing;
-        //     })
-        //     .catch((error) => console.log(error));
-        // }
-      },
+        lastRouteSegment() {
+            const pathArray = this.$route.path.split('/');    
+            return pathArray.pop() || pathArray[pathArray.length - 1]; // This handles non-trailing slash URLs
+        },
+      async fetchData() {
+        let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`;
+        //let updateCurrentPath = this.lastRouteSegment()
+        if (this.dateRange === "today") {
+            const response = await axios.get(
+                url, {
+                        headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                      })
+            const batt1Data = response.data.filter(obj => obj.devId === 'batt-0001');
+            const batt2Data = response.data.filter(obj => obj.devId === 'batt-0002');
+            const lastValueBatt1 = batt1Data[batt1Data.length - 1].state_of_charge; // Last entry for batt-0001
+            const lastValueBatt2 = batt2Data[batt2Data.length - 1].state_of_charge; // Last entry for batt-0002
+            let momentSoCSum = lastValueBatt1 + lastValueBatt2;
+            let batterySoC = (momentSoCSum/200)*100
+            batterySoC = batterySoC.toFixed(1)
+            this.batteryLevel = batterySoC
+            const invertorBatt1 = batt1Data[batt1Data.length - 1].invertor_power;
+            const invertorBatt2 = batt2Data[batt2Data.length - 1].invertor_power;
+            
+            if ((invertorBatt1 - invertorBatt2 || invertorBatt2 - invertorBatt1) > 0)
+            {
+                this.charging = true
+            } 
+            else{
+                this.charging = false
+            }
+            
+        }
     },
-  };
+  }
+}
   </script>
   
   <style scoped>
-  .modern-battery-indicator {
-    width: 150px; /* 50% of the original width */
-    height: 60px; /* 50% of the original height */
-    background: linear-gradient(135deg, #1e1e1e, #3e3e3e); /* Dark metallic gradient */
-    border: 2px solid #111; /* Reduced border size */
-    border-radius: 7.5px; /* Scaled down border-radius */
+  .modern-battery-indicator-vertical {
+    width: 60px;
+    height: 150px;
+    background: linear-gradient(135deg, #1e1e1e, #3e3e3e);
+    border: 2px solid #111;
+    border-radius: 7.5px;
     position: relative;
     display: inline-block;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.6), inset 0 1px 4px rgba(255, 255, 255, 0.1);
     overflow: hidden;
   }
   
-  .modern-battery-level {
-    height: 100%;
-    background: linear-gradient(to right, #00ff85, #1ed760); /* Neon green gradient */
-    border-radius: 7.5px 0 0 7.5px;
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4); /* Inner shadow for depth */
-    position: relative;
-    transition: width 0.4s ease;
+  .modern-battery-level-vertical {
+    width: 100%;
+    background: linear-gradient(to bottom, #7460ee, #9522ff);
+    border-radius: 7.5px 7.5px 0 0;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
+    position: absolute;
+    bottom: 0;
+    transition: height 0.4s ease;
   }
   
-  .battery-percentage-text {
+  .battery-percentage-text-vertical {
     position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
     font-size: 16px;
     font-weight: bold;
-    color: white; /* White text inside the green area */
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6); /* Shadow effect */
-    z-index: 2; /* Ensure the text stays above other elements */
+    color: white;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
+    z-index: 2;
   }
   
-  .glossy-overlay {
+  .glossy-overlay-vertical {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.1); /* Glossy overlay */
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 7.5px;
     z-index: 1;
     pointer-events: none;
   }
   
-  .pulse {
+  .pulse-vertical {
     position: absolute;
-    right: 0;
-    top: 50%;
-    width: 7.5px; /* 50% of the original width */
-    height: 7.5px; /* 50% of the original height */
+    top: 2px;
+    left: 50%;
+    width: 7.5px;
+    height: 7.5px;
     background: #00ff85;
     border-radius: 50%;
-    box-shadow: 0 0 10px 5px rgba(0, 255, 133, 0.6); /* Reduced neon pulse effect */
-    transform: translateY(-50%);
+    box-shadow: 0 0 10px 5px rgba(0, 255, 133, 0.6);
+    transform: translateX(-50%);
     animation: pulse 1.5s infinite ease-in-out;
+    z-index: 1;
   }
   
   @keyframes pulse {
-    0% { box-shadow: 0 0 5px 2.5px rgba(0, 255, 133, 0.6); }
-    50% { box-shadow: 0 0 10px 5px rgba(0, 255, 133, 0.9); }
-    100% { box-shadow: 0 0 5px 2.5px rgba(0, 255, 133, 0.6); }
+    0% {
+      box-shadow: 0 0 5px 2.5px rgba(0, 255, 133, 0.6);
+    }
+    50% {
+      box-shadow: 0 0 10px 5px rgba(0, 255, 133, 0.9);
+    }
+    100% {
+      box-shadow: 0 0 5px 2.5px rgba(0, 255, 133, 0.6);
+    }
   }
   
-  .modern-battery-terminal {
+  .modern-battery-terminal-vertical {
     position: absolute;
-    right: -10px; /* Adjusted for smaller size */
-    top: 12.5px; /* Adjusted for smaller size */
-    width: 15px; /* Slightly narrower terminal */
-    height: 30px; /* Slightly shorter terminal */
-    background: #666; /* Light gray color */
-    border-radius: 4px; /* Rounded corners */
-    border: 2px solid #444; /* Dark border */
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5); /* Deeper shadow for dimension */
+    top: -9px;
+    left: 9.5px;
+    width: 36px;
+    height: 15px;
+    background: #5b5b5b;
+    border-radius: 7.5px;
+    border: 2px solid #e5e5e5;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+    
   }
-  
+
 
   </style>
   

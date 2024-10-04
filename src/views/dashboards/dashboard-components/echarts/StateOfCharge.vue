@@ -144,10 +144,19 @@
                     });
                     // Append cumulative SoC value at the end of the tooltip
                     // Add the total cumulative SoC to the tooltip content at the end
-                    tooltipContent += `
-                    <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
-                        <strong>Total ${sumValue}  </strong> at: <strong></strong> <span style="color: white;">${localTime}</span>
-                    </div>`;
+                    let footer = ''
+                    if(sumValue){
+                      footer = `
+                      <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
+                          <strong>Total ${sumValue}  </strong> at <strong>Time: </strong> <span style="color: white;">${localTime}</span>
+                      </div>`;
+                    }else{
+                      footer = `
+                      <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
+                          <strong>Time: </strong> <span style="color: white;">${localTime}</span>
+                      </div>`;
+                    }
+                    tooltipContent += footer
                     tooltipContent += `</div>`;
                     return tooltipContent;
                     }
@@ -520,8 +529,8 @@
                       
                   ]);
                   this.processData(response.data);
-                  this.processCumulative(cumulativeResponse.data);
-                  this.processScheduleData(scheduleResponse.data);
+                  this.processSchedule(scheduleResponse.data);
+                  this.processCumulative(cumulativeResponse.data);                  
                   this.processCumulativeDam(cumulativeDamResponse.data);
                   
 
@@ -593,7 +602,7 @@
                       })
                   ]);
                   this.processData(response.data);
-                  this.processScheduleData(scheduleResponse.data);
+                  this.processSchedule(scheduleResponse.data);                  
                   this.processCumulative(cumulativeResponse.data);
                   this.processCumulativeDam(cumulativeDamResponse.data)
                    
@@ -608,7 +617,7 @@
       let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam&devId=${this.selectedDev}`;
       let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`;
       try {
-              if (this.dateRange === "today") {               
+              if (this.dateRange === "today" || this.dateRange === 'dam') {               
                   const [response, scheduleResponse] = await Promise.all([
                       axios.get(url, {
                           headers: {
@@ -622,9 +631,20 @@
                           }
                       }),                      
                   ]);
-                  this.processData(response.data);                  
-                  this.processScheduleData(scheduleResponse.data);                  
+                  this.processData(response.data); 
+                  this.processSchedule(scheduleResponse.data);
+                  this.option.series[0].lineStyle.width = 1
+                  this.option.series[1].lineStyle.width = 1
+                  this.option.series[2].lineStyle.width = 1
+                  this.option.series[2].lineStyle.type = 'dashed'
+                  this.option.series[3].lineStyle.width = 1
+                  this.option.series[3].lineStyle.type = 'dashed'
                 }
+
+              // if (this.dateRange === "dam") {  
+
+              // }
+              
       } catch (error) {
           console.error('Error fetching data:', error);
       } finally {
@@ -635,22 +655,44 @@
   
     //Today, Month, Year
     processData(data) {
-        
-        
-        data.forEach(el => {
-            let date = new Date(el.timestamp);
-            // Convert UTC time to local time (UTC+3 adjustment)  
-            date = new Date(date.getTime() - (3 * 60 * 60 * 1000));           
-              if (el.devId === "batt-0001") {
-                  this.option.series[0].data.push([date.toISOString(), el.state_of_charge]);
-              }
-              if (el.devId === "batt-0002") {
-                  this.option.series[1].data.push([date.toISOString(), el.state_of_charge]);
-              }
-            
-      
-        });
+        if(data){
+          let devIdToSeriesIndex = {};
+          this.all_devs.forEach((dev, index) => {
+              devIdToSeriesIndex[dev.id] = index;
+          });       
+          
+          data.forEach(el => {
+              let date = new Date(el.timestamp);
+              // Convert UTC time to local time (UTC+3 adjustment)  
+              date = new Date(date.getTime() - (3 * 60 * 60 * 1000));           
+              let seriesIndex = devIdToSeriesIndex[el.devId];
+              if (seriesIndex !== undefined) {
+                this.option.series[seriesIndex].data.push([date.toISOString(), el.state_of_charge]);                
+              }            
+          }); 
+        }       
+
         this.setAxisTimeRange();
+    },
+
+    processSchedule(schedule){
+      if(schedule){          
+          let currentDate = new Date();
+          schedule.forEach(elSched =>{
+            let date = new Date(elSched.timestamp);                         
+                date = new Date(date.getTime() - (3 * 60 * 60 * 1000));               
+                if (elSched.devId === "batt-0001") {  
+                    if (date >= currentDate){
+                      this.option.series[2].data.push([date.toISOString(), elSched.soc]);                      
+                    }                                  
+                }                 
+                if (elSched.devId === "batt-0002") {
+                  if (date >= currentDate){
+                      this.option.series[3].data.push([date.toISOString(), elSched.soc]); 
+                    }                 
+               }
+          })
+        }
     },
 
     processCumulative(stackData){         
@@ -684,39 +726,6 @@
       }
     },
 
-    processScheduleData(scheduleData) {  
-        
-      let currentDate = new Date();
-      scheduleData.forEach(el => {
-                let date = new Date(el.timestamp);                         
-                date = new Date(date.getTime() - (3 * 60 * 60 * 1000));
-               
-                if (el.devId === "batt-0001") {  
-                    if (date >= currentDate){
-                      this.option.series[2].data.push([date.toISOString(), el.soc]); 
-                      //this.option.series[5].data.push([date.toISOString(), el.soc]); 
-                    }
-                    // else{
-                    //   this.option.series[2].data.push([date.toISOString(), el.soc]); 
-                    // }                                 
-                }         
-                  
-                if (el.devId === "batt-0002") {
-                  if (date >= currentDate){
-                      this.option.series[3].data.push([date.toISOString(), el.soc]); 
-                    }
-                    // else{
-                    //   this.option.series[3].data.push([date.toISOString(), el.soc]); 
-                    // }
-                   
-               }
-       
-              this.setAxisTimeRange()
-              
-      })
-      
-    
-  },    
 
   }
   

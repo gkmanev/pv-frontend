@@ -2,8 +2,8 @@
     <div>
       <b-row>
         <b-col cols="6" md="6">
-          <div class="chart-container">
-            <v-chart class="chart" :option="option" />
+          <div class="gauge-container">
+            <v-chart class="chart" width="100%" :option="option" />
           </div>
         </b-col>
       </b-row>
@@ -139,26 +139,37 @@
       }
     },
   
-    mounted() {
-      this.fetchData();
-    },
+    // mounted() {
+    //   this.fetchData();
+    // },
   
     computed: {
-      ...mapState(['dateRange'])
+      ...mapState(['dateRange','selectedDev'])
     },
     watch: {
       dateRange(newRange, oldRange) {
-        if (newRange !== oldRange) {
-          this.option.series[0].data = []
+        if (newRange !== oldRange) {         
           this.fetchData();
         }
-      }
+      },
+      selectedDev(newDev, oldDev) {
+        if (newDev !== oldDev) {         
+      
+          this.fetchData();
+        }
+      },  
     },
   
     methods: {
-      async fetchData() {
+    lastRouteSegment() {
+            const pathArray = this.$route.path.split('/');    
+            return pathArray.pop() || pathArray[pathArray.length - 1]; // This handles non-trailing slash URLs
+    },
+
+    async fetchData() {
+        if(this.lastRouteSegment() === 'entra'){
         let url_cumulative = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today&cumulative=true`
-        if (this.dateRange === "today") {
+        
           const response = await axios.get(url_cumulative, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
@@ -167,8 +178,24 @@
   
           let currentInvertorSum = response.data[response.data.length - 1].cumulative_invertor_power;          
           this.option.series[0].data[0].value = currentInvertorSum;
-          
         }
+        if(this.lastRouteSegment() === 'client'){
+
+            let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today&devId=${this.selectedDev}`
+            
+            const response = await axios.get(url, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`              
+            }               
+          });
+          let currentBatteryState = response.data[response.data.length - 1].invertor_power;
+          
+          this.option.series[0].value = currentBatteryState;
+          this.option.series[0].min = -25
+          this.option.series[0].max = 25
+          this.option.series[0].splitNumber = 2
+        }
+    
       },
     }
   };
@@ -178,5 +205,7 @@
   .chart {
     height: 300px;
   }
+
+  
   </style>
   

@@ -1,16 +1,15 @@
 <template>
     <div>
       <b-row>
-        <b-col cols="12" md="12">
+        <b-col cols="6" md="6">
           <!-- <b-card class="mb-4 battery-card"> -->
             <div class="modern-battery-indicator-vertical mt-4">
                 <div class="pulse-vertical" :style="{ backgroundColor: pulseColor }"></div>
               <div class="modern-battery-terminal-vertical"></div> <!-- Terminal on top -->
               <div class="glossy-overlay-vertical"></div>
-              <div class="modern-battery-level-vertical" :style="{ height: batteryLevel + '%' }">
-                <div class="battery-percentage-text-vertical">{{ batteryLevel }}%</div>
-                
+              <div class="modern-battery-level-vertical" :style="{ height: batteryLevel + '%' }">                
               </div>
+              <div class="battery-percentage-text-vertical">{{ batteryLevel }}%</div>
             </div>
           <!-- </b-card> -->
         </b-col>
@@ -52,6 +51,12 @@ import { mapState } from "vuex";
           this.fetchData();
         }
       },
+      selectedDev(newDev, oldDev) {
+        if (newDev !== oldDev) {         
+      
+          this.fetchData();
+        }
+      },  
     },
     methods: {
         lastRouteSegment() {
@@ -62,6 +67,7 @@ import { mapState } from "vuex";
         let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`;
         //let updateCurrentPath = this.lastRouteSegment()
         if (this.dateRange === "today") {
+            if(this.lastRouteSegment() === 'entra'){
             const response = await axios.get(
                 url, {
                         headers: {
@@ -85,9 +91,30 @@ import { mapState } from "vuex";
             } 
             else{
                 this.charging = false
+            }            
+        }
+        if (this.lastRouteSegment() === 'client'){
+            let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`;
+            const response = await axios.get(
+                url, {
+                        headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                      })
+            const lastValue = response.data[response.data.length - 1].state_of_charge;
+            let batterySoC = lastValue.toFixed(1)
+            this.batteryLevel = batterySoC
+            const invertorBatt = response.data[response.data.length - 1].invertor_power;
+            if(invertorBatt >= 0){
+                this.charging = true
+            }
+            else{
+                this.charging = false
             }
             
+
         }
+    }
     },
   }
 }

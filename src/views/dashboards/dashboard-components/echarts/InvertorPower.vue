@@ -252,7 +252,7 @@
                 width:0,
                 type: 'dashed'
               },
-              itemStyle: {
+               itemStyle: {
                   color: '#FFBC34'
               },
               sampling: 'average',
@@ -264,48 +264,88 @@
     },
     {
               name: "SUM",
-              smooth: true,             
-              lineStyle:{
-                width:2, 
-                color:"yellow"
-                
-              },
+              type: 'bar', // Changed from 'line' to 'bar'
               itemStyle: {
-                opacity:0,               
+                color: function(params) {
+                  let value = params.value[1]
+                  if(value < 0)
+                  {
+                    return '#b61434'                    
+                  }
+                  else{
+                    return '#349743'
+                  }                  
+                }
               },
-              sampling: 'average',
-              data: [],
-              areaStyle:{
-                color: '#20C997'
-              },
-              type: 'line',
+              showSymbol: false,     
               
-              showSymbol: false,   
+              data: [], // Initialize with empty data
+              barWidth: '100%', // Customize bar width (optional)
+            },
+    // {
+    //           name: "SUM",
+    //           smooth: true,             
+    //           lineStyle:{
+    //             width:2, 
+    //             color:"yellow"
+                
+    //           },
+    //           itemStyle: {
+    //             opacity:0,               
+    //           },
+    //           sampling: 'average',
+    //           data: [],
+    //           areaStyle:{
+    //             color: '#20C997'
+    //           },
+    //           type: 'bar',
+              
+    //           showSymbol: false,   
                           
                         
-    },
+    // },
+    // {
+    //           name: "SUM Day Ahead",
+    //           smooth: true,             
+    //           lineStyle:{
+    //             width:2,
+    //             type: 'dashed'               
+    //           },
+    //           itemStyle: {
+    //               color: 'yellow'
+    //           },
+    //           sampling: 'average',
+    //           data: [],
+    //           type: 'line',
+    //           areaStyle:{
+    //              color:'#20C997',
+    //              opacity:'0.3'
+                
+    //           },
+              
+    //           showSymbol: false,                         
+                        
+    // },
     {
               name: "SUM Day Ahead",
-              smooth: true,             
-              lineStyle:{
-                width:2,
-                type: 'dashed'               
-              },
+              type: 'bar', // Changed from 'line' to 'bar'
               itemStyle: {
-                  color: 'yellow'
+                color: function(params) {
+                  let value = params.value[1]
+                  if(value < 0)
+                  {
+                    return '#b61434'                    
+                  }
+                  else{
+                    return '#349743'
+                  }                  
+                }
               },
-              sampling: 'average',
-              data: [],
-              type: 'line',
-              areaStyle:{
-                 color:'#20C997',
-                 opacity:'0.3'
-                
-              },
+              showSymbol: false,        
               
-              showSymbol: false,                         
-                        
-    },
+              data: [], // Initialize with empty data
+              barWidth: '100%', // Customize bar width (optional)
+      },
 
     {
               name: "Stacked Before",
@@ -319,7 +359,40 @@
               type: 'line',
               showSymbol: false,            
               
-    },  
+    }, 
+    {
+              name: "SUM",
+              smooth: false,         
+              step: 'start',                  
+              lineStyle:{
+                width:2,               
+              },
+              itemStyle: {
+                  color: 'yellow'
+              },
+              sampling: 'average',
+              data: [],
+              type: 'line',
+              
+              showSymbol: false,                              
+    },
+    {
+              name: "SUM",
+              smooth: false,         
+              step: 'start',                  
+              lineStyle:{
+                width:2, 
+                type: 'dashed'              
+              },
+              itemStyle: {
+                  color: 'yellow'
+              },
+              sampling: 'average',
+              data: [],
+              type: 'line',
+              
+              showSymbol: false,                              
+    },
 
 
     ]
@@ -423,6 +496,7 @@
             let end = new Date(today);   // Initialized with today's date
 
             if (this.dateRange === 'today') {
+             
                 end.setHours(23, 59, 59); // Set end time to the end of the day                
                 this.option.xAxis.splitNumber = 24; // 24 hours in a day
 
@@ -474,9 +548,12 @@
         this.option.series[4].data = [];
         this.option.series[5].data = [];
         this.option.series[6].data = [];
+        this.option.series[7].data = [];
+        this.option.series[8].data = [];
         if(updateCurrentPath == 'entra') {     
           try {
-              if (this.dateRange === "today") {                  
+              if (this.dateRange === "today") { 
+                                
                 
                   const [response, cumulativeResponse, cumulativeDamResponse, scheduleResponse] = await Promise.all([
                       axios.get(url, {
@@ -500,10 +577,12 @@
                           }
                       }),
                   ]);
+                  
                   this.processData(response.data);                  
                   this.processCumulative(cumulativeResponse.data)
                   this.processCumulativeDam(cumulativeDamResponse.data)
                   this.processSchedule(scheduleResponse.data)
+                  this.setAxisTimeRange();
                
 
               }
@@ -579,7 +658,7 @@
                   this.processCumulative(cumulativeResponse.data)
                   this.processCumulativeDam(cumulativeDamResponse.data)
                   this.processSchedule(scheduleResponse.data)
-
+                  this.setAxisTimeRange();
               }
           } catch (error) {
               console.error('Error fetching data:', error);
@@ -594,11 +673,12 @@
         {
           
           let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`;
-          let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam&devId=${this.selectedDev}`;
+          let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam&devId=${this.selectedDev}`;         
           
 
           try {
-              if (this.dateRange === "today" || this.dateRange === 'dam') {               
+              if (this.dateRange === "today" || this.dateRange === "dam") {    
+                  url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today&devId=${this.selectedDev}`;           
                   const [response, scheduleResponse] = await Promise.all([
                       axios.get(url, {
                           headers: {
@@ -610,28 +690,17 @@
                           headers: {
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                           }
-                      }),      
-        
+                      }),            
                   ]);
+             
                   this.processData(response.data); 
-                  this.processSchedule(scheduleResponse.data);                
-                  
-                  this.option.series[0].lineStyle.width = 1
-                  this.option.series[0].areaStyle = {}
-                  this.option.series[0].lineStyle.color
-                  this.option.series[1].lineStyle.width = 1
-                  this.option.series[1].areaStyle = {}
-                  this.option.series[2].lineStyle.width = 1
-                  this.option.series[2].lineStyle.type = 'dashed'
-                  this.option.series[2].areaStyle = {'opacity':0.25}
-                  this.option.series[3].lineStyle.width = 1
-                  this.option.series[3].lineStyle.type = 'dashed'
-                  this.option.series[3].areaStyle = {'opacity':0.25}
+                  this.processSchedule(scheduleResponse.data);
+                  this.setAxisTimeRange();
+                  console.log(this.option.series)
+
                 }
 
-              // if (this.dateRange === "dam") {  
-
-              // }
+  
               
       } catch (error) {
           console.error('Error fetching data:', error);
@@ -641,58 +710,51 @@
         }   
         },
             //Today, Month, Year
-          processData(data) {           
-            if(data){
-              let devIdToSeriesIndex = {};
-              this.all_devs.forEach((dev, index) => {
-                  devIdToSeriesIndex[dev.id] = index;
-              });       
-              
-              data.forEach(el => {               
+            processData(data) {               
+  
+              data.forEach(el => {
                   let date = new Date(el.timestamp);
-                  // Convert UTC time to local time (UTC+3 adjustment)  
-                  date = new Date(date.getTime() - (3 * 60 * 60 * 1000));           
-                  let seriesIndex = devIdToSeriesIndex[el.devId];
-                  if (seriesIndex !== undefined) {
-                    this.option.series[seriesIndex].data.push([date.toISOString(), el.invertor_power]);                
-                  }            
+                  // Convert UTC time to local time (UTC+3 adjustment)
+                  date = new Date(date.getTime() - (3 * 60 * 60 * 1000));
+                  
+                  if (el.devId === "batt-0001") {
+                      this.option.series[0].data.push([date.toISOString(), el.invertor_power]);
+                  }
+                  if (el.devId === "batt-0002") {
+                      this.option.series[1].data.push([date.toISOString(), el.invertor_power]);
+                  }
+                  
+                  if(this.lastRouteSegment() === 'client'){
+                  this.option.series[4].data.push([date.toISOString(), el.invertor_power]);  
+                  this.option.series[7].data.push([date.toISOString(), el.invertor_power]);
+                  }
+                  
               }); 
-        }       
-
-        this.setAxisTimeRange();         
+                         
+              
           },
 
           processCumulative(stackData){  
-            
+
 
             if (stackData){ 
-              let aggregated = []
-              if(this.dateRange == 'month' || this.dateRange == 'year')
+
+              if(this.lastRouteSegment() === 'entra')
               {
-                aggregated = this.aggregateData(stackData)
-                aggregated.forEach(el => {
+              stackData.forEach(el => {
                     let date = new Date(el.timestamp);
                     // Convert UTC time to local time (UTC+3 adjustment)
                     date = new Date(date.getTime() - (3 * 60 * 60 * 1000));          
-                        this.option.series[4].data.push([date.toISOString(), el.invertor_power]);
+                    this.option.series[4].data.push([date.toISOString(), el.cumulative_invertor_power]);                    
+                    this.option.series[7].data.push([date.toISOString(), el.cumulative_invertor_power]);
                   
-                });
-              }
-              else{
-                aggregated = stackData
-              }
+                });    
+              }    
+   
 
-              aggregated.forEach(el => {
-                    let date = new Date(el.timestamp);
-                    // Convert UTC time to local time (UTC+3 adjustment)
-                    date = new Date(date.getTime() - (3 * 60 * 60 * 1000));          
-                        this.option.series[4].data.push([date.toISOString(), el.cumulative_invertor_power]);
-                  
-                });
-                
-
-            }
-            this.setAxisTimeRange()
+            
+          }
+          
           },
 
           processCumulativeDam(cumlativeDam){
@@ -704,6 +766,7 @@
                 date = new Date(date.getTime() - (3 * 60 * 60 * 1000));
                 if(date >= currentDate){
                   this.option.series[5].data.push([date.toISOString(), el.cumulative_invertor_power]);
+                  this.option.series[8].data.push([date.toISOString(), el.cumulative_invertor_power]);
                 }
                 // else{
                 //   this.option.series[5].data.push([date.toISOString(), el.cumulative_invertor_power]);
@@ -711,7 +774,7 @@
                 
                   
                 });
-                this.setAxisTimeRange()
+               
             }
 
           },
@@ -735,7 +798,14 @@
                           this.option.series[3].data.push([date.toISOString(), el.invertor]);
                         }
                     }
-                  this.setAxisTimeRange()
+                    if(this.lastRouteSegment() === 'client'){                       
+                      this.option.series[5].data.push([date.toISOString(), el.invertor]); 
+                      if (date >= currentDate){
+                        this.option.series[8].data.push([date.toISOString(), el.invertor]); 
+                      }
+                         
+                    }        
+                  
             })
           
         },

@@ -497,7 +497,7 @@
       this.option.series[7].data = [];
       this.option.series[8].data = [];
       if(updateCurrentPath == 'entra') { 
-
+          
                     
           let url_cumulative = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&cumulative=true`
           let url_cumulative_dam = `http://85.14.6.37:16543/api/schedule/?date_range=dam&cumulative=true`
@@ -528,6 +528,7 @@
                       }),
                       
                   ]);
+                  
                   this.processData(response.data);
                   this.processSchedule(scheduleResponse.data);
                   this.processCumulative(cumulativeResponse.data);                  

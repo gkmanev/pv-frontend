@@ -2,15 +2,19 @@
   <div>
     <b-card class="mb-4">
       <b-row class="justify-content-start"> 
-        <b-col cols="4">
-          <div class="battery-container d-flex justify-content-between"> <!-- Use d-flex to arrange items horizontally -->
-            <BatteryChart class="battery-chart" style="flex: 1;" />
-            <BatteryGauge class="battery-gauge" style="flex: 1;" />
+        <b-col cols="6">
+          <div class="widget-container d-flex"> <!-- Use d-flex to arrange items horizontally -->
+            <b-col cols="4" md="4">
+              <BatteryChart class="battery-chart ml-auto" style="flex: 1;" />
+            </b-col>
+            <b-col cols="8" md="8">
+              <BatteryGauge class="battery-gauge" style="flex: 1;" />
+            </b-col>
           </div>  
         </b-col> 
-        <b-col cols="4">
-        </b-col>
-        <b-col cols="4">
+        <!-- <b-col cols="4">
+        </b-col> -->
+        <b-col cols="6">
           <DigiClock />
         </b-col>
       </b-row>
@@ -126,7 +130,7 @@ import DigiClock from "../dashboard-components/echarts/DigiClock.vue";
   </script>
 
 <style scoped>
-.battery-container {
+.widget-container {
   display: flex;
   justify-content: space-between; /* Align items next to each other */
   max-height: 220px;

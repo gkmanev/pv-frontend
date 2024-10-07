@@ -23,7 +23,7 @@
   
   
   export default {
-    name: "digiClock",  
+    name: "DigiClock",  
     data() {
       return {
         time: '',
@@ -101,7 +101,8 @@ p{
 .chart-container {
   display: flex;
   flex-direction: column; /* Stack items vertically */
-  align-items: flex-end; /* Align items to the right */
+  align-items: flex-end; 
+  align-items: center;
 }
 
 

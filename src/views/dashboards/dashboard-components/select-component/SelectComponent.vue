@@ -53,3 +53,8 @@
   }
   </script>
   
+  <style scoped>
+  .custom-select {
+    max-width: 307px;
+}
+  </style>

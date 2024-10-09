@@ -580,42 +580,57 @@
                     }
 
                 }
-                if(updateCurrentPath == 'client'){                  
-
-                    if (this.dateRange === "today" || this.dateRange === 'dam'){
-
-                      let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today&devId=${this.selectedDev}`;
-                      let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam&devId=${this.selectedDev}`;
-                                     
-                      try {          
-                          const [response, scheduleResponse] = await Promise.all([
-                          axios.get(url, {
-                              headers: {
-                                  'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                              }
-                          }),
-
-                          axios.get(url_schedule, {
-                              headers: {
-                                  'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                              }
-                          }),      
-
-                      ]);
-                 
-                  this.processData(response.data); 
-                  this.processSchedule(scheduleResponse.data);           
-                  this.setAxisTimeRange();               
+                if(updateCurrentPath == 'client'){
+                  let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`;
+                  let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam&devId=${this.selectedDev}`;         
           
 
-              
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                } finally {
-                    this.loading = false;
-                }
+                  try {
+                    if (this.dateRange === "today" || this.dateRange === "dam") {    
+                        url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today&devId=${this.selectedDev}`;           
+                        const [response, scheduleResponse] = await Promise.all([
+                            axios.get(url, {
+                                headers: {
+                                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                                }
+                            }),
 
-              }
+                            axios.get(url_schedule, {
+                                headers: {
+                                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                                }
+                            }),            
+                        ]);
+                  
+                        this.processData(response.data); 
+                        this.processSchedule(scheduleResponse.data);
+                        this.setAxisTimeRange();
+                        
+
+                      }
+                    else if (this.dateRange === "month"){
+
+                      const [response] = await Promise.all([
+                            axios.get(url, {
+                                headers: {
+                                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                                }
+                            }),                     
+
+                        ]);                  
+                        this.processData(response.data);                    
+                        this.setAxisTimeRange()
+
+                } 
+
+  
+              
+      } catch (error) {
+          console.error('Error fetching data:', error);
+      } finally {
+          this.loading = false;
+      }   
+
             }          
     
             },
@@ -627,7 +642,7 @@
                     date = new Date(date.getTime() - (3 * 60 * 60 * 1000));
                     
                     if (el.devId === "batt-0001") {
-                        
+
                         this.option.series[0].data.push([date.toISOString(), el.flow_last_min]);
                     }
                     if (el.devId === "batt-0002") {

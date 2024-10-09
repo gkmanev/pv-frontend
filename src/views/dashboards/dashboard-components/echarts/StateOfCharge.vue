@@ -705,6 +705,22 @@
                   this.option.series[3].lineStyle.width = 1
                   this.option.series[3].lineStyle.type = 'dashed'
                 }
+                else if (this.dateRange === "month"){
+
+                  const [response] = await Promise.all([
+                        axios.get(url, {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                            }
+                        }),
+                        
+                       
+                    ]);
+                    this.processData(response.data);
+                    this.setAxisTimeRange()
+                   
+
+                  } 
 
               // if (this.dateRange === "dam") {  
 

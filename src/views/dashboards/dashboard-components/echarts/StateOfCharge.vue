@@ -290,7 +290,8 @@
               }
               
                         
-              },
+    },
+
     {
               name: "SUM",
               smooth: true,             
@@ -359,6 +360,66 @@
               lineStyle:{
                 width:0,   
                 type:'dashed'            
+              },
+              itemStyle: {
+                  color: 'yellow'
+              },
+              sampling: 'average',
+              data: [],
+              type: 'line',
+              
+              showSymbol: false,           
+                        
+    },
+
+    {
+              name: "Batt1 Day Ahead",
+              smooth: true,            
+              stack: 'Dam2',
+              lineStyle:{
+                width:0,
+                type: 'dashed'
+              },
+              itemStyle: {
+                  color: '#009BCB'
+              },              
+              sampling: 'average',
+              data: [],
+              type: 'line',
+              showSymbol: false,   
+              areaStyle: {opacity: 0.1},            
+             
+              
+    },
+    {
+              name: "Batt2 Day Ahead",
+              smooth: true,            
+              stack: 'Dam2',
+              lineStyle:{
+                width:0,
+                type: 'dashed'
+              },
+              itemStyle: {
+                  color: '#FFBC34'
+              },
+              sampling: "",
+              data: [],
+              type: 'line',
+              
+              showSymbol: false,   
+              areaStyle: {
+                opacity: 0.1
+              }
+              
+                        
+    },
+    {
+              name: "SUM Day Ahead",
+              smooth: true,             
+              lineStyle:{
+                width:2,  
+                type:"dashed",
+                opacity:0.3                             
               },
               itemStyle: {
                   color: 'yellow'
@@ -496,6 +557,9 @@
       this.option.series[6].data = [];
       this.option.series[7].data = [];
       this.option.series[8].data = [];
+      this.option.series[9].data = [];
+      this.option.series[10].data = [];
+      this.option.series[11].data = [];
       if(updateCurrentPath == 'entra') { 
           
                     
@@ -545,11 +609,11 @@
                           }
                       }),
                       
-                      // axios.get(url_cumulative, {
-                      //     headers: {
-                      //         'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                      //     }
-                      // })
+                      axios.get(url_cumulative, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      })
                   ]);
                   this.processData(response.data);
                   this.processCumulative(cumulativeResponse.data)
@@ -563,11 +627,11 @@
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                           }
                       }),
-                      // axios.get(url_cumulative, {
-                      //     headers: {
-                      //         'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                      //     }
-                      // })
+                      axios.get(url_cumulative, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      })
                   ]);
                   this.processData(response.data);
                   this.processCumulative(cumulativeResponse.data)
@@ -617,7 +681,7 @@
     if(updateCurrentPath == 'client') { 
       let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam&devId=${this.selectedDev}`;
       let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`;
-      try {
+      try {      
               if (this.dateRange === "today" || this.dateRange === 'dam') {               
                   const [response, scheduleResponse] = await Promise.all([
                       axios.get(url, {
@@ -679,18 +743,31 @@
     processSchedule(schedule){
       if(schedule){          
           let currentDate = new Date();
+          let tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1); // Move to tomorrow
+          tomorrow.setHours(1, 0, 0, 0); // Set the time to 01:00:00.000
+
           schedule.forEach(elSched =>{
+            
             let date = new Date(elSched.timestamp);                         
                 date = new Date(date.getTime() - (3 * 60 * 60 * 1000));               
                 if (elSched.devId === "batt-0001") {  
-                    if (date >= currentDate){
+                    if (date >= currentDate && date <= tomorrow){
                       this.option.series[2].data.push([date.toISOString(), elSched.soc]);                      
-                    }                                  
-                }                 
+                    }     
+                    else if(date >= tomorrow){
+                      this.option.series[9].data.push([date.toISOString(), elSched.soc]);  
+                    }                             
+                }       
+                        
                 if (elSched.devId === "batt-0002") {
-                  if (date >= currentDate){
+                  if (date >= currentDate && date <= tomorrow){
                       this.option.series[3].data.push([date.toISOString(), elSched.soc]); 
-                    }                 
+                    }   
+                  if( date >= tomorrow){
+                    
+                    this.option.series[10].data.push([date.toISOString(), elSched.soc]); 
+                  }              
                }
           })
         }
@@ -707,17 +784,24 @@
           });          
       }
     },
-    processCumulativeDam(stackData){    
-      let currentDate = new Date();     
+    processCumulativeDam(stackData){      
+      let currentDate = new Date();   
+      let tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1); // Move to tomorrow
+      tomorrow.setHours(1, 0, 0, 0); // Set the time to 01:00:00.000  
       if (stackData){         
         stackData.forEach(el => {
               let date = new Date(el.timestamp);
               // Convert UTC time to local time (UTC+3 adjustment)
               date = new Date(date.getTime() - (3 * 60 * 60 * 1000));  
-              if (date >= currentDate){        
+              if (date >= currentDate && date <= tomorrow){        
                 this.option.series[7].data.push([date.toISOString(), el.cumulative_soc]);
               //this.option.series[8].data.push([date.toISOString(), el.cumulative_soc]);
               }
+              else if(date >= tomorrow){
+                this.option.series[11].data.push([date.toISOString(), el.cumulative_soc]);
+              }
+
               // else{
               //   this.option.series[7].data.push([date.toISOString(), el.cumulative_soc]);
               // }

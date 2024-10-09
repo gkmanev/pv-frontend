@@ -484,11 +484,12 @@
                                       'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                                   }
                               }),
-                          ]);                         
-                         this.processData(response.data);                  
-                         this.processCumulative(cumulativeResponse.data)
-                         this.processCumulativeDam(cumulativeDamResponse.data)
-                         this.processSchedule(responseSchedule.data)
+                          ]);          
+                                 
+                          this.processData(response.data);                  
+                          this.processCumulative(cumulativeResponse.data)
+                          this.processCumulativeDam(cumulativeDamResponse.data)
+                          this.processSchedule(responseSchedule.data)
                          this.setAxisTimeRange()
                          
 
@@ -509,6 +510,7 @@
                           ]);
                           this.processData(response.data);
                           this.processCumulative(cumulativeResponse.data)
+                          this.setAxisTimeRange()
 
                       } 
 
@@ -528,6 +530,7 @@
                           ]);
                           this.processData(response.data);
                           this.processCumulative(cumulativeResponse.data)
+                          this.setAxisTimeRange()
 
                       }             
               
@@ -561,7 +564,7 @@
                         this.processCumulative(responseCumulative.data);
                         this.processCumulativeDam(responseCumulativeDam.data);
                         this.processData(response.data);
-                        //console.log("From POwerFlow",responseCumulative,responseCumulativeDam, responseDam)
+                      
                         this.processSchedule(responseDam.data);
                         this.setAxisTimeRange()
                         
@@ -617,22 +620,42 @@
     
             },
             
-            processData(data) {             
-                
+            processData(data) {                
                 data.forEach(el => {
                     let date = new Date(el.timestamp);
                     // Convert UTC time to local time (UTC+3 adjustment)
                     date = new Date(date.getTime() - (3 * 60 * 60 * 1000));
                     
                     if (el.devId === "batt-0001") {
+                        
                         this.option.series[0].data.push([date.toISOString(), el.flow_last_min]);
                     }
                     if (el.devId === "batt-0002") {
                         this.option.series[1].data.push([date.toISOString(), el.flow_last_min]);
                     }
-                    this.option.series[2].data.push([date.toISOString(), el.flow_last_min]);
+                    if(this.lastRouteSegment() === 'client'){
+                      this.option.series[2].data.push([date.toISOString(), el.flow_last_min]);
+                      //change the colors
+                      
+                      let itemStyle = {
+                                          color: function(params) {
+                                          let value = params.value[1]
+                                          if(value < 0)
+                                          {
+                                            return '#b61434'                    
+                                          }
+                                          else{
+                                            return '#349743'
+                                          }                  
+                                          }
+                      }                     
+                      this.option.series[0].itemStyle = itemStyle
+                      this.option.series[1].itemStyle = itemStyle
+                    }
+                      
 
                 });
+               
 
           },
 
@@ -646,24 +669,20 @@
                   
                 });
             }
+          
             
           },
           
           processCumulativeDam(cumlativeDam){
             let currentDate = new Date();
             if (cumlativeDam){ 
-              cumlativeDam.forEach(el => {
-                
+              cumlativeDam.forEach(el => {                
                 let date = new Date(el.timestamp);
                 // Convert UTC time to local time (UTC+3 adjustment)
                 date = new Date(date.getTime() - (3 * 60 * 60 * 1000));          
                 if(date >= currentDate){
                   this.option.series[3].data.push([date.toISOString(), el.cumulative_flow_last_min]);
-                }
-                // else{
-                //   this.option.series[3].data.push([date.toISOString(), el.cumulative_flow_last_min]);
-                // }
-                
+                }      
                   
                 });
                
@@ -689,10 +708,27 @@
                                 if(date >= currentDate){
                                   this.option.series[5].data.push([date.toISOString(), el.flow]);
                                 }                                     
-                              }     
-                              if(date >= currentDate){
-                                this.option.series[3].data.push([date.toISOString(), el.flow]);    
-                              }    
+                              }  
+                              if(this.lastRouteSegment() === 'client'){   
+                                if(date >= currentDate){
+                                  this.option.series[3].data.push([date.toISOString(), el.flow]);    
+                                }    
+                                let itemStyle = {
+                                          color: function(params) {
+                                          let value = params.value[1]
+                                          if(value < 0)
+                                          {
+                                            return '#b61434'                    
+                                          }
+                                          else{
+                                            return '#349743'
+                                          }                  
+                                          }
+                                }  
+                                this.option.series[4].itemStyle = itemStyle
+                                this.option.series[5].itemStyle = itemStyle
+
+                              }
                     })
   
           },

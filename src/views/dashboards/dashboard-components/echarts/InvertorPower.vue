@@ -277,8 +277,7 @@
                   }                  
                 }
               },
-              showSymbol: false,     
-              
+              showSymbol: false,                  
               data: [], // Initialize with empty data
               barWidth: '100%', // Customize bar width (optional)
             },
@@ -599,9 +598,10 @@
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                           }
                       })
-                  ]);
+                  ]);                  
                   this.processData(response.data);                  
                   this.processCumulative(cumulativeResponse.data)
+                  this.setAxisTimeRange()
 
               } 
               else if (this.dateRange == 'year'){
@@ -618,8 +618,10 @@
                           }
                       })
                   ]);
+
                   this.processData(response.data);
                   this.processCumulative(cumulativeResponse.data)
+                  this.setAxisTimeRange()
 
 
               }             
@@ -696,7 +698,7 @@
                   this.processData(response.data); 
                   this.processSchedule(scheduleResponse.data);
                   this.setAxisTimeRange();
-                  console.log(this.option.series)
+                  
 
                 }
 

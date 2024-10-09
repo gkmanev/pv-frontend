@@ -139,9 +139,9 @@
       }
     },
   
-    // mounted() {
-    //   this.fetchData();
-    // },
+    mounted() {
+      this.fetchData();
+    },
   
     computed: {
       ...mapState(['dateRange','selectedDev'])
@@ -188,9 +188,10 @@
               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`              
             }               
           });
-          let currentBatteryState = response.data[response.data.length - 1].invertor_power;
+          let currentInvertor = response.data[response.data.length - 1].invertor_power;
           
-          this.option.series[0].value = currentBatteryState;
+          
+          this.option.series[0].data[0].value = currentInvertor;
           this.option.series[0].min = -25
           this.option.series[0].max = 25
           this.option.series[0].splitNumber = 2

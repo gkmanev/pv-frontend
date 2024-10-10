@@ -447,6 +447,18 @@
     },
   
     mounted() { 
+      this.option.series[0].data = [];
+      this.option.series[1].data = [];
+      this.option.series[2].data = [];
+      this.option.series[3].data = [];
+      this.option.series[4].data = [];
+      this.option.series[5].data = [];
+      this.option.series[6].data = [];
+      this.option.series[7].data = [];
+      this.option.series[8].data = [];
+      this.option.series[9].data = [];
+      this.option.series[10].data = [];
+      this.option.series[11].data = [];
         
         this.displayData();
 
@@ -467,7 +479,18 @@
       
       dateRange(newRange, oldRange) {
         if (newRange !== oldRange) {
-         // this.option.series[0].data = []
+          this.option.series[0].data = [];
+          this.option.series[1].data = [];
+          this.option.series[2].data = [];
+          this.option.series[3].data = [];
+          this.option.series[4].data = [];
+          this.option.series[5].data = [];
+          this.option.series[6].data = [];
+          this.option.series[7].data = [];
+          this.option.series[8].data = [];
+          this.option.series[9].data = [];
+          this.option.series[10].data = [];
+          this.option.series[11].data = [];
          
           this.displayData();
           
@@ -475,6 +498,18 @@
       },
       selectedDev(newDev, oldDev) {
         if (newDev !== oldDev) {
+          this.option.series[0].data = [];
+          this.option.series[1].data = [];
+          this.option.series[2].data = [];
+          this.option.series[3].data = [];
+          this.option.series[4].data = [];
+          this.option.series[5].data = [];
+          this.option.series[6].data = [];
+          this.option.series[7].data = [];
+          this.option.series[8].data = [];
+          this.option.series[9].data = [];
+          this.option.series[10].data = [];
+          this.option.series[11].data = [];
          // this.option.series[0].data = []
           const foundObject = this.all_devs.find(obj => obj.id === newDev);        
           this.lat = parseInt(foundObject.lat)        
@@ -518,6 +553,7 @@
                 this.option.xAxis.splitNumber = 24; // 24 hours in a day              
                 this.option.dataZoom[0].start = 0;
                 this.option.dataZoom[0].end = 100;
+                this.option.dataZoom[0].zoomLock = false;
 
             } 
             else if (this.dateRange === 'dam') {
@@ -528,6 +564,7 @@
               this.option.xAxis.splitNumber = 24; // 48 half-hour intervals in 24 hours
               this.option.dataZoom[0].start = 0;
               this.option.dataZoom[0].end = 100;
+              this.option.dataZoom[0].zoomLock = false;
 
             } else if (this.dateRange === 'month') {
                 start.setDate(1); // Start of the month
@@ -536,6 +573,7 @@
                 this.option.xAxis.splitNumber = 12;
                 this.option.dataZoom[0].start = 0;
                 this.option.dataZoom[0].end = 100;
+                this.option.dataZoom[0].zoomLock = false;
                
                 this.option.xAxis.splitNumber = end.getDate(); // Number of days in the month
             } else if (this.dateRange === 'year') {
@@ -571,18 +609,18 @@
       let updateCurrentPath = this.lastRouteSegment()
       let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam`;
       let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`;
-      this.option.series[0].data = [];
-      this.option.series[1].data = [];
-      this.option.series[2].data = [];
-      this.option.series[3].data = [];
-      this.option.series[4].data = [];
-      this.option.series[5].data = [];
-      this.option.series[6].data = [];
-      this.option.series[7].data = [];
-      this.option.series[8].data = [];
-      this.option.series[9].data = [];
-      this.option.series[10].data = [];
-      this.option.series[11].data = [];
+      // this.option.series[0].data = [];
+      // this.option.series[1].data = [];
+      // this.option.series[2].data = [];
+      // this.option.series[3].data = [];
+      // this.option.series[4].data = [];
+      // this.option.series[5].data = [];
+      // this.option.series[6].data = [];
+      // this.option.series[7].data = [];
+      // this.option.series[8].data = [];
+      // this.option.series[9].data = [];
+      // this.option.series[10].data = [];
+      // this.option.series[11].data = [];
       if(updateCurrentPath == 'entra') { 
           
                     
@@ -620,6 +658,7 @@
                   this.processSchedule(scheduleResponse.data);
                   this.processCumulative(cumulativeResponse.data);                  
                   this.processCumulativeDam(cumulativeDamResponse.data);
+                  this.setAxisTimeRange()
                   
 
               }
@@ -638,19 +677,23 @@
                           }
                       })
                   ]);
+                  this.option.series[4].lineStyle.width = 0
                   this.processData(response.data);
                   this.processCumulative(cumulativeResponse.data)
+                  this.setAxisTimeRange()
 
               } 
               else if (this.dateRange == 'year'){
+                let url_year = `http://85.14.6.37:16543/api/year-agg`;
+                let url_cumulative_year = `http://85.14.6.37:16543/api/year-sum`;
                 
                 const [response, cumulativeResponse] = await Promise.all([
-                      axios.get(url, {
+                      axios.get(url_year, {
                           headers: {
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                           }
                       }),
-                      axios.get(url_cumulative, {
+                      axios.get(url_cumulative_year, {
                           headers: {
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                           }
@@ -658,8 +701,7 @@
                   ]);
                   this.processData(response.data);
                   this.processCumulative(cumulativeResponse.data)
-
-
+                  this.setAxisTimeRange()
               }
               
               
@@ -693,6 +735,7 @@
                   this.processSchedule(scheduleResponse.data);                  
                   this.processCumulative(cumulativeResponse.data);
                   this.processCumulativeDam(cumulativeDamResponse.data)
+                  this.setAxisTimeRange()
                    
               }
           } catch (error) {
@@ -791,7 +834,7 @@
           }); 
         }       
 
-        this.setAxisTimeRange();
+       
     },
 
     processSchedule(schedule){
@@ -861,7 +904,7 @@
               // }
             
           }); 
-        this.setAxisTimeRange()         
+               
       }
     },
 

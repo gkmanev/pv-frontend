@@ -511,7 +511,7 @@
                           this.processCumulative(cumulativeResponse.data)
                           this.processCumulativeDam(cumulativeDamResponse.data)
                           this.processSchedule(responseSchedule.data)
-                         this.setAxisTimeRange()
+                          this.setAxisTimeRange()
                          
 
                       }
@@ -536,24 +536,25 @@
                       } 
 
                       else if (this.dateRange == 'year'){
-                        
-                        const [response, cumulativeResponse] = await Promise.all([
-                              axios.get(url, {
-                                  headers: {
-                                      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                                  }
-                              }),
-                              axios.get(url_cumulative, {
-                                  headers: {
-                                      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                                  }
-                              })
-                          ]);
-                          this.processData(response.data);
-                          this.processCumulative(cumulativeResponse.data)
-                          this.setAxisTimeRange()
-
-                      }             
+                          let url_year = `http://85.14.6.37:16543/api/year-agg`;
+                          let url_cumulative_year = `http://85.14.6.37:16543/api/year-sum`;
+                          
+                          const [response, cumulativeResponse] = await Promise.all([
+                                axios.get(url_year, {
+                                    headers: {
+                                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                                    }
+                                }),
+                                axios.get(url_cumulative_year, {
+                                    headers: {
+                                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                                    }
+                                })
+                            ]);
+                            this.processData(response.data);
+                            this.processCumulative(cumulativeResponse.data)
+                            this.setAxisTimeRange()
+                        }
               
                       else if (this.dateRange === "dam") {
                           // Fetch both cumulative DAM and cumulative                          

@@ -60,9 +60,10 @@
                 let day = clock.getDate();
                 day = day < 10 ? '0' + day : day;
 
-                let month = clock.getMonth() + 1;
-                month = month < 10 ? '0' + month : month;
-
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                let month = monthNames[clock.getMonth()];
+                // month = month < 10 ? '0' + month : month;             
+       
                 const year = clock.getFullYear();
 
                 this.date = `${day} - ${month} - ${year}`;

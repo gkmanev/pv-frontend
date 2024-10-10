@@ -137,7 +137,7 @@
                             <ul style="list-style-type: none; margin: 0; padding-left: 0;">
                             <li>
                                 <div class="color-point" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background-color: ${param.color};"></div>
-                                <span style="color: gray;">${param.seriesName}: </span><span style="color: white;">${param.data[1]}</span>
+                                <span style="color: gray;">${param.seriesName}: </span><span style="color: white;">${param.data[1]} MW/h</span>
                             </li>
                             </ul>
                         </div>`;
@@ -198,19 +198,24 @@
       },
       
     ],
-    dataZoom: [{
-        height: 20,      
-        handleSize: "75%",
+    dataZoom: [
+      {
+        
+        type: 'slider',
+        height: 20,
+        handleSize: '75%',
         show: true,
         dataBackground: {
-          areaStyle: {
-            color: "#9a9a9a"
-          }
+            areaStyle: {
+                color: '#9a9a9a'
+            }
         },
-        start: 0,
-        end: 100
-        },
-       ],
+        start: 0, // Start of the month (timestamp)
+        end: 100, // End of the month (timestamp)
+        // zoomLock: true // Lock the zoom window size to prevent resizing
+    
+      },
+    ],
     
     series:[
     
@@ -296,7 +301,7 @@
               name: "SUM",
               smooth: true,             
               lineStyle:{
-                width:2,               
+                width:1,               
               },
               itemStyle: {
                   color: 'yellow',
@@ -341,7 +346,7 @@
               name: "SUM Day Ahead",
               smooth: true,             
               lineStyle:{
-                width:2,  
+                width:1,  
                 type:"dashed"                             
               },
               itemStyle: {
@@ -417,7 +422,7 @@
               name: "SUM Day Ahead",
               smooth: true,             
               lineStyle:{
-                width:2,  
+                width:1,  
                 type:"dashed",
                 opacity:0.3                             
               },
@@ -510,7 +515,9 @@
 
             if (this.dateRange === 'today') {
                 end.setHours(23, 59, 59); // Set end time to the end of the day                
-                this.option.xAxis.splitNumber = 24; // 24 hours in a day
+                this.option.xAxis.splitNumber = 24; // 24 hours in a day              
+                this.option.dataZoom[0].start = 0;
+                this.option.dataZoom[0].end = 100;
 
             } 
             else if (this.dateRange === 'dam') {
@@ -519,12 +526,16 @@
               end.setDate(end.getDate() + 2); // Move to the day after tomorrow
               end.setHours(1, 0, 0); // Set end time to 01:00 of the day after tomorrow             
               this.option.xAxis.splitNumber = 24; // 48 half-hour intervals in 24 hours
+              this.option.dataZoom[0].start = 0;
+              this.option.dataZoom[0].end = 100;
 
             } else if (this.dateRange === 'month') {
                 start.setDate(1); // Start of the month
                 end.setMonth(end.getMonth() + 1, 0); // Last day of the current month
                 end.setHours(23, 59, 59); // Set end time to the end of the day
-                this.option.xAxis.splitNumber = 12
+                this.option.xAxis.splitNumber = 12;
+                this.option.dataZoom[0].start = 0;
+                this.option.dataZoom[0].end = 100;
                
                 this.option.xAxis.splitNumber = end.getDate(); // Number of days in the month
             } else if (this.dateRange === 'year') {
@@ -533,6 +544,18 @@
                 end.setHours(23, 59, 59); // Set end time to the end of the day
                
                 this.option.xAxis.splitNumber = 12; // 12 months in a year
+                // Adjust the zoom window for one month (approx 8% of the year)
+                // Calculate the zoom window for the current month
+                const currentMonth = today.getMonth();
+                const totalMonths = 12;
+
+                // Calculate the percentage range for the current month
+                const startPercentage = ((currentMonth / totalMonths) * 100) - 1;
+                const endPercentage = ((currentMonth + 1) / totalMonths) * 100;
+
+                this.option.dataZoom[0].start = startPercentage;
+                this.option.dataZoom[0].end = endPercentage;
+                this.option.dataZoom[0].zoomLock = true;
             }
 
             // Update xAxis min and max properties
@@ -721,6 +744,21 @@
                    
 
                   } 
+                  else if (this.dateRange === "year"){
+
+                    const [response] = await Promise.all([
+                          axios.get(url, {
+                              headers: {
+                                  'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                              }
+                          }),
+                          
+                        
+                      ]);
+                      this.processData(response.data);
+                      this.setAxisTimeRange()                   
+
+                    } 
 
               // if (this.dateRange === "dam") {  
 

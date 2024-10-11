@@ -15,6 +15,7 @@
   import VChart from "vue-echarts";
   import axios from 'axios';
   import { mapState } from 'vuex';
+  import { mapActions } from 'vuex';
   import { use } from 'echarts/core'
   import { LineChart } from 'echarts/charts'
   import {
@@ -459,7 +460,7 @@
       this.option.series[9].data = [];
       this.option.series[10].data = [];
       this.option.series[11].data = [];
-        
+        this.setAxisTimeRange();
         this.displayData();
 
     //  const foundObject = this.all_devs.find(obj => obj.id === this.selectedDev);      
@@ -491,6 +492,7 @@
           this.option.series[9].data = [];
           this.option.series[10].data = [];
           this.option.series[11].data = [];
+          this.setAxisTimeRange()
          
           this.displayData();
           
@@ -511,9 +513,7 @@
           this.option.series[10].data = [];
           this.option.series[11].data = [];
          // this.option.series[0].data = []
-          const foundObject = this.all_devs.find(obj => obj.id === newDev);        
-          this.lat = parseInt(foundObject.lat)        
-          this.long = parseInt(foundObject.long)        
+          this.setAxisTimeRange()
           this.displayData();
         }
       },   
@@ -521,6 +521,8 @@
     },
   
     methods: {
+
+      ...mapActions(['updateTodayData']),
 
       lastRouteSegment() {
             const pathArray = this.$route.path.split('/');    
@@ -658,7 +660,8 @@
                   this.processSchedule(scheduleResponse.data);
                   this.processCumulative(cumulativeResponse.data);                  
                   this.processCumulativeDam(cumulativeDamResponse.data);
-                  this.setAxisTimeRange()
+                  //this.setAxisTimeRange()
+                  // this.updateTodayData = [response, scheduleResponse, cumulativeResponse, cumulativeDamResponse]
                   
 
               }
@@ -680,7 +683,7 @@
                   this.option.series[4].lineStyle.width = 0
                   this.processData(response.data);
                   this.processCumulative(cumulativeResponse.data)
-                  this.setAxisTimeRange()
+                  //this.setAxisTimeRange()
 
               } 
               else if (this.dateRange == 'year'){
@@ -701,7 +704,7 @@
                   ]);
                   this.processData(response.data);
                   this.processCumulative(cumulativeResponse.data)
-                  this.setAxisTimeRange()
+                  //this.setAxisTimeRange()
               }
               
               
@@ -734,8 +737,9 @@
                   this.processData(response.data);
                   this.processSchedule(scheduleResponse.data);                  
                   this.processCumulative(cumulativeResponse.data);
-                  this.processCumulativeDam(cumulativeDamResponse.data)
-                  this.setAxisTimeRange()
+                  this.processCumulativeDam(cumulativeDamResponse.data)                  
+                  //this.setAxisTimeRange()
+                  
                    
               }
           } catch (error) {

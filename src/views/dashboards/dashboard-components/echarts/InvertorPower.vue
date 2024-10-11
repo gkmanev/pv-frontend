@@ -369,7 +369,8 @@
               smooth: false,         
               step: 'start',                  
               lineStyle:{
-                width:1,               
+                width:1,   
+               // opacity:1            
               },
               itemStyle: {
                   color: 'yellow'
@@ -385,7 +386,7 @@
               smooth: false,         
               step: 'start',                  
               lineStyle:{
-                width:1, 
+                width:1,
                 type: 'dashed'              
               },
               itemStyle: {
@@ -572,8 +573,8 @@
         if(updateCurrentPath == 'entra') {     
           try {
               if (this.dateRange === "today") { 
-                                
                 
+
                   const [response, cumulativeResponse, cumulativeDamResponse, scheduleResponse] = await Promise.all([
                       axios.get(url, {
                           headers: {
@@ -601,6 +602,7 @@
                   this.processCumulative(cumulativeResponse.data)
                   this.processCumulativeDam(cumulativeDamResponse.data)
                   this.processSchedule(scheduleResponse.data)
+                  this.option.series[7].lineStyle.width = 0
                   this.setAxisTimeRange();
                
 

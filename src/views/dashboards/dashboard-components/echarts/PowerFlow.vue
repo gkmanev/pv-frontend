@@ -197,7 +197,7 @@
                     return '#ff5c5c'                    
                   }
                   else{
-                    return '#009BCB'
+                    return 'green'
                   }                  
                 }
               },
@@ -218,7 +218,7 @@
                     return 'red'                    
                   }
                   else{
-                    return '#FFBC34'
+                    return '#338f42'
                   }                  
                 }
               },
@@ -273,7 +273,7 @@
                     return '#ff5c5c'                    
                   }
                   else{
-                    return '#009BCB'
+                    return 'green'
                   }                  
                 },
 
@@ -294,7 +294,7 @@
                     return 'red'                    
                   }
                   else{
-                    return '#FFBC34'
+                    return '#338f42'
                   }                  
                 }
               },     
@@ -532,6 +532,7 @@
                           this.processData(response.data);
                           this.processCumulative(cumulativeResponse.data)
                           this.setAxisTimeRange()
+                          this.option.series[2].lineStyle.width = 0
 
                       } 
 

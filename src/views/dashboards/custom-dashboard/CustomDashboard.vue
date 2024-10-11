@@ -54,7 +54,7 @@
   // import GridNodes from "../dashboard-components/echarts/GridNodes";
   // import MapCard from '../dashboard-components/echarts/MapCard.vue';
   import StateOfCharge from '../dashboard-components/echarts/StateOfCharge.vue';
-  import PowerFlow from '../dashboard-components/echarts/PowerFlow.vue';
+ import PowerFlow from '../dashboard-components/echarts/PowerFlow.vue';
 
 import BatteryChart from "../dashboard-components/echarts/BatteryChart.vue";
 import BatteryGauge from "../dashboard-components/echarts/BatteryGauge.vue";

@@ -26,13 +26,13 @@
     </b-row>
     <b-row>
         <b-col cols="12">
-            <StateOfCharge />
+            <StateOfCharge ref="socRef" />
         </b-col>
         <b-col cols="12">
-            <InvertorPower />
+            <InvertorPower ref="invRef" />
         </b-col>
         <b-col cols="12">
-            <PowerFlow />
+            <PowerFlow ref="flowRef" />
         </b-col>
         <b-col cols="12">
             <PriceChart />
@@ -45,6 +45,8 @@
   // -----------------------------------------
   // Import Components Here
   // -----------------------------------------
+  import axios from "axios"
+  import { mapState } from 'vuex';
   // import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
   import RangeComponent from "../dashboard-components/range-component/RangeComponent";
   import InvertorPower from "../dashboard-components/echarts/InvertorPower.vue";
@@ -74,6 +76,8 @@ import DigiClock from "../dashboard-components/echarts/DigiClock.vue";
     data: () => ({
       title: "ModernDashboard",
       show:false,
+      updateTodayData: [],
+      updateYearData:[],
       // Month Table
       month1: 0,
       monthoptions1: [
@@ -121,11 +125,117 @@ import DigiClock from "../dashboard-components/echarts/DigiClock.vue";
         console.log(`Filtering content for ${period}`);
         // Make API request here and update content
         },
+
+      async fetchToday() {          
+       
+          let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam`;
+          let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today`;                   
+          let url_cumulative = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today&cumulative=true`
+          let url_cumulative_dam = `http://85.14.6.37:16543/api/schedule/?date_range=dam&cumulative=true`
+          try { 
+                
+                  const [response, cumulativeResponse, scheduleResponse, cumulativeDamResponse] = await Promise.all([
+                      axios.get(url, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),
+                      axios.get(url_cumulative, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),
+                      axios.get(url_schedule, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),
+                      axios.get(url_cumulative_dam, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                          }
+                      }),
+                      
+                  ]);
+                  
+                  
+                  this.updateTodayData = [response.data, cumulativeResponse.data, scheduleResponse.data, cumulativeDamResponse.data]
+                  
+              }
+              catch (error) {
+                console.error('Error fetching data:', error);
+              } finally {
+                  this.loading = false;
+                  this.$refs.socRef.displayData(this.updateTodayData);
+                  this.$refs.invRef.displayData(this.updateTodayData);
+                  this.$refs.flowRef.displayData(this.updateTodayData);
+              }
+        },
+        async fetchYear(){
+          
+          let url = `http://85.14.6.37:16543/api/year-agg/`;                   
+          let url_cumulative = `http://85.14.6.37:16543/api/year-sum/`
+          try { 
+            
+                
+                const [response, cumulativeResponse] = await Promise.all([
+                    axios.get(url, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                    }),
+                    axios.get(url_cumulative, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                    }),                    
+                    
+                ]);               
+                
+                this.updateYearData = [response.data, cumulativeResponse.data]
+                
+            }
+            catch (error) {
+              console.error('Error fetching data:', error);
+            } finally {
+                this.loading = false;
+                this.$refs.socRef.displayData(this.updateYearData);
+                this.$refs.invRef.displayData(this.updateYearData);
+                this.$refs.flowRef.displayData(this.updateYearData);
+            }
+          
+
+        }
+
+
   },
-    created() {
+    mounted() {
         // Trigger "today" filter when the component is created
         this.handleFilter('today');
+        this.fetchToday();
     },
+    computed: {
+      ...mapState(['dateRange']),    
+  
+    },
+
+    watch: {     
+      dateRange(newRange, oldRange) {
+        if (newRange !== oldRange) {
+          if(this.dateRange === 'today' || this.dateRange === 'dam'){
+            this.fetchToday()
+          }     
+          else if(this.dateRange === 'year'){
+            this.fetchYear()
+          }
+              
+      }
+   },
+   
+ },
+
+
+
     };
   </script>
 

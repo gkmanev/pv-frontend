@@ -13,7 +13,7 @@
   // import * as echarts from 'echarts';
 
   import VChart from "vue-echarts";
-  import axios from 'axios';
+  
   import { mapState } from 'vuex';
   import { mapActions } from 'vuex';
   import { use } from 'echarts/core'
@@ -461,7 +461,7 @@
       this.option.series[10].data = [];
       this.option.series[11].data = [];
         this.setAxisTimeRange();
-        this.displayData();
+       // this.displayData();
 
     //  const foundObject = this.all_devs.find(obj => obj.id === this.selectedDev);      
     //   if (foundObject)
@@ -494,7 +494,7 @@
           this.option.series[11].data = [];
           this.setAxisTimeRange()
          
-          this.displayData();
+          //this.displayData();
           
         }
       },
@@ -514,7 +514,7 @@
           this.option.series[11].data = [];
          // this.option.series[0].data = []
           this.setAxisTimeRange()
-          this.displayData();
+          //this.displayData();
         }
       },   
   
@@ -607,141 +607,30 @@
             this.$refs.chart && this.$refs.chart.refresh(); 
     },
 
-    async displayData() {
+    async displayData(data) {
       let updateCurrentPath = this.lastRouteSegment()
-      let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam`;
-      let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}`;
-      // this.option.series[0].data = [];
-      // this.option.series[1].data = [];
-      // this.option.series[2].data = [];
-      // this.option.series[3].data = [];
-      // this.option.series[4].data = [];
-      // this.option.series[5].data = [];
-      // this.option.series[6].data = [];
-      // this.option.series[7].data = [];
-      // this.option.series[8].data = [];
-      // this.option.series[9].data = [];
-      // this.option.series[10].data = [];
-      // this.option.series[11].data = [];
-      if(updateCurrentPath == 'entra') { 
-          
-                    
-          let url_cumulative = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&cumulative=true`
-          let url_cumulative_dam = `http://85.14.6.37:16543/api/schedule/?date_range=dam&cumulative=true`
+
+      if(updateCurrentPath == 'entra') {                   
+       
           try {
-              if (this.dateRange === "today") {
-                  
-                
-                  const [response, cumulativeResponse, scheduleResponse, cumulativeDamResponse] = await Promise.all([
-                      axios.get(url, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      }),
-                      axios.get(url_cumulative, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      }),
-                      axios.get(url_schedule, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      }),
-                      axios.get(url_cumulative_dam, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      }),
-                      
-                  ]);
-                  
-                  this.processData(response.data);
-                  this.processSchedule(scheduleResponse.data);
-                  this.processCumulative(cumulativeResponse.data);                  
-                  this.processCumulativeDam(cumulativeDamResponse.data);
-                  //this.setAxisTimeRange()
-                  // this.updateTodayData = [response, scheduleResponse, cumulativeResponse, cumulativeDamResponse]
-                  
+              if (this.dateRange === "today" || this.dateRange === "dam") {   
+
+                this.processData(data[0]);
+                this.processSchedule(data[2]);
+                this.processCumulative(data[1]);     
+                this.processCumulativeDam(data[3]);           
 
               }
-              else if (this.dateRange === "month"){
 
-                const [response, cumulativeResponse] = await Promise.all([
-                      axios.get(url, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      }),
-                      
-                      axios.get(url_cumulative, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      })
-                  ]);
-                  this.option.series[4].lineStyle.width = 0
-                  this.processData(response.data);
-                  this.processCumulative(cumulativeResponse.data)
-                  //this.setAxisTimeRange()
-
-              } 
-              else if (this.dateRange == 'year'){
-                let url_year = `http://85.14.6.37:16543/api/year-agg`;
-                let url_cumulative_year = `http://85.14.6.37:16543/api/year-sum`;
-                
-                const [response, cumulativeResponse] = await Promise.all([
-                      axios.get(url_year, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      }),
-                      axios.get(url_cumulative_year, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      })
-                  ]);
-                  this.processData(response.data);
-                  this.processCumulative(cumulativeResponse.data)
-                  //this.setAxisTimeRange()
-              }
+              else if (this.dateRange == 'year'){               
               
+                  this.processData(data[0]);
+                  this.processCumulative(data[1])
+                  this.setAxisTimeRange();
+                
+              }             
               
-              else if (this.dateRange === "dam") {
-                  // Fetch both url and url_schedule
-                  url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today`;
-                  url_cumulative=`http://85.14.6.37:16543/api/state_of_charge/?date_range=today&cumulative=true`
-                  const [response, scheduleResponse, cumulativeResponse, cumulativeDamResponse] = await Promise.all([
-                      axios.get(url, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      }),
-                      axios.get(url_schedule, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      }),
-                      axios.get(url_cumulative, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      }),
-                      axios.get(url_cumulative_dam, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      })
-                  ]);
-                  this.processData(response.data);
-                  this.processSchedule(scheduleResponse.data);                  
-                  this.processCumulative(cumulativeResponse.data);
-                  this.processCumulativeDam(cumulativeDamResponse.data)                  
-                  //this.setAxisTimeRange()
-                  
-                   
-              }
+           
           } catch (error) {
               console.error('Error fetching data:', error);
           } finally {
@@ -749,67 +638,22 @@
           }
     }
     if(updateCurrentPath == 'client') { 
-      let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam&devId=${this.selectedDev}`;
-      let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=${this.dateRange}&devId=${this.selectedDev}`;
+
       try {      
-              if (this.dateRange === "today" || this.dateRange === 'dam') {               
-                  const [response, scheduleResponse] = await Promise.all([
-                      axios.get(url, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      }),
+              if (this.dateRange === "today" || this.dateRange === 'dam') {   
+               
+                  this.processData(data[0]);
+                  this.processSchedule(data[1]);                   
 
-                      axios.get(url_schedule, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                      }),                      
-                  ]);
-                  this.processData(response.data); 
-                  this.processSchedule(scheduleResponse.data);
-                  this.option.series[0].lineStyle.width = 1
-                  this.option.series[1].lineStyle.width = 1
-                  this.option.series[2].lineStyle.width = 1
-                  this.option.series[2].lineStyle.type = 'dashed'
-                  this.option.series[3].lineStyle.width = 1
-                  this.option.series[3].lineStyle.type = 'dashed'
                 }
-                else if (this.dateRange === "month"){
 
-                  const [response] = await Promise.all([
-                        axios.get(url, {
-                            headers: {
-                                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                            }
-                        }),
-                        
-                       
-                    ]);
-                    this.processData(response.data);
-                    this.setAxisTimeRange()
-                   
-
-                  } 
-                  else if (this.dateRange === "year"){
-
-                    const [response] = await Promise.all([
-                          axios.get(url, {
-                              headers: {
-                                  'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                              }
-                          }),
-                          
-                        
-                      ]);
-                      this.processData(response.data);
+                  else if (this.dateRange === "year"){                 
+                      this.processData(data[0]);
                       this.setAxisTimeRange()                   
 
                     } 
 
-              // if (this.dateRange === "dam") {  
-
-              // }
+           
               
       } catch (error) {
           console.error('Error fetching data:', error);

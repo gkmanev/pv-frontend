@@ -33,17 +33,17 @@
    
     <b-row> 
         <b-col class="mt-3" v-if="isDevSelected" cols="12">          
-            <StateOfCharge />
+            <StateOfCharge ref="socRef" />
         </b-col>  
     </b-row>
     <b-row>   
         <b-col class="mt-3" v-if="isDevSelected" cols="12">          
-          <InvertorPower />
+          <InvertorPower  ref="invRef" />
         </b-col>
     </b-row>
     <b-row> 
         <b-col class="mt-3" v-if="isDevSelected" cols="12">          
-          <PowerFlow />
+          <PowerFlow ref = "flowRef" />
         </b-col>
     </b-row>
     <b-row>    
@@ -88,6 +88,7 @@
   // // import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
   // import CustomProgress from "../dashboard-components/progress-cards/CustomProgress.vue";
   import { mapState } from 'vuex';
+  import axios from "axios"
 
 //   import SalesCard from "../dashboard-components/sales-card/SalesCard.vue";
 //   import WeatherChartClouds from "../dashboard-components/echarts/WeatherChartClouds.vue";
@@ -127,16 +128,25 @@
     
 },
 
-  created(){
-    this.checkSelectedDev()
-  },
-
-  computed: {
-      ...mapState(['selectedDev']),
+    mounted() {
+        // Trigger "today" filter when the component is created
+        this.checkSelectedDev()
+        if (this.dateRange === 'today' || this.dateRange === 'dam'){
+          this.fetchToday();
+        }
+        else if (this.dateRange === 'year'){
+          this.fetchYear();
+        }
     },
 
+  computed: {
+      ...mapState(['selectedDev', 'dateRange']),
+    },
+
+  
 
   methods: {
+
     checkSelectedDev(){
       if(this.selectedDev){
         this.isDevSelected = true
@@ -144,14 +154,101 @@
       else{
         this.isDevSelected = false
       }
-    } 
+    }, 
+
+    async fetchToday() {          
+       
+      let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam&devId=${this.selectedDev}`;
+      let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today&devId=${this.selectedDev}`;     
+   
+      
+      try {            
+               const [response, scheduleResponse] = await Promise.all([
+                   axios.get(url, {
+                       headers: {
+                           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                       }
+                   }),                
+                   axios.get(url_schedule, {
+                       headers: {
+                           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                       }
+                   }),                
+                   
+               ]);
+               
+               
+               this.updateTodayData = [response.data, scheduleResponse.data]
+               
+           }
+           catch (error) {
+             console.error('Error fetching data:', error);
+           } finally {
+               this.loading = false;
+               this.$refs.socRef.displayData(this.updateTodayData);
+               this.$refs.invRef.displayData(this.updateTodayData);
+               this.$refs.flowRef.displayData(this.updateTodayData);
+           }
+     },
+     async fetchYear(){
+          
+          let url = `http://85.14.6.37:16543/api/year-agg/?devId=${this.selectedDev}`;    
+   
+          
+        
+          try { 
+                
+                const [response] = await Promise.all([
+                    axios.get(url, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                    }),         
+                    
+                ]);               
+                
+                this.updateYearData = [response.data]
+               
+                
+            }
+            catch (error) {
+              console.error('Error fetching data:', error);
+            } finally {
+                this.loading = false;
+                this.$refs.socRef.displayData(this.updateYearData);
+                this.$refs.invRef.displayData(this.updateYearData);
+                this.$refs.flowRef.displayData(this.updateYearData);
+            }
+          
+
+        }
+
+
+
   },
   watch: {
     selectedDev(newDev, oldDev) {
       if (newDev !== oldDev) {
         this.isDevSelected = true;
+        if (this.dateRange === 'today' || this.dateRange === 'dam'){
+          this.fetchToday();
+        }
+        else if (this.dateRange === 'year'){
+          this.fetchYear();
+        }
       }
     },
+    dateRange(newRange, oldRange) {
+        if (newRange !== oldRange) {     
+          if (this.dateRange === 'today' || this.dateRange === 'dam'){
+          this.fetchToday();
+        }
+        else if (this.dateRange === 'year'){
+          this.fetchYear();
+        }
+     
+      }
+   },
 
   },
 

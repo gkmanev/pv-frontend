@@ -319,7 +319,6 @@
             //this.configureChartForToday(); // Extract chart configuration to a method for better readability
 
             const url1 = `http://85.14.6.37:16455/api/price/?timestamp=&start_date=${start}&end_date=${end}`;
-            console.log(url1)
             
             const url2 = `http://85.14.6.37:16455/api/price/?timestamp=&start_date=${end}&end_date=${tomorrow}`;
             

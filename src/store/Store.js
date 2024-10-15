@@ -10,7 +10,7 @@ export default new Vuex.Store({
     all_devs: [],
     checkedDevs:[],
     selectBoxDevs:[],
-    todayData:[],
+    zoomData:[],
     dateRange: 'today',
     Theme: "dark", // theme can be light or dark
     LayoutType: "full-sidebar", // this can be full-sidebar, mini-sidebar
@@ -49,8 +49,8 @@ export default new Vuex.Store({
       state.checkedDevs = checked
     },
 
-    SET_TODAY_DATA(state, newData) {
-      state.todayData = newData;
+    SET_ZOOM_DATA(state, newData) {
+      state.zoomData = newData;
     },
 
     SET_DATE_RANGE(state, newRange) {
@@ -92,8 +92,8 @@ export default new Vuex.Store({
 
   },
   actions: {
-    updateTodayData({ commit }, data) {
-      commit('SET_TODAY_DATA', data);
+    updateZoomData({ commit }, data) {     
+      commit('SET_ZOOM_DATA', data);
     },
     updateDateRange({ commit }, newRange) {
       commit('SET_DATE_RANGE', newRange);

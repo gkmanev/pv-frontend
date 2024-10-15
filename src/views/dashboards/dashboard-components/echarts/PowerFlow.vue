@@ -122,7 +122,7 @@
                     if(sumValue){
                       footer = `
                       <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
-                          <strong>Total ${sumValue}  </strong> at <strong>Time: </strong> <span style="color: white;">${localTime}</span>
+                          <strong>Total ${sumValue}  </strong> at <span style="color: white;">${localTime}</span>
                       </div>`;
                     }else{
                       footer = `
@@ -352,10 +352,22 @@
     },
   
     computed: {
-      ...mapState(['dateRange', 'selectedDev', 'all_devs']),
+      ...mapState(['dateRange', 'selectedDev', 'all_devs', 'zoomData']),
     },
   
     watch: {
+
+      zoomData(newZoom, oldZoom){
+        if (newZoom !== oldZoom){
+          const start = newZoom[0]
+          const end = newZoom[1]     
+          if(this.dateRange !== 'year'){     
+            this.option.dataZoom[0].start = start
+            this.option.dataZoom[0].end = end
+          }
+        }
+
+      },
       dateRange(newRange, oldRange) {
         if (newRange !== oldRange) {
           this.option.series[0].data = []
@@ -482,7 +494,7 @@
 
                       }  
 
-                      else if (this.dateRange == 'year'){
+                      else if (this.dateRange == 'year' || this.dateRange == 'month'){
                         
                             this.processData(data[0]);
                             this.processCumulative(data[1])
@@ -566,7 +578,7 @@
                       }                     
                       this.option.series[0].itemStyle = itemStyle
                       this.option.series[1].itemStyle = itemStyle
-                      if (this.dateRange === 'year'){
+                      if (this.dateRange === 'year' || this.dateRange === 'month'){
                         this.option.series[2].data = []
                       }
                     }

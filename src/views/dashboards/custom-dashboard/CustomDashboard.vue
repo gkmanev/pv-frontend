@@ -55,7 +55,7 @@
 
   // import GridNodes from "../dashboard-components/echarts/GridNodes";
   // import MapCard from '../dashboard-components/echarts/MapCard.vue';
-  import StateOfCharge from '../dashboard-components/echarts/StateOfCharge.vue';
+ import StateOfCharge from '../dashboard-components/echarts/StateOfCharge.vue';
  import PowerFlow from '../dashboard-components/echarts/PowerFlow.vue';
 
 import BatteryChart from "../dashboard-components/echarts/BatteryChart.vue";
@@ -78,6 +78,7 @@ import DigiClock from "../dashboard-components/echarts/DigiClock.vue";
       show:false,
       updateTodayData: [],
       updateYearData:[],
+      updateMonthData: [],
       // Month Table
       month1: 0,
       monthoptions1: [
@@ -176,7 +177,7 @@ import DigiClock from "../dashboard-components/echarts/DigiClock.vue";
           let url = `http://85.14.6.37:16543/api/year-agg/`;                   
           let url_cumulative = `http://85.14.6.37:16543/api/year-sum/`
           try { 
-            
+
                 
                 const [response, cumulativeResponse] = await Promise.all([
                     axios.get(url, {
@@ -202,10 +203,43 @@ import DigiClock from "../dashboard-components/echarts/DigiClock.vue";
                 this.$refs.socRef.displayData(this.updateYearData);
                 this.$refs.invRef.displayData(this.updateYearData);
                 this.$refs.flowRef.displayData(this.updateYearData);
-            }
-          
+            }        
 
-        }
+        },
+        async fetchMonth(){          
+          let url = `http://85.14.6.37:16543/api/year-agg/?date_range=month`;                   
+          let url_cumulative = `http://85.14.6.37:16543/api/year-sum/?date_range=month`
+          
+          try { 
+                
+                const [response, cumulativeResponse] = await Promise.all([
+                    axios.get(url, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                    }),
+                    axios.get(url_cumulative, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                    }),                    
+                    
+                ]);               
+                
+                this.updateMonthData = [response.data, cumulativeResponse.data]
+                
+            }
+            catch (error) {
+              console.error('Error fetching data:', error);
+            } finally {
+                this.loading = false;
+                this.$refs.socRef.displayData(this.updateMonthData);
+                this.$refs.invRef.displayData(this.updateMonthData);
+                this.$refs.flowRef.displayData(this.updateMonthData);
+            }        
+
+        },
+        
 
 
   },
@@ -224,7 +258,10 @@ import DigiClock from "../dashboard-components/echarts/DigiClock.vue";
         if (newRange !== oldRange) {
           if(this.dateRange === 'today' || this.dateRange === 'dam'){
             this.fetchToday()
-          }     
+          } 
+          else if (this.dateRange === 'month'){
+            this.fetchMonth()
+          }    
           else if(this.dateRange === 'year'){
             this.fetchYear()
           }

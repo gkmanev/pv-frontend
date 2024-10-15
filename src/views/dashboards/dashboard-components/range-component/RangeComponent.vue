@@ -3,7 +3,7 @@
             <b-button-group>
               <b-button @click="filterContent('dam')" :class="{ 'active': selectedPeriod === 'dam' }">Day Ahead</b-button>
               <b-button @click="filterContent('today')" :class="{ 'active': selectedPeriod === 'today' }">Today</b-button>
-              <!-- <b-button @click="filterContent('month')" :class="{ 'active': selectedPeriod === 'month' }">Month</b-button> -->
+              <b-button @click="filterContent('month')" :class="{ 'active': selectedPeriod === 'month' }">Month</b-button>
               <b-button @click="filterContent('year')"  :class="{ 'active': selectedPeriod === 'year' }">Year</b-button>
               <b-button @click="populateBatterySchedule"  :class="{'default-state':'default-state', 'active': selectedPeriod === 'forecast' }">Create forecast</b-button>
             </b-button-group>

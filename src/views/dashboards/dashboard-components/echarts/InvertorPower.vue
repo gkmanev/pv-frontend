@@ -1,7 +1,7 @@
 <template>
     <b-card class="mb-4 line-chart">
       <div class="mt-4">
-        <v-chart class="chart" height="450" width="100%" :option="option" autoresize/>
+        <v-chart ref="chart2" class="chart" height="450" width="100%" :option="option" autoresize/>
       </div>
     </b-card>
   </template>
@@ -126,7 +126,7 @@
                     if(sumValue){
                       footer = `
                       <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
-                          <strong>Total ${sumValue}  </strong> at <strong>Time: </strong> <span style="color: white;">${localTime}</span>
+                          <strong>Total ${sumValue}  </strong> at <span style="color: white;">${localTime}</span>
                       </div>`;
                     }else{
                       footer = `
@@ -416,10 +416,21 @@
     },
   
     computed: {
-      ...mapState(['dateRange','selectedDev', 'all_devs']),    
-  
+      ...mapState(['dateRange','selectedDev', 'all_devs', 'zoomData']), 
     },
     watch: {
+
+      zoomData(newZoom, oldZoom){
+        if (newZoom !== oldZoom){
+          const start = newZoom[0]
+          const end = newZoom[1]
+          if(this.dateRange !== 'year'){          
+            this.option.dataZoom[0].start = start
+            this.option.dataZoom[0].end = end
+          }
+        }
+
+      },
    
       
       dateRange(newRange, oldRange) {
@@ -521,6 +532,8 @@
                 end.setMonth(end.getMonth() + 1, 0); // Last day of the current month
                 end.setHours(23, 59, 59); // Set end time to the end of the day
                 this.option.xAxis.splitNumber = 12
+                this.option.dataZoom[0].start = 0;
+                this.option.dataZoom[0].end = 100;
                
                 this.option.xAxis.splitNumber = end.getDate(); // Number of days in the month
             } else if (this.dateRange === 'year') {
@@ -576,10 +589,11 @@
                              
 
               }             
-              else if (this.dateRange == 'year'){                
+              else if (this.dateRange == 'year' || this.dateRange == 'month'){  
+                       
                 this.processData(data[0]);
-                this.processCumulative(data[1])           
-
+                this.processCumulative(data[1])
+                this.setAxisTimeRange();
               }
               
           
@@ -619,9 +633,8 @@
         }   
         },
             //Today, Month, Year
-            processData(data) {    
-                      
-  
+            processData(data) {                      
+              
               data.forEach(el => {
                   let date = new Date(el.timestamp);
                   // Convert UTC time to local time (UTC+3 adjustment)
@@ -640,7 +653,7 @@
                       this.option.series[4].data.push([date.toISOString(), el.invertor_power]);  
                       this.option.series[7].data.push([date.toISOString(), el.invertor_power]);
                     }
-                    else if(this.dateRange === 'year'){
+                    else if(this.dateRange === 'year' || this.dateRange ==='month'){
                       this.option.series[4].data.push([date.toISOString(), el.invertor_power]);  
                       this.option.series[7].data = []
                     }
@@ -668,7 +681,7 @@
                     this.option.series[4].data.push([date.toISOString(), el.cumulative_invertor_power]);                    
                     this.option.series[7].data.push([date.toISOString(), el.cumulative_invertor_power]);
                     }
-                    else if(this.dateRange === 'year'){
+                    else if(this.dateRange === 'year' || this.dateRange == 'month'){
                       this.option.series[4].data.push([date.toISOString(), el.cumulative_invertor_power]);  
                     }
                   

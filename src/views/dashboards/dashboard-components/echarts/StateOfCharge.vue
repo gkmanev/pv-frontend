@@ -3,7 +3,7 @@
       <div class="mt-4">
         <div v-if="loading"> <b-spinner label="Loading..."></b-spinner></div>
         <div v-else>
-        <v-chart class="chart" height="450" width="100%" :option="option" autoresize/>
+        <v-chart class="chart" height="450" width="100%" :option="option" @datazoom="onDataZoom" autoresize/>
         </div>
       </div>
     </b-card>
@@ -149,7 +149,7 @@
                     if(sumValue){
                       footer = `
                       <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">                                              
-                          <strong>Total ${sumValue}  </strong> at <strong>Time: </strong> <span style="color: white;">${localTime}</span>
+                          <strong>Total ${sumValue}  </strong> at <span style="color: white;">${localTime}</span>
                       </div>`;
                     }else{
                       footer = `
@@ -522,7 +522,14 @@
   
     methods: {
 
-      ...mapActions(['updateTodayData']),
+      onDataZoom(event) {
+        // Capture the dataZoom start and end values
+        const start = event.start;
+        const end = event.end;        
+        this.updateZoomData([start, end]);
+      },
+
+      ...mapActions(['updateZoomData']),
 
       lastRouteSegment() {
             const pathArray = this.$route.path.split('/');    
@@ -595,7 +602,7 @@
 
                 this.option.dataZoom[0].start = startPercentage;
                 this.option.dataZoom[0].end = endPercentage;
-                this.option.dataZoom[0].zoomLock = true;
+                //this.option.dataZoom[0].zoomLock = true;
             }
 
             // Update xAxis min and max properties
@@ -622,13 +629,14 @@
 
               }
 
-              else if (this.dateRange == 'year'){               
+              else if (this.dateRange === 'year' || this.dateRange === 'month'){               
               
                   this.processData(data[0]);
                   this.processCumulative(data[1])
                   this.setAxisTimeRange();
                 
-              }             
+              }       
+
               
            
           } catch (error) {
@@ -692,9 +700,8 @@
           tomorrow.setDate(tomorrow.getDate() + 1); // Move to tomorrow
           tomorrow.setHours(1, 0, 0, 0); // Set the time to 01:00:00.000
 
-          schedule.forEach(elSched =>{
-            
-            let date = new Date(elSched.timestamp);                         
+          schedule.forEach(elSched =>{           
+          let date = new Date(elSched.timestamp);                         
                 date = new Date(date.getTime() - (3 * 60 * 60 * 1000));               
                 if (elSched.devId === "batt-0001") {  
                     if (date >= currentDate && date <= tomorrow){

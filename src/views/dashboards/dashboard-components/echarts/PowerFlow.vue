@@ -547,7 +547,7 @@
                 data.forEach(el => {
                     let date = new Date(el.timestamp);
                     // Convert UTC time to local time (UTC+3 adjustment)
-                    date = new Date(date.getTime() - (3 * 60 * 60 * 1000));
+                    date = new Date(date.getTime() - (2 * 60 * 60 * 1000));
                     if(el.flow_last_min > 5 || el.flow_last_min < -5)
                     {
                       el.flow_last_min = el.flow_last_min/60
@@ -594,7 +594,7 @@
               stackData.forEach(el => {
                     let date = new Date(el.timestamp);
                     // Convert UTC time to local time (UTC+3 adjustment)
-                    date = new Date(date.getTime() - (3 * 60 * 60 * 1000));          
+                    date = new Date(date.getTime() - (2 * 60 * 60 * 1000));          
                         this.option.series[2].data.push([date.toISOString(), el.cumulative_flow_last_min]);
                   
                 });
@@ -609,7 +609,7 @@
               cumlativeDam.forEach(el => {                
                 let date = new Date(el.timestamp);
                 // Convert UTC time to local time (UTC+3 adjustment)
-                date = new Date(date.getTime() - (3 * 60 * 60 * 1000));          
+                date = new Date(date.getTime() - (2 * 60 * 60 * 1000));          
                 if(date >= currentDate){
                   this.option.series[3].data.push([date.toISOString(), el.cumulative_flow_last_min]);
                 }      
@@ -627,7 +627,7 @@
               scheduleData.forEach(el => {                              
                               let date = new Date(el.timestamp);
                               // Convert UTC time to local time if needed
-                              date = new Date(date.getTime() - (3 * 60 * 60 * 1000)); // Adjust for UTC+3
+                              date = new Date(date.getTime() - (2 * 60 * 60 * 1000)); // Adjust for UTC+3
                               
                               if (el.devId === "batt-0001") {                         
                                   if (date >= currentDate){

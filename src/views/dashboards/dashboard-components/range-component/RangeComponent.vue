@@ -1,13 +1,17 @@
 <template>
-    <div class="ml-auto">
+  <div class="d-flex justify-content-between">
+    <div class="filter-buttons">
             <b-button-group>
               <b-button @click="filterContent('dam')" :class="{ 'active': selectedPeriod === 'dam' }">Day Ahead</b-button>
               <b-button @click="filterContent('today')" :class="{ 'active': selectedPeriod === 'today' }">Today</b-button>
               <b-button @click="filterContent('month')" :class="{ 'active': selectedPeriod === 'month' }">Month</b-button>
-              <b-button @click="filterContent('year')"  :class="{ 'active': selectedPeriod === 'year' }">Year</b-button>
-              <b-button @click="populateBatterySchedule"  :class="{'default-state':'default-state', 'active': selectedPeriod === 'forecast' }">Create forecast</b-button>
+              <b-button @click="filterContent('year')"  :class="{ 'active': selectedPeriod === 'year' }">Year</b-button>              
             </b-button-group>
-          </div>
+    </div>
+    <div class="forecast-button">
+      <b-button @click="populateBatterySchedule"  :class="{'btn-forecast':'btn', 'active': selectedPeriod === 'forecast' }">Create forecast</b-button>
+    </div>
+  </div>
   </template>
   
   <script>
@@ -63,10 +67,12 @@
   </script>
   
   <style scoped>
-  .default-state {
-    margin-left: 24px;
-    border-left: 1px solid;
+   .btn-forecast {   
     background: #8d5cf5;
     color: #ffffff;
-}
+  } 
+
+  .btn-forecast:hover{
+    background: #a57efa;
+  }
   </style>

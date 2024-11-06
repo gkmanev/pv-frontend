@@ -20,7 +20,7 @@
       </b-row>
   </b-card>
     <b-row class="mb-4"> 
-      <b-col cols="3">            
+      <b-col cols="12">            
         <RangeComponent @filter="handleFilter" />          
       </b-col>
     </b-row>

@@ -682,7 +682,7 @@
           data.forEach(el => {
               let date = new Date(el.timestamp);
               // Convert UTC time to local time (UTC+3 adjustment)  
-              date = new Date(date.getTime() - (3 * 60 * 60 * 1000));           
+              date = new Date(date.getTime() - (2 * 60 * 60 * 1000));           
               let seriesIndex = devIdToSeriesIndex[el.devId];
               if (seriesIndex !== undefined) {
                 this.option.series[seriesIndex].data.push([date.toISOString(), el.state_of_charge]);                
@@ -702,7 +702,7 @@
 
           schedule.forEach(elSched =>{           
           let date = new Date(elSched.timestamp);                         
-                date = new Date(date.getTime() - (3 * 60 * 60 * 1000));               
+                date = new Date(date.getTime() - (2 * 60 * 60 * 1000));               
                 if (elSched.devId === "batt-0001") {  
                     if (date >= currentDate && date <= tomorrow){
                       this.option.series[2].data.push([date.toISOString(), elSched.soc]);                      
@@ -730,7 +730,7 @@
         stackData.forEach(el => {
               let date = new Date(el.timestamp);
               // Convert UTC time to local time (UTC+3 adjustment)
-              date = new Date(date.getTime() - (3 * 60 * 60 * 1000));          
+              date = new Date(date.getTime() - (2 * 60 * 60 * 1000));          
               this.option.series[4].data.push([date.toISOString(), el.cumulative_soc]);
             
           });          
@@ -745,7 +745,7 @@
         stackData.forEach(el => {
               let date = new Date(el.timestamp);
               // Convert UTC time to local time (UTC+3 adjustment)
-              date = new Date(date.getTime() - (3 * 60 * 60 * 1000));  
+              date = new Date(date.getTime() - (2 * 60 * 60 * 1000));  
               if (date >= currentDate && date <= tomorrow){        
                 this.option.series[7].data.push([date.toISOString(), el.cumulative_soc]);
               //this.option.series[8].data.push([date.toISOString(), el.cumulative_soc]);

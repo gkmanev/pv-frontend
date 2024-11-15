@@ -113,7 +113,7 @@
                       const year = utcTime.getFullYear();
                         // Construct time in the desired format: 13:13 | 01.10.2024
                       localTime = `${hours}:${minutes} | ${day}.${month}.${year}`;
-                                            
+
                       if(parseInt(hours) == this.removeDoublePriceTitles()){                        
                         if(param.seriesName === 'price '){                      
                  
@@ -238,12 +238,12 @@
             type: "line",
         },
         {
-            name: "DAM",
+            name: "DAM Price",
             smooth: false,
             step: 'middle',
             lineStyle:{
                 type: 'dotted',
-                width: 3,
+                width: 1,
                 color: 'yellow'
             },
             itemStyle: {

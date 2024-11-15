@@ -32,20 +32,20 @@
     CanvasRenderer
   ])
   
-  var timeLineSet = function(value) {
-    // Create a Date object from the UTC date string
-    let date = new Date(value);
+  // var timeLineSet = function(value) {
+  //   // Create a Date object from the UTC date string
+  //   let date = new Date(value);
   
-    // Get UTC hours and minutes
-    let hours = date.getUTCHours();
-    let minutes = date.getUTCMinutes();
+  //   // Get UTC hours and minutes
+  //   let hours = date.getUTCHours();
+  //   let minutes = date.getUTCMinutes();
   
-    // Format hours and minutes to ensure two digits
-    hours = ("0" + hours).slice(-2);
-    minutes = ("0" + minutes).slice(-2);
+  //   // Format hours and minutes to ensure two digits
+  //   hours = ("0" + hours).slice(-2);
+  //   minutes = ("0" + minutes).slice(-2);
   
-    return `${hours}:${minutes}`;
-  }  
+  //   return `${hours}:${minutes}`;
+  // }  
 
 
 
@@ -102,14 +102,19 @@
             formatter: (params) => {
                     if (params && params.length) {
                     let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
-                    
+                    let localTime;
                     // Loop over each series data point
                     params.forEach(param => {
-                      let date = new Date(param.data[0]);
-                      date = new Date(date.getTime() - (3 * 60 * 60 * 1000));
-                      let currHour = date.getHours()                      
-                      if(currHour == this.removeDoublePriceTitles()){
-                        
+                      const utcTime = new Date(param.data[0]);
+                      const hours = utcTime.getHours().toString().padStart(2, '0');
+                      const minutes = utcTime.getMinutes().toString().padStart(2, '0');
+                      const day = utcTime.getDate().toString().padStart(2, '0');
+                      const month = (utcTime.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
+                      const year = utcTime.getFullYear();
+                        // Construct time in the desired format: 13:13 | 01.10.2024
+                      localTime = `${hours}:${minutes} | ${day}.${month}.${year}`;
+                                            
+                      if(parseInt(hours) == this.removeDoublePriceTitles()){                        
                         if(param.seriesName === 'price '){                      
                  
                            tooltipContent = ``          
@@ -127,7 +132,7 @@
                                 <span style="color: gray;"></span><span style="color: white;">${param.data[1]}</span>
                             </li>
                             <li>
-                                <span style="color: gray;">Time: </span><span style="color: white;">${param.data[0].split(":00Z")[0]}</span>
+                                <span style="color: gray;">Time: </span><span style="color: white;">${localTime}</span>
                             </li>
                             </ul>
                         </div>`;
@@ -144,8 +149,7 @@
             // left: '5%',
             // right: '1%',
             bottom: '35%',
-            containLabel: false,
-            
+            containLabel: false,            
           },
           xAxis: 
             {
@@ -233,6 +237,22 @@
             data: [],
             type: "line",
         },
+        {
+            name: "DAM",
+            smooth: false,
+            step: 'middle',
+            lineStyle:{
+                type: 'dotted',
+                width: 3,
+                color: 'yellow'
+            },
+            itemStyle: {
+                color: 'yellow'
+            },
+            sampling: 'lttb',
+            data: [],
+            type: "line",
+        },
     ]
   }
         //end option
@@ -265,6 +285,7 @@
         if (newRange !== oldRange) {
           this.option.series[0].data = []
           this.option.series[1].data = []
+          this.option.series[2].data = []
           this.fetchData();
         }
       }
@@ -287,31 +308,32 @@
       },
 
   
-      setHourlyAxisLabels() {
-        // Update xAxis axisLabel formatter and interval
-        this.option.xAxis.axisLabel = {
-          ...this.option.xAxis.axisLabel, // Preserve existing axisLabel properties
-          formatter: function(value) {
-            const date = new Date(value);
-            return `${date.getHours()}:00`;
-          }
-        };
+      // setHourlyAxisLabels() {
+      //   // Update xAxis axisLabel formatter and interval
+      //   this.option.xAxis.axisLabel = {
+      //     ...this.option.xAxis.axisLabel, // Preserve existing axisLabel properties
+      //     formatter: function(value) {
+      //       const date = new Date(value);
+      //       return `${date.getHours()}:00`;
+      //     }
+      //   };
   
-        this.option.xAxis.interval = 3600 * 1000; // One hour in milliseconds
+      //   this.option.xAxis.interval = 3600 * 1000; // One hour in milliseconds
 
-      },  
+      // },  
   
       setAxisTimeRange() {
-          const today = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
-          let start = new Date(today); // Initialized with todayUTC
-          let end = new Date(today); // Initialized with todayUTC
+          //const today = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
+          const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+          let start = new Date(today); // Initialized with today's date            
+          let end = new Date(today);   // Initialized with today's date
   
           if (this.dateRange === 'today') {
-            end.setUTCHours(23, 0, 0);
-            this.option.xAxis.axisLabel.formatter = timeLineSet//'{HH}:{mm}'
-            this.option.xAxis.splitNumber = 23
-            this.option.dataZoom[0].start = 0;
-            this.option.dataZoom[0].end = 100;
+            end.setHours(23, 59, 59); // Set end time to the end of the day                
+                this.option.xAxis.splitNumber = 24; // 24 hours in a day              
+                this.option.dataZoom[0].start = 0;
+                this.option.dataZoom[0].end = 100;
+                this.option.dataZoom[0].zoomLock = false;
           } else if (this.dateRange === 'dam'){
               start.setHours(0, 0, 0); // Start of today at 00:00
               end.setDate(end.getDate() + 2); // Move to the day after tomorrow
@@ -319,37 +341,39 @@
               this.option.xAxis.splitNumber = 24; // 48 half-hour intervals in 24 hours
               this.option.dataZoom[0].start = 0;
               this.option.dataZoom[0].end = 100;
+              this.option.dataZoom[0].zoomLock = false;
           }
            else if (this.dateRange === 'month') {
-            start.setUTCDate(1); // Start of the month
-            end.setUTCMonth(end.getUTCMonth() + 1, 0); // Last day of the month
-            end.setUTCHours(23, 0, 0);
-            this.option.xAxis.axisLabel.formatter = []//'{HH}:{mm}'
-            this.option.xAxis.splitNumber = 30
-            this.option.dataZoom[0].start = 0;
-            this.option.dataZoom[0].end = 100;
+              start.setDate(1); // Start of the month
+              end.setMonth(end.getMonth() + 1, 0); // Last day of the current month
+              end.setHours(23, 59, 59); // Set end time to the end of the day
+              this.option.xAxis.splitNumber = 12;
+              this.option.dataZoom[0].start = 0;
+              this.option.dataZoom[0].end = 100;
+              this.option.dataZoom[0].zoomLock = false;              
+              this.option.xAxis.splitNumber = end.getDate(); // Number of days in the month
           } else if (this.dateRange === 'year') {
-            start.setUTCMonth(0, 1); // Start of the year
-            end.setUTCFullYear(end.getUTCFullYear() + 1, 0, 0); // Last day of the year
-            end.setUTCHours(23, 0, 0);
-            this.option.xAxis.axisLabel.formatter = []//'{HH}:{mm}'
-            this.option.xAxis.splitNumber = 12
+            start.setMonth(0, 1); // Start of the year (January 1st)
+                end.setFullYear(end.getFullYear(), 11, 31); // Last day of the year (December 31st)
+                end.setHours(23, 59, 59); // Set end time to the end of the day
+               
+                this.option.xAxis.splitNumber = 12; // 12 months in a year
+                // Adjust the zoom window for one month (approx 8% of the year)
+                // Calculate the zoom window for the current month
+                const currentMonth = today.getMonth();
+                const totalMonths = 12;
 
-            const currentMonth = today.getMonth();
-            const totalMonths = 12;
+                // Calculate the percentage range for the current month
+                const startPercentage = ((currentMonth / totalMonths) * 100) - 1;
+                const endPercentage = ((currentMonth + 1) / totalMonths) * 100;
 
-            // Calculate the percentage range for the current month
-            const startPercentage = ((currentMonth / totalMonths) * 100) - 1;
-            const endPercentage = ((currentMonth + 1) / totalMonths) * 100;
-
-            this.option.dataZoom[0].start = startPercentage;
-            this.option.dataZoom[0].end = endPercentage;
+                this.option.dataZoom[0].start = startPercentage;
+                this.option.dataZoom[0].end = endPercentage;
           }
   
-          // Update xAxis min and max properties
-          this.option.xAxis.min = start.getTime();
-          this.option.xAxis.max = end.getTime();
-          // Additional logic to update the chart as necessary
+            this.option.xAxis.min = start.getTime();
+            
+            this.option.xAxis.max = end.getTime();
       },
   
   
@@ -361,13 +385,13 @@
         
 
         // Configuration based on dateRange
-        if (queryParam === 'today' || queryParam == 'dam') {
+        if (queryParam === 'today') {
             //this.configureChartForToday(); // Extract chart configuration to a method for better readability
 
-            const url1 = `http://85.14.6.37:16455/api/price/?start_date=${start}&end_date=${end}`;
+            const url1 = `http://85.14.6.37:16543/api/price/?start_date=${start}&end_date=${end}`;
             
-            const url2 = `http://85.14.6.37:16455/api/price/?start_date=${end}&end_date=${tomorrow}`;
-            console.log(url1)
+            const url2 = `http://85.14.6.37:16543/api/price/?start_date=${end}&end_date=${tomorrow}`;
+            
             
             try {
                 const [responseOne, responseTwo] = await Promise.all([
@@ -381,17 +405,34 @@
                 console.error('Error fetching data:', error);
             }
         }
+        else if (queryParam === 'dam'){
+          const url1 = `http://85.14.6.37:16543/api/price/?start_date=${start}&end_date=${end}`;
+          const url2 = `http://85.14.6.37:16543/api/price/?start_date=${end}&end_date=${tomorrow}`;
+          const url3 = `http://85.14.6.37:16543/api/price/?date_range=dam`;
+                      
+          try {
+                const [responseOne, responseTwo, responseThree] = await Promise.all([
+                    axios.get(url1),
+                    axios.get(url2),
+                    axios.get(url3)
+
+                ]);
+                
+                this.processResponseDayAhead(responseOne.data, responseTwo.data, responseThree.data)
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+
+        }
         else{
-          if(queryParam == 'dam')
-          {
-            queryParam = 'today'
-          }
-          const url = `http://85.14.6.37:16455/api/price/?date_range=${queryParam}`;
+
+          const url = `http://85.14.6.37:16543/api/price/?date_range=${queryParam}`;
 
           
           axios.get(url)
                  .then(response => response.data.forEach(el=>{                 
-                    this.option.series[0].data.push([el.timestamp,el.value])
+                    this.option.series[0].data.push([el.timestamp, el.price])
                  }))
                 .catch(errors => {
                     console.log(errors)
@@ -425,26 +466,43 @@
 
     // Example of extracting data processing into a separate method
     processResponseData(seriesIndex, priceData) {
-        if(seriesIndex == 1){
+        if(seriesIndex == 1){          
             priceData.forEach(el =>{
-              
-                el = [el.timestamp,el.value]
-                this.option.series[0].data.push(el)
-            
-
-            
+                let date = new Date(el.timestamp);
+                date = new Date(date.getTime() - (2 * 60 * 60 * 1000));
+                el = [date.toISOString(), el.price]
+                this.option.series[0].data.push(el) 
             })     
         }
         else{
             priceData.forEach(el =>{
-              
-              el = [el.timestamp,el.value]
+              let date = new Date(el.timestamp);
+              date = new Date(date.getTime() - (2 * 60 * 60 * 1000));
+              el = [date.toISOString(), el.price]             
               this.option.series[1].data.push(el)
             })   
-
         }
-      }        
-        // Make an API call to fetch data      
+      },
+    // Process DAM
+    processResponseDayAhead(res1, res2, res3){
+      if (res1 && res2 && res3){
+        res1.forEach(el => {
+          const dataPoint = [el.timestamp, el.price];
+          this.option.series[0].data.push(dataPoint);
+        })
+        res2.forEach(el => {
+          const dataPoint = [el.timestamp, el.price];
+          this.option.series[1].data.push(dataPoint);
+        })
+        res3.forEach(el => {
+          const dataPoint = [el.timestamp, el.price];
+          this.option.series[1].data.push(dataPoint);
+        })
+      }
+
+    }
+
+ 
     
       }
     };

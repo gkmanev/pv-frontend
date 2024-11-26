@@ -253,6 +253,53 @@
             data: [],
             type: "line",
         },
+        {
+            name: "forecast Price",
+            smooth: false,
+            step: 'middle',
+            lineStyle:{                
+                width: 1,
+                color: 'yellow'
+            },
+            itemStyle: {
+                color: 'yellow'
+            },
+            sampling: 'lttb',
+            data: [],
+            type: "line",
+        },
+        {
+            name: "forecast DAM Price",
+            smooth: false,
+            step: 'middle',
+            lineStyle:{
+                type: 'dotted',
+                width: 1,
+                color: 'yellow'
+            },
+            itemStyle: {
+                color: 'yellow'
+            },
+            sampling: 'lttb',
+            data: [],
+            type: "line",
+        },
+        {
+            name: "forecast DAM Price",
+            smooth: false,
+            step: 'middle',
+            lineStyle:{
+                type: 'dotted',
+                width: 1,
+                color: 'yellow'
+            },
+            itemStyle: {
+                color: 'yellow'
+            },
+            sampling: 'lttb',
+            data: [],
+            type: "line",
+        },
     ]
   }
         //end option
@@ -265,7 +312,7 @@
     },
   
     computed: {
-      ...mapState(['dateRange', 'zoomData'])
+      ...mapState(['dateRange', 'zoomData', 'selectedDev'])
     },
     watch: {
 
@@ -286,8 +333,23 @@
           this.option.series[0].data = []
           this.option.series[1].data = []
           this.option.series[2].data = []
+          this.option.series[3].data = []
+          this.option.series[4].data = []
+          this.option.series[5].data = []
           this.fetchData();
         }
+      },
+      selectedDev(newDev, oldDev) {
+        if(newDev !== oldDev){
+          this.option.series[0].data = []
+          this.option.series[1].data = []
+          this.option.series[2].data = []
+          this.option.series[3].data = []
+          this.option.series[4].data = []
+          this.option.series[5].data = []
+          this.fetchData();
+        }
+
       }
     },
 
@@ -391,16 +453,24 @@
             const url1 = `http://85.14.6.37:16543/api/price/?start_date=${start}&end_date=${end}`;
             
             const url2 = `http://85.14.6.37:16543/api/price/?start_date=${end}&end_date=${tomorrow}`;
-            
+
+            const url3Forecast =  `http://85.14.6.37:16543/api/forecasted_price/?start_date=${start}&end_date=${end}`;
+
+            const url4Forecast = `http://85.14.6.37:16543/api/forecasted_price/?start_date=${end}&end_date=${tomorrow}`;
+         
             
             try {
-                const [responseOne, responseTwo] = await Promise.all([
+                const [responseOne, responseTwo, responseThree, responseFour] = await Promise.all([
                     axios.get(url1),
-                    axios.get(url2)
+                    axios.get(url2),
+                    axios.get(url3Forecast),
+                    axios.get(url4Forecast)
                 ]);
                 
                 this.processResponseData(1, responseOne.data); // Assuming series 1 is for the first set of data
                 this.processResponseData(2, responseTwo.data); // Assuming series 2 is for the second set of data
+                this.processForecast(responseThree.data, responseFour.data)
+
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -408,17 +478,25 @@
         else if (queryParam === 'dam'){
           const url1 = `http://85.14.6.37:16543/api/price/?start_date=${start}&end_date=${end}`;
           const url2 = `http://85.14.6.37:16543/api/price/?start_date=${end}&end_date=${tomorrow}`;
-          const url3 = `http://85.14.6.37:16543/api/price/?date_range=dam`;
+          const url3 = `http://85.14.6.37:16543/api/price/?date_range=dam`;          
+          const url4Forecast =  `http://85.14.6.37:16543/api/forecasted_price/?start_date=${start}&end_date=${end}`;
+          const url5Forecast = `http://85.14.6.37:16543/api/forecasted_price/?start_date=${end}&end_date=${tomorrow}`;
+          const urlForecastDam = `http://85.14.6.37:16543/api/forecasted_price/?date_range=dam`;
                       
           try {
-                const [responseOne, responseTwo, responseThree] = await Promise.all([
+                const [responseOne, responseTwo, responseThree, responseFour, responseFive, responseDam] = await Promise.all([
                     axios.get(url1),
                     axios.get(url2),
-                    axios.get(url3)
+                    axios.get(url3),
+                    axios.get(url4Forecast),
+                    axios.get(url5Forecast),
+                    axios.get(urlForecastDam),
 
-                ]);
-                
+
+                ]);                
                 this.processResponseDayAhead(responseOne.data, responseTwo.data, responseThree.data)
+                this.processForecast(responseFour.data, responseFive.data)
+                this.processForecastDayAhead(responseDam.data)
 
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -429,14 +507,27 @@
 
           const url = `http://85.14.6.37:16543/api/price/?date_range=${queryParam}`;
 
+          const urlForecast = `http://85.14.6.37:16543/api/forecasted_price/?date_range=${queryParam}`;
+
+          try{
+            const [responseOne, responseTwo] = await Promise.all([
+                    axios.get(url),
+                    axios.get(urlForecast),
+                ]);  
+            this.processMonthYear(responseOne.data, responseTwo.data)              
+
+          } catch (error) {
+                console.error('Error fetching data:', error);
+          }
+
           
-          axios.get(url)
-                 .then(response => response.data.forEach(el=>{                 
-                    this.option.series[0].data.push([el.timestamp, el.price])
-                 }))
-                .catch(errors => {
-                    console.log(errors)
-                })
+          // axios.get(url)
+          //        .then(response => response.data.forEach(el=>{                 
+          //           this.option.series[0].data.push([el.timestamp, el.price])
+          //        }))
+          //       .catch(errors => {
+          //           console.log(errors)
+          //       })
         }
         this.setAxisTimeRange()
     },
@@ -500,7 +591,44 @@
         })
       }
 
-    }
+    },
+
+    processForecast(res1, res2)
+    {
+      res1.forEach(el =>{
+          let date = new Date(el.timestamp);
+          date = new Date(date.getTime() - (2 * 60 * 60 * 1000));
+          el = [date.toISOString(), el.price]
+          this.option.series[3].data.push(el) 
+      })
+      res2.forEach(el =>{
+          let date = new Date(el.timestamp);
+          date = new Date(date.getTime() - (2 * 60 * 60 * 1000));
+          el = [date.toISOString(), el.price]
+          this.option.series[4].data.push(el) 
+      })
+
+    },   
+    processForecastDayAhead(res){
+      res.forEach(el =>{
+          let date = new Date(el.timestamp);
+          date = new Date(date.getTime() - (2 * 60 * 60 * 1000));
+          el = [date.toISOString(), el.price]
+          this.option.series[5].data.push(el) 
+      })
+
+    },
+    processMonthYear(res, resForecast){
+      res.forEach(el => {
+        this.option.series[0].data.push([el.timestamp, el.price])
+      })
+      resForecast.forEach(el => {
+        this.option.series[1].data.push([el.timestamp, el.price])
+        this.option.series[1].itemStyle.color = 'yellow'
+      })
+
+    } 
+
 
  
     

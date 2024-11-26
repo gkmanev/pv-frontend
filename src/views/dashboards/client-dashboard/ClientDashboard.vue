@@ -130,13 +130,14 @@
 
     mounted() {
         // Trigger "today" filter when the component is created
-        this.checkSelectedDev()
+      if (this.checkSelectedDev()){
         if (this.dateRange === 'today' || this.dateRange === 'dam'){
           this.fetchToday();
         }
         else if (this.dateRange === 'year'){
           this.fetchYear();
         }
+      }
     },
 
   computed: {
@@ -221,6 +222,35 @@
             }
           
 
+        },
+
+        async fetchMonth(){
+          
+          let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=month&devId=${this.selectedDev}`;          
+        
+          try {                 
+                const [response] = await Promise.all([
+                    axios.get(url, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                    }),         
+                    
+                ]);               
+                
+                this.updateMonthData = [response.data]          
+                
+            }
+            catch (error) {
+              console.error('Error fetching data:', error);
+            } finally {
+                this.loading = false;
+                this.$refs.socRef.displayData(this.updateMonthData);
+                this.$refs.invRef.displayData(this.updateMonthData);
+                this.$refs.flowRef.displayData(this.updateMonthData);
+            }
+          
+
         }
 
 
@@ -233,6 +263,9 @@
         if (this.dateRange === 'today' || this.dateRange === 'dam'){
           this.fetchToday();
         }
+        else if (this.dateRange === 'month'){
+            this.fetchMonth()
+        }    
         else if (this.dateRange === 'year'){
           this.fetchYear();
         }
@@ -243,6 +276,9 @@
           if (this.dateRange === 'today' || this.dateRange === 'dam'){
           this.fetchToday();
         }
+        else if (this.dateRange === 'month'){
+            this.fetchMonth()
+        }    
         else if (this.dateRange === 'year'){
           this.fetchYear();
         }

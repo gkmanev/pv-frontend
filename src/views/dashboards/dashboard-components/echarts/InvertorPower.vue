@@ -333,6 +333,7 @@
               name: "SUM Day Ahead",
               type: 'bar', // Changed from 'line' to 'bar'
               itemStyle: {
+                opacity:1,
                 color: function(params) {
                   let value = params.value[1]
                   if(value < 0)
@@ -612,26 +613,19 @@
           try {
               if (this.dateRange === "today" || this.dateRange === "dam") {    
                 this.processData(data[0]);
-                this.processSchedule(data[1]);  
-            
-                         
-
+                this.processSchedule(data[1]);            
               }
+              else if (this.dateRange === "year" || this.dateRange === "month"){
+                this.processData(data[0]);
+              } 
 
-              else if (this.dateRange === "year"){
-                  this.processData(data[0]);        
-
-                  } 
-
-  
-              
-      } catch (error) {
-          console.error('Error fetching data:', error);
-      } finally {
-          this.loading = false;
-      }
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          } finally {
+              this.loading = false;
+          }
         }   
-        },
+      },
             //Today, Month, Year
             processData(data) {                      
               
@@ -695,15 +689,25 @@
           },
 
           processCumulativeDam(cumlativeDam){
+           
             let currentDate = new Date()
+            let tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1); // Move to tomorrow
+            tomorrow.setHours(1, 0, 0, 0); // Set the time to 01:00:00.000  
             if (cumlativeDam){ 
               cumlativeDam.forEach(el => {
                 let date = new Date(el.timestamp);
                 // Convert UTC time to local time (UTC+3 adjustment)
                 date = new Date(date.getTime() - (2 * 60 * 60 * 1000));
-                if(date >= currentDate){
+                if(date >= currentDate && date <= tomorrow){
                   this.option.series[5].data.push([date.toISOString(), el.cumulative_invertor_power]);
                   this.option.series[8].data.push([date.toISOString(), el.cumulative_invertor_power]);
+                  this.option.series[5].itemStyle.opacity = 0.1
+                }
+                else if(date>=tomorrow){                  
+                  this.option.series[5].data.push([date.toISOString(), el.cumulative_invertor_power]);
+                  this.option.series[8].data.push([date.toISOString(), el.cumulative_invertor_power]);
+                  this.option.series[5].itemStyle.opacity = 0.3
                 }
                 // else{
                 //   this.option.series[5].data.push([date.toISOString(), el.cumulative_invertor_power]);
@@ -739,6 +743,7 @@
                       this.option.series[5].data.push([date.toISOString(), el.invertor]); 
                       if (date >= currentDate){
                         this.option.series[8].data.push([date.toISOString(), el.invertor]); 
+                        this.option.series[5].itemStyle.opacity = 0.3
                       }
                          
                     }        

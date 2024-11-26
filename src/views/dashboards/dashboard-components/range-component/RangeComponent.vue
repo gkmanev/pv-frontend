@@ -67,6 +67,9 @@
   </script>
   
   <style scoped>
+   button.btn.btn-secondary.active{
+    background-color: #272b34;
+   }
    .btn-forecast {   
     background: #8d5cf5;
     color: #ffffff;

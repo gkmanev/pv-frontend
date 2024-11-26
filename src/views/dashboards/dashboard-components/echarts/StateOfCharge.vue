@@ -630,7 +630,7 @@
               }
 
               else if (this.dateRange === 'year' || this.dateRange === 'month'){               
-              
+                  
                   this.processData(data[0]);
                   this.processCumulative(data[1])
                   this.setAxisTimeRange();
@@ -655,11 +655,11 @@
 
                 }
 
-                  else if (this.dateRange === "year"){                 
-                      this.processData(data[0]);
-                      this.setAxisTimeRange()                   
+                else if (this.dateRange === "year" || this.dateRange == "month"){                 
+                  this.processData(data[0]);
+                  this.setAxisTimeRange()                   
 
-                    } 
+                } 
 
            
               
@@ -741,6 +741,7 @@
       let tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1); // Move to tomorrow
       tomorrow.setHours(1, 0, 0, 0); // Set the time to 01:00:00.000  
+      let hours = currentDate.getHours()
       if (stackData){         
         stackData.forEach(el => {
               let date = new Date(el.timestamp);
@@ -752,6 +753,10 @@
               }
               else if(date >= tomorrow){
                 this.option.series[11].data.push([date.toISOString(), el.cumulative_soc]);
+                if (hours >= 14){
+                  this.option.series[9].areaStyle.opacity = 0.3
+                  this.option.series[10].areaStyle.opacity = 0.3
+                }
               }
 
               // else{

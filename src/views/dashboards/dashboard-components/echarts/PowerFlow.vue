@@ -263,7 +263,7 @@
               name: "Batt1 Day Ahead",
               type: 'bar', 
               stack:'three',
-
+              opacity:0.3,
               itemStyle: {
                 color: function(params) {
                   let value = params.value[1]
@@ -286,6 +286,7 @@
               type: 'bar',        
               stack:'three',      
               itemStyle: {
+                opacity:0.3,
                 color: function(params) {
                   let value = params.value[1]
                   if(value < 0)
@@ -524,7 +525,7 @@
 
                     }
                
-                    else if (this.dateRange === "year"){
+                    else if (this.dateRange === "year" || this.dateRange === "month"){
                       this.processData(data[0]);  
                       this.setAxisTimeRange();
               
@@ -632,11 +633,13 @@
                               if (el.devId === "batt-0001") {                         
                                   if (date >= currentDate){
                                     this.option.series[4].data.push([date.toISOString(), el.flow]); 
+                                    this.option.series[4].itemStyle.opacity = 0.3
                                   }                
                               }              
                               if (el.devId === "batt-0002") {                         
                                 if(date >= currentDate){
                                   this.option.series[5].data.push([date.toISOString(), el.flow]);
+                                  this.option.series[5].itemStyle.opacity = 0.3
                                 }                                     
                               }  
                               if(this.lastRouteSegment() === 'client'){   
@@ -644,6 +647,7 @@
                                   this.option.series[3].data.push([date.toISOString(), el.flow]);    
                                 }    
                                 let itemStyle = {
+                                          opacity: 0.3,
                                           color: function(params) {
                                           let value = params.value[1]
                                           if(value < 0)

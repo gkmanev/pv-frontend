@@ -258,6 +258,7 @@
             smooth: false,
             step: 'middle',
             lineStyle:{                
+                type: 'dotted',
                 width: 1,
                 color: 'yellow'
             },
@@ -571,6 +572,8 @@
               date = new Date(date.getTime() - (2 * 60 * 60 * 1000));
               el = [date.toISOString(), el.price]             
               this.option.series[1].data.push(el)
+              this.option.series[1].lineStyle.color = '#39c449'
+              this.option.series[1].itemStyle.color = "#39c449"
             })   
         }
       },
@@ -584,6 +587,8 @@
         res2.forEach(el => {
           const dataPoint = [el.timestamp, el.price];
           this.option.series[1].data.push(dataPoint);
+          this.option.series[1].lineStyle.color = '#39c449'
+          this.option.series[1].itemStyle.color = "#39c449"
         })
         res3.forEach(el => {
           const dataPoint = [el.timestamp, el.price];
@@ -601,7 +606,7 @@
           el = [date.toISOString(), el.price]
           this.option.series[3].data.push(el) 
           this.option.series[3].lineStyle.color = "orange"
-          this.option.series[3].itemStyle.color = "orange"
+          this.option.series[3].itemStyle.color = "black"
       })
       res2.forEach(el =>{
           let date = new Date(el.timestamp);
@@ -609,7 +614,7 @@
           el = [date.toISOString(), el.price]
           this.option.series[4].data.push(el) 
           this.option.series[4].lineStyle.color = "orange"
-          this.option.series[4].itemStyle.color = "orange"
+          this.option.series[4].itemStyle.color = "black"
       })
 
     },   
@@ -620,7 +625,7 @@
           el = [date.toISOString(), el.price]
           this.option.series[5].data.push(el)        
           this.option.series[5].lineStyle.color = "orange"
-          this.option.series[5].itemStyle.color = "orange"
+          this.option.series[5].itemStyle.color = "black"
       })
 
     },
@@ -631,14 +636,11 @@
       resForecast.forEach(el => {
         this.option.series[1].data.push([el.timestamp, el.price])
         this.option.series[1].lineStyle.color = 'orange'
-        this.option.series[1].itemStyle.color = "orange"
+        this.option.series[1].itemStyle.color = "black"
       })
 
     } 
-
-
- 
-    
+   
       }
     };
   

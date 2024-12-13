@@ -51,6 +51,11 @@
             <PriceChart />
         </b-col>
     </b-row>    
+    <b-row>    
+        <b-col cols="12" v-if="isDevSelected" class="mt-3">
+            <RevenueChart />
+        </b-col>
+    </b-row>    
         <!--
          <b-col cols="8">
             <LineChart />
@@ -89,6 +94,7 @@
   // import CustomProgress from "../dashboard-components/progress-cards/CustomProgress.vue";
   import { mapState } from 'vuex';
   import axios from "axios"
+  import RevenueChart from "../dashboard-components/echarts/RevenueChart.vue";
 
 //   import SalesCard from "../dashboard-components/sales-card/SalesCard.vue";
 //   import WeatherChartClouds from "../dashboard-components/echarts/WeatherChartClouds.vue";
@@ -118,7 +124,8 @@
     PriceChart,
     DigiClock,
     BatteryChart,
-    BatteryGauge
+    BatteryGauge,
+    RevenueChart
    // AwesomeCards,
    // WeatherChart,
    // CustomProgress,
@@ -129,12 +136,15 @@
 },
 
     mounted() {
+      
         // Trigger "today" filter when the component is created
-      if (this.checkSelectedDev()){
+      if (this.selectedDev){       
         if (this.dateRange === 'today' || this.dateRange === 'dam'){
+          this.isDevSelected = true
           this.fetchToday();
         }
         else if (this.dateRange === 'year'){
+          this.isDevSelected = true
           this.fetchYear();
         }
       }

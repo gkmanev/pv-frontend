@@ -244,10 +244,10 @@
             lineStyle:{
                 type: 'dotted',
                 width: 1,
-                color: 'yellow'
+                color: '#39c449'
             },
             itemStyle: {
-                color: 'yellow'
+                color: '#39c449'
             },
             sampling: 'lttb',
             data: [],
@@ -579,20 +579,26 @@
       },
     // Process DAM
     processResponseDayAhead(res1, res2, res3){
-      if (res1 && res2 && res3){
-        res1.forEach(el => {
-          const dataPoint = [el.timestamp, el.price];
-          this.option.series[0].data.push(dataPoint);
+      if (res1 && res2 && res3){        
+        res1.forEach(el => {  
+          let date = new Date(el.timestamp);
+          date = new Date(date.getTime() - (2 * 60 * 60 * 1000));        
+          el = [date.toISOString(), el.price]         
+          this.option.series[0].data.push(el);
         })
         res2.forEach(el => {
-          const dataPoint = [el.timestamp, el.price];
-          this.option.series[1].data.push(dataPoint);
+          let date = new Date(el.timestamp);
+          date = new Date(date.getTime() - (2 * 60 * 60 * 1000));
+          el = [date.toISOString(), el.price]
+          this.option.series[1].data.push(el);
           this.option.series[1].lineStyle.color = '#39c449'
           this.option.series[1].itemStyle.color = "#39c449"
         })
         res3.forEach(el => {
-          const dataPoint = [el.timestamp, el.price];
-          this.option.series[2].data.push(dataPoint);
+          let date = new Date(el.timestamp);
+          date = new Date(date.getTime() - (2 * 60 * 60 * 1000));
+          el = [date.toISOString(), el.price]
+          this.option.series[2].data.push(el);
         })
       }
 

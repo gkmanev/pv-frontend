@@ -20,6 +20,7 @@
             : 'container-fluid content-wrapper'
         "
       >
+      <b-card class="mb-4">
         <h3 class="mb-0" v-if="$route.path !== '/starter'">
           {{ $route.name }}
         </h3>
@@ -27,8 +28,11 @@
           <b-breadcrumb-item href="/" custom> Home </b-breadcrumb-item>
           <b-breadcrumb-item active>{{ $route.name }}</b-breadcrumb-item>
         </b-breadcrumb>
+      </b-card>
+
         <router-view />
       </div>
+       
       <!-- <Customizer /> -->
       <Footer />
     </aside>
@@ -95,4 +99,7 @@ export default {
 </script>
 
 <style>
+.breadcrumb{
+  margin-bottom: 0;
+}
 </style>

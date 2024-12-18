@@ -1,7 +1,7 @@
 <template>
     <div>
       <b-row>
-        <b-col cols="6" md="6">
+        <b-col >
           <div class="gauge-container">
             <v-chart class="chart" width="100%" :option="option" />
           </div>

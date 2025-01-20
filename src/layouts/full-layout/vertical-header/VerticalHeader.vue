@@ -179,9 +179,9 @@
           </b-nav-item-dropdown> -->
 
           <!-- Logout -->
-          <b-button variant="danger" @click="logout" size="sm" class="mr-2">
+          <!-- <b-button variant="danger" @click="logout" size="sm" class="mr-2">
             Logout
-          </b-button>
+          </b-button> -->
         </b-navbar-nav>
 
         <!-- -----------------------------------------------------------

@@ -1,77 +1,31 @@
 <template>
 
   <div>
-    <b-card class="mb-4" v-if="isDevSelected">
-      <b-row class="justify-content-start"> 
-        <b-col cols="6">
-          <div class="widget-container d-flex"> <!-- Use d-flex to arrange items horizontally -->
-            <b-col cols="4" md="4" class="d-flex justify-content-end">
-              <BatteryChart class="battery-chart" />
-            </b-col>
-            <b-col cols="8" md="8">
-              <BatteryGauge class="battery-gauge" style="flex: 1;" />
-            </b-col>
-          </div>  
-        </b-col> 
-        <!-- <b-col cols="4">
-        </b-col> -->
-        <b-col cols="6">
-          <DigiClock />
-        </b-col>
-      </b-row>
-    </b-card>
     <b-row>     
-        <b-col cols="3">            
+        <b-col cols="12">            
             <SelectComponent />
         </b-col>
     </b-row>
     <b-row>
-        <b-col class="mt-5" cols="3">            
-            <RangeComponent class="mb-4" />          
+        <b-col class="mt-5" cols="12">            
+            <RangeComponent class="mb-4" :isVisible="true" />          
         </b-col>
     </b-row>
-   
-    <b-row> 
-        <b-col class="mt-3" v-if="isDevSelected" cols="12">          
-            <StateOfCharge ref="socRef" />
-        </b-col>  
+    <b-row v-if="isDevSelected">
+      <b-col cols="12" class="mt-4">
+        <b-card>
+          <MeasurementData />          
+        </b-card>
+      </b-col>
     </b-row>
-    <b-row>   
-        <b-col class="mt-3" v-if="isDevSelected" cols="12">          
-          <InvertorPower  ref="invRef" />
-        </b-col>
+    <b-row v-if="isDevSelected">
+      <b-col cols="12" class="mt-4">
+        <b-card>
+          <WeatherDataChart />
+        </b-card>
+      </b-col>
     </b-row>
-    <b-row> 
-        <b-col class="mt-3" v-if="isDevSelected" cols="12">          
-          <PowerFlow ref = "flowRef" />
-        </b-col>
-    </b-row>
-    <b-row>    
-        <b-col cols="12" v-if="isDevSelected" class="mt-3">
-            <PriceChart />
-        </b-col>
-    </b-row>    
-    <b-row>    
-        <b-col cols="12" v-if="isDevSelected" class="mt-3">
-            <RevenueChart />
-        </b-col>
-    </b-row>    
-        <!--
-         <b-col cols="8">
-            <LineChart />
-        </b-col>
-        <b-col cols="4">
-          <CustomProgress />
-          <CorelationsHeat />
-        </b-col>
-        
-        <b-col cols="12">
-            <WeatherChart />
-        </b-col>   
-        <b-col cols="12">
-            <WeatherChartClouds />
-        </b-col>    -->
-  
+     
   </div>
   </template>
   <script>
@@ -80,28 +34,10 @@
   // -----------------------------------------
   
   import SelectComponent from "../dashboard-components/select-component/SelectComponent";
-  import RangeComponent from "../dashboard-components/range-component/RangeComponent";
-  import StateOfCharge from "../dashboard-components/echarts/StateOfCharge";  
-  import PriceChart from "../dashboard-components/echarts/PriceChart"; 
-  import InvertorPower from "../dashboard-components/echarts/InvertorPower.vue";
-  import PowerFlow from '../dashboard-components/echarts/PowerFlow.vue';
-  import BatteryChart from "../dashboard-components/echarts/BatteryChart.vue";
-  import BatteryGauge from "../dashboard-components/echarts/BatteryGauge.vue";
-  import DigiClock from "../dashboard-components/echarts/DigiClock.vue";
-  
-
-  // // import AwesomeCards from "../dashboard-components/awesome-cards/AwesomeCards";  
-  // import CustomProgress from "../dashboard-components/progress-cards/CustomProgress.vue";
+  import RangeComponent from "../dashboard-components/range-component/RangeComponent";  
+  import MeasurementData from "../dashboard-components/echarts/MeasurementData.vue";
   import { mapState } from 'vuex';
-  import axios from "axios"
-  import RevenueChart from "../dashboard-components/echarts/RevenueChart.vue";
-
-//   import SalesCard from "../dashboard-components/sales-card/SalesCard.vue";
-//   import WeatherChartClouds from "../dashboard-components/echarts/WeatherChartClouds.vue";
-// import CorelationsHeat from "../dashboard-components/echarts/CorelationsHeat.vue";
-
-
-
+  import WeatherDataChart from "../dashboard-components/echarts/WeatherDataChart.vue";
   
   // -----------------------------------------
   // Export Here
@@ -113,47 +49,22 @@
       isDevSelected: false      
       
     }),
-    components: {
+    components: {  
    
-    // LineChart,
     SelectComponent,    
-    StateOfCharge,
-    InvertorPower,
-    PowerFlow,
-    RangeComponent,
-    PriceChart,
-    DigiClock,
-    BatteryChart,
-    BatteryGauge,
-    RevenueChart
-   // AwesomeCards,
-   // WeatherChart,
-   // CustomProgress,
-   // SalesCard,
-    // WeatherChartClouds,
-    // CorelationsHeat
-    
+    RangeComponent,  
+    MeasurementData,
+    WeatherDataChart  
+
 },
 
     mounted() {
-      
-        // Trigger "today" filter when the component is created
-      if (this.selectedDev){       
-        if (this.dateRange === 'today' || this.dateRange === 'dam'){
-          this.isDevSelected = true
-          this.fetchToday();
-        }
-        else if (this.dateRange === 'year'){
-          this.isDevSelected = true
-          this.fetchYear();
-        }
-      }
+      this.checkSelectedDev()  
     },
 
   computed: {
       ...mapState(['selectedDev', 'dateRange']),
     },
-
   
 
   methods: {
@@ -167,132 +78,16 @@
       }
     }, 
 
-    async fetchToday() {          
-       
-      let url_schedule = `http://85.14.6.37:16543/api/schedule/?date_range=dam&devId=${this.selectedDev}`;
-      let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=today&devId=${this.selectedDev}`;     
-   
-      
-      try {            
-               const [response, scheduleResponse] = await Promise.all([
-                   axios.get(url, {
-                       headers: {
-                           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                       }
-                   }),                
-                   axios.get(url_schedule, {
-                       headers: {
-                           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                       }
-                   }),                
-                   
-               ]);
-               
-               
-               this.updateTodayData = [response.data, scheduleResponse.data]
-               
-           }
-           catch (error) {
-             console.error('Error fetching data:', error);
-           } finally {
-               this.loading = false;
-               this.$refs.socRef.displayData(this.updateTodayData);
-               this.$refs.invRef.displayData(this.updateTodayData);
-               this.$refs.flowRef.displayData(this.updateTodayData);
-           }
-     },
-     async fetchYear(){
-          
-          let url = `http://85.14.6.37:16543/api/year-agg/?devId=${this.selectedDev}`;    
-   
-          
-        
-          try { 
-                
-                const [response] = await Promise.all([
-                    axios.get(url, {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                        }
-                    }),         
-                    
-                ]);               
-                
-                this.updateYearData = [response.data]
-               
-                
-            }
-            catch (error) {
-              console.error('Error fetching data:', error);
-            } finally {
-                this.loading = false;
-                this.$refs.socRef.displayData(this.updateYearData);
-                this.$refs.invRef.displayData(this.updateYearData);
-                this.$refs.flowRef.displayData(this.updateYearData);
-            }
-          
-
-        },
-
-        async fetchMonth(){
-          
-          let url = `http://85.14.6.37:16543/api/state_of_charge/?date_range=month&devId=${this.selectedDev}`;          
-        
-          try {                 
-                const [response] = await Promise.all([
-                    axios.get(url, {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                        }
-                    }),         
-                    
-                ]);               
-                
-                this.updateMonthData = [response.data]          
-                
-            }
-            catch (error) {
-              console.error('Error fetching data:', error);
-            } finally {
-                this.loading = false;
-                this.$refs.socRef.displayData(this.updateMonthData);
-                this.$refs.invRef.displayData(this.updateMonthData);
-                this.$refs.flowRef.displayData(this.updateMonthData);
-            }
-          
-
-        }
-
-
-
   },
   watch: {
     selectedDev(newDev, oldDev) {
-      if (newDev !== oldDev) {
-        this.isDevSelected = true;
-        if (this.dateRange === 'today' || this.dateRange === 'dam'){
-          this.fetchToday();
-        }
-        else if (this.dateRange === 'month'){
-            this.fetchMonth()
-        }    
-        else if (this.dateRange === 'year'){
-          this.fetchYear();
-        }
+      if (newDev !== oldDev) {        
+        this.checkSelectedDev()
       }
     },
     dateRange(newRange, oldRange) {
-        if (newRange !== oldRange) {     
-          if (this.dateRange === 'today' || this.dateRange === 'dam'){
-          this.fetchToday();
-        }
-        else if (this.dateRange === 'month'){
-            this.fetchMonth()
-        }    
-        else if (this.dateRange === 'year'){
-          this.fetchYear();
-        }
-     
+        if (newRange !== oldRange) {    
+            this.checkSelectedDev()
       }
    },
 

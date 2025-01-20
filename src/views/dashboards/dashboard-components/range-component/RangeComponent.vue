@@ -1,27 +1,85 @@
 <template>
-  <div class="d-flex justify-content-between">
-    <div class="filter-buttons">
-            <b-button-group>
-              <b-button @click="filterContent('dam')" :class="{ 'active': selectedPeriod === 'dam' }">Day Ahead</b-button>
-              <b-button @click="filterContent('today')" :class="{ 'active': selectedPeriod === 'today' }">Today</b-button>
-              <b-button @click="filterContent('month')" :class="{ 'active': selectedPeriod === 'month' }">Month</b-button>
-              <b-button @click="filterContent('year')"  :class="{ 'active': selectedPeriod === 'year' }">Year</b-button>              
-            </b-button-group>
-    </div>
-    <div class="forecast-button">
-      <b-button @click="populateBatterySchedule"  :class="{'btn-forecast':'btn', 'active': selectedPeriod === 'forecast' }">Create forecast</b-button>
-    </div>
+  <div>
+    <b-row>
+      <b-col cols="auto">
+      <b-button-group>
+        <!-- <b-button 
+          v-if="isVisible" 
+          @click="filterContent('dam')" 
+          :class="{ 'active': selectedPeriod === 'dam' }"
+        >
+          Day Ahead
+        </b-button> -->
+        <!-- <b-button v-if="isVisible"
+          @click="filterContent('all')" 
+          :class="{ 'active': selectedPeriod === 'all' }"
+        >
+          All
+        </b-button> -->
+        <b-button 
+          @click="filterContent('start_date=2023-01-01')" 
+          :class="{ 'active': selectedPeriod === 'start_date=2023-01-01' }"
+        >
+          2023
+        </b-button>
+        <b-button 
+          @click="filterContent('start_date=2024-01-01')" 
+          :class="{ 'active': selectedPeriod === 'start_date=2024-01-01' }"
+        >
+          2024
+        </b-button>
+        <b-button 
+          @click="filterContent('start_date=2025-01-01')" 
+          :class="{ 'active': selectedPeriod === 'start_date=2025-01-01' }"
+        >
+          YTD
+        </b-button>
+      </b-button-group>   
+    </b-col>
+    <b-col v-if="isVisible" cols="auto">
+      <b-form-datepicker 
+        id="datepicker-buttons"
+        v-model="selectedDate"
+        @input="handleDateChange"
+        today-button
+        reset-button
+        close-button
+        locale="en"
+        class="me-2"
+      ></b-form-datepicker>
+      </b-col>
+      <b-col v-if="isVisible" cols="auto">
+      <b-form-select 
+        id="number-picker"
+        @input="selectNumberChange"
+        v-model="selectedNumber"
+        :options="[1, 2, 3, 4, 5]"
+        class="me-2"
+      ></b-form-select>
+      </b-col>
+      <b-col v-if="isVisible" cols="auto">
+        <b-button @click="confidance('checking')" >         
+          Check Confidance
+        </b-button>
+      </b-col>
+
+  </b-row>
+   
   </div>
-  </template>
+</template>
+
   
   <script>
   import { mapActions } from 'vuex';
   import { mapState } from 'vuex';
-  import axios from 'axios';
+
   export default {
+    props:['isVisible'],
     data() {
-      return {
-        selectedPeriod: 'today',
+      return {        
+        selectedPeriod: 'all',  
+        selectedDate: null,
+        selectedNumber: null,      
       };
     },
 
@@ -29,38 +87,51 @@
       ...mapState(['dateRange']),    
   
     },
-    mounted() { 
-
+    mounted() {       
       this.selectedPeriod = this.dateRange
-
     },
   
     methods: {
 
-      ...mapActions(['updateDateRange']),
+      ...mapActions(['updateDateRange', 'updateConfidance']),
       
 
-      filterContent(period) {
-        
-        this.selectedPeriod = period
-        // console.log(period)
-        this.updateDateRange(period)
-       
-        //this.$emit('filter', period);          
+      filterContent(period) {        
+        this.selectedPeriod = period       
+        this.updateDateRange(period)              
       },
-
-      async populateBatterySchedule() {
-      try {
-          const response = await axios.post('http://85.14.6.37:16543/api/populate-schedule/');
-          if (response.status === 202) {
-            console.log('Task started:', response.data.task_id);
-            //this.$notify({ type: 'success', message: 'Battery schedule population started' });
-          }
-        } catch (error) {
-          console.error('Error starting task:', error);
-          //this.$notify({ type: 'error', message: 'Failed to start battery schedule population' });
-        }
+      handleDateChange(date) {
+        this.updateConfidance(false);
+        this.selectedDate = date;   
+        if(date && this.selectedNumber){
+          let startPeriod = date;
+          //add number of days to the selected date
+          let endPeriod = new Date(startPeriod);
+          endPeriod.setDate(endPeriod.getDate() + this.selectedNumber);
+          this.rangeString = `start_date=${startPeriod}&end_date=${endPeriod.toISOString().slice(0, 10)}`;
+         
+          this.updateDateRange(this.rangeString);
+          
+        }        
+      },
+      selectNumberChange(number) {
+        this.selectedNumber = number;
+        if (this.selectedDate && number)
+        {
+          let startPeriod = this.selectedDate;
+          //add number of days to the selected date
+          let endPeriod = new Date(startPeriod);
+          endPeriod.setDate(endPeriod.getDate() + number);
+          this.rangeString = `start_date=${startPeriod}&end_date=${endPeriod.toISOString().slice(0, 10)}`;
+          this.updateDateRange(this.rangeString);
+          
+        }       
+        
+      },  
+      confidance(){    
+        this.updateConfidance(true)    
       }
+
 
     },
   };
@@ -78,4 +149,5 @@
   .btn-forecast:hover{
     background: #a57efa;
   }
+
   </style>

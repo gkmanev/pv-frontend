@@ -1,7 +1,8 @@
 <template>
     <div>
-      <b-form-select v-model="selected" @change="setSelected(selected)" :options="options"></b-form-select>      
-      <!-- <div class="mt-3">Selected: <strong>{{ selected }}</strong></div> -->
+      <b-row>
+        <b-form-select v-model="selected" @change="setSelected(selected)" :options="options"></b-form-select>      
+      </b-row>
     </div>
   </template>
   
@@ -36,17 +37,14 @@
         this.updateSelected(sel);
       },
       populateOptions() {     
-        
         const devOptions = this.all_devs.map(dev =>         
         ({                    
-          value: dev.id, 
-          text: dev.id,                              
+          value: dev.farm, 
+          text: dev.farm,                              
         }));   
         
-        devOptions.forEach(el => {        
-          if (el.online !== 'offline') {   
-                this.options.push(el);        
-        }
+        devOptions.forEach(el => {          
+          this.options.push(el);       
         });        
       },
     },

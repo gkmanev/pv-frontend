@@ -3,13 +3,13 @@ export default [
   {
     id:"1200",
     icon: "zap",
-    title: "Fleet",    
+    title: "PV Dashboard",    
     to: "/dashboard/entra"
   },  
   {
     id:"1201",
     icon: "bar-chart",
-    title: "Asset",     
+    title: "PV Asset",     
     to: "/dashboard/client"
   },
   // {

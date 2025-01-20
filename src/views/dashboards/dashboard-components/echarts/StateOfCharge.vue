@@ -3,7 +3,7 @@
       <div class="mt-4">
         <div v-if="loading"> <b-spinner label="Loading..."></b-spinner></div>
         <div v-else>
-        <v-chart class="chart" height="450" width="100%" :option="option" @datazoom="onDataZoom" autoresize/>
+        <v-chart class="chart" height="450" width="100%" :option="option" autoresize/>
         </div>
       </div>
     </b-card>
@@ -13,9 +13,10 @@
   // import * as echarts from 'echarts';
 
   import VChart from "vue-echarts";
-  
+  import axios from 'axios';
+
   import { mapState } from 'vuex';
-  import { mapActions } from 'vuex';
+  // import { mapActions } from 'vuex';
   import { use } from 'echarts/core'
   import { LineChart } from 'echarts/charts'
   import {
@@ -42,22 +43,6 @@
     
   ])
   
-//   var timeLineSet = function(value) {
-//     // Create a Date object from the UTC date string
-//     let date = new Date(value);
-
-//     // Convert UTC date to local time
-//     let hours = date.getHours();
-//     let minutes = date.getMinutes();
-
-//     // Format hours and minutes to ensure two digits
-//     hours = ("0" + hours).slice(-2);
-//     minutes = ("0" + minutes).slice(-2);
-
-//     return `${hours}:${minutes}`;
-// };
-  
- 
 
   
   export default {
@@ -220,226 +205,7 @@
     
     series:[
     
-    {
-              name: "Batt1",
-              smooth: true,            
-              stack: 'Total',
-              lineStyle:{
-                width:0
-              },
-              itemStyle: {
-                  color: '#009BCB'
-              },
-                     
-              data: [],
-              type: 'line',
-              showSymbol: false,   
-              areaStyle: {                
-              },
-      
-              
-    },
-    {
-              name: "Batt2",
-              smooth: true,            
-              stack: 'Total',
-              lineStyle:{
-                width:0
-              },
-              itemStyle: {
-                color: '#FFBC34'
-              },
-              
-              data: [],
-              type: 'line',
-              showSymbol: false,   
-              areaStyle: {},        
-              
-    },
-    {
-              name: "Batt1 Day Ahead",
-              smooth: true,            
-              stack: 'Dam',
-              lineStyle:{
-                width:0,
-                type: 'dashed'
-              },
-              itemStyle: {
-                  color: '#009BCB'
-              },              
-              sampling: 'average',
-              data: [],
-              type: 'line',
-              showSymbol: false,   
-              areaStyle: {opacity: 0.3},            
-             
-              
-    },
-    {
-              name: "Batt2 Day Ahead",
-              smooth: true,            
-              stack: 'Dam',
-              lineStyle:{
-                width:0,
-                type: 'dashed'
-              },
-              itemStyle: {
-                  color: '#FFBC34'
-              },
-              sampling: "",
-              data: [],
-              type: 'line',
-              
-              showSymbol: false,   
-              areaStyle: {
-                opacity: 0.3
-              }
-              
-                        
-    },
-
-    {
-              name: "SUM",
-              smooth: true,             
-              lineStyle:{
-                width:1,               
-              },
-              itemStyle: {
-                  color: 'yellow',
-                  opacity: 0
-              },
-              sampling: 'average',
-              data: [],
-              type: 'line',
-              
-              showSymbol: false,                        
-                        
-    },
-    
-    {
-              name: "Batt1 Day Ahead Before",
-              smooth: true,            
-              //stack: 'Dam',
-              lineStyle:{
-                width:0,                
-              },             
-              sampling: 'average',
-              data: [],
-              type: 'line',
-              showSymbol: false,  
-             
-              
-    },
-    {
-              name: "Batt2 Day Ahead Before",
-              smooth: true,            
-             // stack: 'Dam',
-              lineStyle:{
-                width:0,               
-              },                     
-              sampling: 'average',
-              data: [],
-              type: 'line',
-              showSymbol: false,             
-              
-    },
-    {
-              name: "SUM Day Ahead",
-              smooth: true,             
-              lineStyle:{
-                width:1,  
-                type:"dashed"                             
-              },
-              itemStyle: {
-                  color: 'yellow'
-              },
-              sampling: 'average',
-              data: [],
-              type: 'line',
-              
-              showSymbol: false,           
-                        
-    },
-    {
-              name: "SUM Day Ahead Before",
-              smooth: true,             
-              lineStyle:{
-                width:0,   
-                type:'dashed'            
-              },
-              itemStyle: {
-                  color: 'yellow'
-              },
-              sampling: 'average',
-              data: [],
-              type: 'line',
-              
-              showSymbol: false,           
-                        
-    },
-
-    {
-              name: "Batt1 Day Ahead",
-              smooth: true,            
-              stack: 'Dam2',
-              lineStyle:{
-                width:0,
-                type: 'dashed'
-              },
-              itemStyle: {
-                  color: '#009BCB'
-              },              
-              sampling: 'average',
-              data: [],
-              type: 'line',
-              showSymbol: false,   
-              areaStyle: {opacity: 0.1},            
-             
-              
-    },
-    {
-              name: "Batt2 Day Ahead",
-              smooth: true,            
-              stack: 'Dam2',
-              lineStyle:{
-                width:0,
-                type: 'dashed'
-              },
-              itemStyle: {
-                  color: '#FFBC34'
-              },
-              sampling: "",
-              data: [],
-              type: 'line',
-              
-              showSymbol: false,   
-              areaStyle: {
-                opacity: 0.1
-              }
-              
-                        
-    },
-    {
-              name: "SUM Day Ahead",
-              smooth: true,             
-              lineStyle:{
-                width:1,  
-                type:"dashed",
-                opacity:0.3                             
-              },
-              itemStyle: {
-                  color: 'yellow'
-              },
-              sampling: 'average',
-              data: [],
-              type: 'line',
-              
-              showSymbol: false,           
-                        
-    },
-
-
-
+   
     ],
 
   }
@@ -448,27 +214,10 @@
     },
   
     mounted() { 
-      this.option.series[0].data = [];
-      this.option.series[1].data = [];
-      this.option.series[2].data = [];
-      this.option.series[3].data = [];
-      this.option.series[4].data = [];
-      this.option.series[5].data = [];
-      this.option.series[6].data = [];
-      this.option.series[7].data = [];
-      this.option.series[8].data = [];
-      this.option.series[9].data = [];
-      this.option.series[10].data = [];
-      this.option.series[11].data = [];
+     
         this.setAxisTimeRange();
-       // this.displayData();
-
-    //  const foundObject = this.all_devs.find(obj => obj.id === this.selectedDev);      
-    //   if (foundObject)
-    //   {
-       
-    //   }    
-      //this.fetchData();
+        this.displayData();
+    
     },
   
     computed: {
@@ -480,56 +229,21 @@
       
       dateRange(newRange, oldRange) {
         if (newRange !== oldRange) {
-          this.option.series[0].data = [];
-          this.option.series[1].data = [];
-          this.option.series[2].data = [];
-          this.option.series[3].data = [];
-          this.option.series[4].data = [];
-          this.option.series[5].data = [];
-          this.option.series[6].data = [];
-          this.option.series[7].data = [];
-          this.option.series[8].data = [];
-          this.option.series[9].data = [];
-          this.option.series[10].data = [];
-          this.option.series[11].data = [];
-          this.setAxisTimeRange()
          
-          //this.displayData();
+          this.setAxisTimeRange()      
           
         }
       },
       selectedDev(newDev, oldDev) {
-        if (newDev !== oldDev) {
-          this.option.series[0].data = [];
-          this.option.series[1].data = [];
-          this.option.series[2].data = [];
-          this.option.series[3].data = [];
-          this.option.series[4].data = [];
-          this.option.series[5].data = [];
-          this.option.series[6].data = [];
-          this.option.series[7].data = [];
-          this.option.series[8].data = [];
-          this.option.series[9].data = [];
-          this.option.series[10].data = [];
-          this.option.series[11].data = [];
-         // this.option.series[0].data = []
+        if (newDev !== oldDev) {        
           this.setAxisTimeRange()
-          //this.displayData();
+      
         }
       },   
   
     },
   
     methods: {
-
-      onDataZoom(event) {
-        // Capture the dataZoom start and end values
-        const start = event.start;
-        const end = event.end;        
-        this.updateZoomData([start, end]);
-      },
-
-      ...mapActions(['updateZoomData']),
 
       lastRouteSegment() {
             const pathArray = this.$route.path.split('/');    
@@ -614,29 +328,46 @@
             this.$refs.chart && this.$refs.chart.refresh(); 
     },
 
-    async displayData(data) {
+    async displayData() {
       let updateCurrentPath = this.lastRouteSegment()
 
       if(updateCurrentPath == 'entra') {                   
        
           try {
-              if (this.dateRange === "today" || this.dateRange === "dam") {   
-
-                this.processData(data[0]);
-                this.processSchedule(data[2]);
-                this.processCumulative(data[1]);     
-                this.processCumulativeDam(data[3]);           
-
+            const response = await axios.get('http://209.38.208.230:8000/api/pvdata/');
+            const data = response.data;
+            const filteredData = data.filter(item => item.parameter_id === 720);
+            // Group data by installation_name
+            const groupedData = filteredData.reduce((acc, item) => {
+              if (!acc[item.installation_name]) {
+                acc[item.installation_name] = [];
               }
+              acc[item.installation_name].push(item);
+              return acc;
+            }, {});
+            
+            // Prepare series data
+            const series = [];
+            const xAxisData = [];
+            Object.keys(groupedData).forEach(installation_name => {
+              const installationData = groupedData[installation_name];
+              const seriesData = installationData.map(item => (
+                [
+                  item.signal_time,parseFloat(item.signal_value)
+                ]));
+              series.push({
+                name: installation_name,
+                type: 'line',
+                data: seriesData
+              });
 
-              else if (this.dateRange === 'year' || this.dateRange === 'month'){               
-                  
-                  this.processData(data[0]);
-                  this.processCumulative(data[1])
-                  this.setAxisTimeRange();
-                
-              }       
-
+              if (xAxisData.length === 0) {
+                xAxisData.push(...installationData.map(item => item.signal_time));
+              }
+          });
+          this.option.xAxis.data = xAxisData;
+          this.option.series = series;
+          console.log('series:', series);
               
            
           } catch (error) {
@@ -645,130 +376,31 @@
               this.loading = false;
           }
     }
-    if(updateCurrentPath == 'client') { 
+    // if(updateCurrentPath == 'client') { 
 
-      try {      
-              if (this.dateRange === "today" || this.dateRange === 'dam') {   
+    //   try {      
+    //           if (this.dateRange === "today" || this.dateRange === 'dam') {   
                
-                  this.processData(data[0]);
-                  this.processSchedule(data[1]);                   
+                             
 
-                }
+    //             }
 
-                else if (this.dateRange === "year" || this.dateRange == "month"){                 
-                  this.processData(data[0]);
-                  this.setAxisTimeRange()                   
+    //             else if (this.dateRange === "year" || this.dateRange == "month"){                 
+                         
 
-                } 
+    //             } 
 
            
               
-      } catch (error) {
-          console.error('Error fetching data:', error);
-      } finally {
-          this.loading = false;
-      }
-    }
+    //   } catch (error) {
+    //       console.error('Error fetching data:', error);
+    //   } finally {
+    //       this.loading = false;
+    //   }
+    // }
     },
   
-    //Today, Month, Year
-    processData(data) {
-        if(data){
-          let devIdToSeriesIndex = {};
-          this.all_devs.forEach((dev, index) => {
-              devIdToSeriesIndex[dev.id] = index;
-          });       
-          
-          data.forEach(el => {
-              let date = new Date(el.timestamp);
-              // Convert UTC time to local time (UTC+3 adjustment)  
-              date = new Date(date.getTime() - (2 * 60 * 60 * 1000));           
-              let seriesIndex = devIdToSeriesIndex[el.devId];
-              if (seriesIndex !== undefined) {
-                this.option.series[seriesIndex].data.push([date.toISOString(), el.state_of_charge]);                
-              }            
-          }); 
-        }       
-
-       
-    },
-
-    processSchedule(schedule){
-      if(schedule){          
-          let currentDate = new Date();
-          let tomorrow = new Date();
-          tomorrow.setDate(tomorrow.getDate() + 1); // Move to tomorrow
-          tomorrow.setHours(1, 0, 0, 0); // Set the time to 01:00:00.000
-
-          schedule.forEach(elSched =>{           
-          let date = new Date(elSched.timestamp);                         
-                date = new Date(date.getTime() - (2 * 60 * 60 * 1000));               
-                if (elSched.devId === "batt-0001") {  
-                    if (date >= currentDate && date <= tomorrow){
-                      this.option.series[2].data.push([date.toISOString(), elSched.soc]);                      
-                    }     
-                    else if(date >= tomorrow){
-                      this.option.series[9].data.push([date.toISOString(), elSched.soc]);  
-                    }                             
-                }       
-                        
-                if (elSched.devId === "batt-0002") {
-                  if (date >= currentDate && date <= tomorrow){
-                      this.option.series[3].data.push([date.toISOString(), elSched.soc]); 
-                    }   
-                  if( date >= tomorrow){
-                    
-                    this.option.series[10].data.push([date.toISOString(), elSched.soc]); 
-                  }              
-               }
-          })
-        }
-    },
-
-    processCumulative(stackData){         
-      if (stackData){         
-        stackData.forEach(el => {
-              let date = new Date(el.timestamp);
-              // Convert UTC time to local time (UTC+3 adjustment)
-              date = new Date(date.getTime() - (2 * 60 * 60 * 1000));          
-              this.option.series[4].data.push([date.toISOString(), el.cumulative_soc]);
-            
-          });          
-      }
-    },
-    processCumulativeDam(stackData){      
-      let currentDate = new Date();   
-      let tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1); // Move to tomorrow
-      tomorrow.setHours(1, 0, 0, 0); // Set the time to 01:00:00.000  
-      let hours = currentDate.getHours()
-      if (stackData){         
-        stackData.forEach(el => {
-              let date = new Date(el.timestamp);
-              // Convert UTC time to local time (UTC+3 adjustment)
-              date = new Date(date.getTime() - (2 * 60 * 60 * 1000));  
-              if (date >= currentDate && date <= tomorrow){        
-                this.option.series[7].data.push([date.toISOString(), el.cumulative_soc]);
-              //this.option.series[8].data.push([date.toISOString(), el.cumulative_soc]);
-              }
-              else if(date >= tomorrow){
-                this.option.series[11].data.push([date.toISOString(), el.cumulative_soc]);
-                if (hours >= 14){
-                  this.option.series[9].areaStyle.opacity = 0.3
-                  this.option.series[10].areaStyle.opacity = 0.3
-                }
-              }
-
-              // else{
-              //   this.option.series[7].data.push([date.toISOString(), el.cumulative_soc]);
-              // }
-            
-          }); 
-               
-      }
-    },
-
-
+   
   }
   
   };

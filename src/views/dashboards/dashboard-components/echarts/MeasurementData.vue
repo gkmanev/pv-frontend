@@ -1,6 +1,6 @@
 <template>    
     <b-card >
-      <div ref="chart" :style="{ width: '100%', height: '450px' }"></div>
+      <div ref="chart" :style="{ width: '100%', height: '450px' }"><span v-if="noDataMessage">There Are no Data for this Period</span></div>
     </b-card>
 </template>
 
@@ -16,14 +16,16 @@ export default {
       measurementData: [],
       timestampField: 'day',
       valueField: 'total_production',
+      noDataMessage: false
     };
   },
     mounted() {
         this.fetchAllData();
         window.addEventListener('resize', this.handleResize);
+        console.log(this.all_devs)
     },
     computed: {
-      ...mapState(['dateRange', 'selectedDev', 'confidanceCheck']),      
+      ...mapState(['dateRange', 'selectedDev', 'confidanceCheck', 'all_devs']),      
       chartHeight() {
     return window.innerHeight * 0.3; // Adjust this factor as needed
   }
@@ -125,22 +127,24 @@ export default {
           });
         } else {
           console.error('No data found');
-          this.chart.clear();
-    this.option = {
-      title: {
-        text: 'No Data Available',
-        left: 'center',
-        top: 'middle',
-        textStyle: {
-          fontSize: 16,
-          color: '#b2b9bf',
-          fontFamily: 'Arial',
-          fontWeight: 'normal'
-        }
-      }
-    };
-    this.chart.setOption(this.option);
-            
+          this.noDataMessage = true
+          if(this.chart){
+              this.chart.clear();
+              this.option = {
+                title: {
+                  text: 'No Data Available',
+                  left: 'center',
+                  top: 'middle',
+                  textStyle: {
+                    fontSize: 16,
+                    color: '#b2b9bf',
+                    fontFamily: 'Arial',
+                    fontWeight: 'normal'
+                  }
+                }
+              };
+            this.chart.setOption(this.option);   
+          }       
         
         }
       } catch (error) {
@@ -153,18 +157,20 @@ export default {
       const timestamps = this.getAllTimestamps(this.measurementData);
       const series = this.createSeries(groupedData, timestamps);
       const xAxis = this.getXAxisConfig(timestamps);
-      let allSeries = series
+      let allSeries = series      
       
       if (this.selectedDev && this.lastRouteSegment() !== 'entra'){        
         const newSeriesMax = this.addMaxSeries(groupedData, timestamps);        
         const newSeriesMin = this.addMinSeries(groupedData, timestamps);        
-        allSeries = allSeries.concat(newSeriesMin).concat(newSeriesMax);
-        
+        allSeries = allSeries.concat(newSeriesMin).concat(newSeriesMax);       
+        series[0].areaStyle.opacity = 0
+        series[0].lineStyle.color = "orange"
       }     
       this.option = {
         title: {
             text: 'PV Production [MW/h] | Resolution: 1h', 
-            left: 'center',   
+            left: 'center', 
+            top: 'top',  
             textStyle: {
               fontSize: 16,
               color:'#b2b9bf',
@@ -242,7 +248,7 @@ export default {
         series: allSeries,
         //series: series,
       };
-      this.chart.setOption(this.option);   
+      this.chart.setOption(this.option);
     },
     groupDataByFarm(data) {
       return data.reduce((acc, item) => {
@@ -261,25 +267,27 @@ export default {
       return Array.from(timestamps).sort();
     },
     createSeries(groupedData, timestamps) {      
-      return Object.keys(groupedData).map(farm => {
-        const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueField]]));
-        const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp) || null]); // Use null for missing data
-        
-        return {
-          name: farm,
+        return Object.keys(groupedData).map(farm => {
+          const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueField]]));
+          const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp) || null]); // Use null for missing data
+          const config = {          
           type: 'line',
-          stack: 'total',
+          stack: 'total',  
           itemStyle: {
             opacity:50
-          },
-          //color:'orange',
+          },       
+          lineStyle:{},   
           connectNulls: false,
           showSymbol: false,
-          areaStyle: {},
-          
-          data: data,
-        };
+            areaStyle: {
+           
+          },         
+        }
+          config.name = farm
+          config.data = data
+          return config      
       });
+      
     },
     getXAxisConfig(timestamps) {
       return {
@@ -289,11 +297,11 @@ export default {
         boundaryGap: false
       };
     },
-  addMaxSeries(groupedData, timestamps){    
-    console.log("InMaxSeries", this.dateRange)
-    return Object.keys(groupedData).map(farm => {
-      const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item['max_production'] - item['min_production']]));
-      const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp) || null]); // Use null for missing data
+    addMaxSeries(groupedData, timestamps){    
+      console.log("InMaxSeries", this.dateRange)
+      return Object.keys(groupedData).map(farm => {
+        const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item['max_production'] - item['min_production']]));
+        const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp) || null]); // Use null for missing data
       
     
       return {
@@ -306,7 +314,7 @@ export default {
         },     
         areaStyle: {
             color: '#ccc',
-            opacity: 0.5
+            opacity: 0.2
         },
         stack: 'confidence-band',
         symbol:'none',

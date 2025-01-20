@@ -113,13 +113,12 @@
   },
     mounted() {
         // Trigger "today" filter when the component is created
-        console.log("Date ")
-        this.handleFilter('all');
+        console.log()
+        this.handleFilter('2024');
       
     },
     computed: {
-      ...mapState(['dateRange']),    
-  
+      ...mapState(['dateRange']),  
     },
 
 //     watch: {     

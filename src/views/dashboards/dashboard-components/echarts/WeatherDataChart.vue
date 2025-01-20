@@ -1,6 +1,6 @@
 <template>    
     <b-card>
-        <div ref="chart" style="width: 100%; height: 400px;"></div>
+        <div ref="chart" style="width: 100%; height: 400px;"><span v-if="noDataMessage">There Are no Data for this Period</span></div>
     </b-card>
 </template>
 
@@ -16,7 +16,8 @@ export default {
       measurementData: [],
       timestampField: 'day',
       valueFieldTemp: 'avg_temperature',
-      valueFieldRadiation: 'avg_uv_index'
+      valueFieldRadiation: 'avg_uv_index',
+      noDataMessage: false
     };
   },
     mounted() {
@@ -61,15 +62,34 @@ export default {
           this.timestampField = 'timestamp';
           this.valueFieldRadiation = 'uv_index';          
         }           
-        console.log(baseUrl)
+       
       }      
       try {        
           const response = await axios.get(baseUrl);             
           this.measurementData = response.data;
         if (this.measurementData.length > 0) {
+
           this.initChart();
         } else {
-          console.error('No data found');
+          console.error('No Weather Data Found');
+          this.noDataMessage = true
+          if(this.chart){
+              this.chart.clear();
+              this.option = {
+                title: {
+                  text: 'No Weather Data Available',
+                  left: 'center',
+                  top: 'middle',
+                  textStyle: {
+                    fontSize: 16,
+                    color: '#b2b9bf',
+                    fontFamily: 'Arial',
+                    fontWeight: 'normal'
+                  }
+                }
+              };
+            this.chart.setOption(this.option);   
+          } 
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -84,7 +104,8 @@ export default {
       const option = {
         title: {
             text: 'Direct Radiation [W/m²] | Temperature [°C]', 
-            left: 'center',   
+            left: 'center',
+            top: 'top',   
             textStyle: {
               fontSize: 16,
               color:'#b2b9bf',
@@ -207,7 +228,8 @@ export default {
           stack: 'total',
           connectNulls: false,
           lineStyle: {
-            color: 'orange',
+            color: 'rgba(255,255,255,0.6)',
+            
           },
           showSymbol: false,
     

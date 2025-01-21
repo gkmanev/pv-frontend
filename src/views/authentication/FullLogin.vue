@@ -14,7 +14,7 @@
                     <b-col cols="12" lg="12" xl="12">
                       <div>
                         <h2 class="display-6 text-white">
-                          Fleet Managment System
+                          PV Managment System
                         </h2>
                         <!-- <p class="mt-4 text-white op-5 font-weight-normal">
                           Wrappixel helps developers to build organized and

@@ -19,8 +19,8 @@ export default {
   components: {
     
   },
-  created (){
-    this.createAllDevs()    
+  created (){      
+    this.fetchApi()
   },
   
 
@@ -29,20 +29,31 @@ export default {
   },
   methods:{
     ...mapActions(['allDevsCreation']),
-    
-    createAllDevs() {        
-        // Map device IDs to device objects, incorporating coords data
-        this.all = pvAssets.map(id => {          
-            return {
-            id: id.PPE,
-            online: 'offline', // Default state
-            farm: id.farm,
-            latitude: id.latitude,
-            longitude: id.longitude,
-            production: 0
-            };           
+
+    fetchApi(){
+      fetch('http://209.38.208.230:8000/api/last-n-unique/')
+        .then(response => response.json())
+        .then(data => {
+          this.createAllDevs(data);
+          // Process the data as needed
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
         });
-        this.allDevsCreation(this.all);
+    },
+    
+    createAllDevs(data) {        
+   
+      const mergedData = pvAssets.map(item => {
+      const matchedData = data.find(c => c.installation_name === item.farm);
+        return {
+        ...item,
+        power: matchedData ? matchedData.signal_value : null, // Handle undefined matchedData
+        online: matchedData ? "online" : "offline" 
+        };
+        });    
+    this.all = mergedData;
+    this.allDevsCreation(this.all);
 
     },
 

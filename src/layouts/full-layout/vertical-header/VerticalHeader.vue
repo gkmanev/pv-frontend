@@ -6,17 +6,17 @@
       class="p-0"
       :variant="navbarColor"
     >
-      <b-navbar-nav
+      <!-- <b-navbar-nav
         ><b-nav-item @click="showMobileSidebar" class="d-block d-lg-none"
           ><i class="mdi mdi-menu fs-3"></i></b-nav-item
-      ></b-navbar-nav>
+      ></b-navbar-nav> -->
       <div :class="`navbar-header d-block d-lg-none`">
         <LogoDark v-if="navbarColor == 'white'" />
         <LogoLight v-else />
       </div>
-      <b-navbar-toggle target="nav-collapse" class="mx-2 border-0"
+      <!-- <b-navbar-toggle target="nav-collapse" class="mx-2 border-0"
         ><i class="ti-more"></i
-      ></b-navbar-toggle>
+      ></b-navbar-toggle> -->
       <b-collapse id="nav-collapse" is-nav class="">
         <!-- -----------------------------------------------------------
           Left aligned nav items
@@ -391,3 +391,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.topbar{
+  max-height: 30px;
+}
+</style>

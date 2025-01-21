@@ -2,85 +2,12 @@
     <b-row>
      <b-col cols="12">
        <b-card class="mb-4">
-         <h5 class="card-title mb-3">Installed Smartmeters</h5>
+         <h5 class="card-title mb-3">All Farms Data</h5>
          <b-table :items="all" :fields="fields" :select-mode="selectMode" responsive="sm" ref="selectableTable" selectable @row-selected="onRowSelected">
            <!-- Scoped slot for the 'online' status -->
            <template #cell(status)="{ item }">
              <span class="led-indicator" :class="getLedClass(item.online)"></span>
            </template>
-           <template #cell(edit)="{ item }">
-            
-            <div v-if="item.online == 'not-ready'" class="d-flex align-items-center">
-              <!-- Button to open modal -->
-                <b-button size="sm" variant="primary" @click="openModal(item)">Details</b-button>
-                <!-- Display the cell value -->
-                
-              </div>
-              <!-- Modal for displaying details -->
-              <b-modal :id="'modal_' + item.id" :title="modalTitle">
-                <b-form-group :label="labelGrid">
-                <div class="d-flex align-items-center mb-3">
-                  <!-- Input field -->
-                  <b-form-input v-model="inputGrid" placeholder="Enter Grid Node..." class="mr-2"></b-form-input>
-                  <!-- Flex container for button -->
-                  <div class="d-flex">
-                    <!-- Send button -->
-                    <b-button @click="sendDataGrNode(item.id)" :disabled="inputGrid === ''">Send</b-button>            
-                  </div>
-                </div>
-              </b-form-group>
-              <b-form-group :label="labelLat">
-                <div class="d-flex align-items-center mb-3">
-                <!-- Input field -->
-                <b-form-input v-model="inputLat" placeholder="Enter Latitude..." class="mr-2"></b-form-input>
-                <!-- Send button -->
-                <div class="d-flex">
-                <b-button @click="sendDataLat(item.id)" :disabled="inputLat === ''">Send</b-button>
-                </div>
-                </div>
-              </b-form-group>
-              <b-form-group :label="labelLong">
-                <div class="d-flex align-items-center mb-3">
-                <!-- Input field -->
-                <b-form-input v-model="inputLong" placeholder="Enter Longitude..." class="mr-2"></b-form-input>
-                <!-- Send button -->
-                <div class="d-flex">
-                <b-button @click="sendDataLong(item.id)" :disabled="inputLong === ''">Send</b-button>
-                </div>
-                </div>
-              </b-form-group>
-              <b-form-group :label="labelCap">
-                <div class="d-flex align-items-center mb-3">
-                <!-- Input field -->
-                <b-form-input v-model="inputCap" placeholder="Enter Capacity..." class="mr-2"></b-form-input>
-                <!-- Send button -->
-                <div class="d-flex">
-                <b-button @click="sendDataCap(item.id)" :disabled="inputCap === ''">Send</b-button>
-                </div>
-                </div>
-              </b-form-group>
-              <!-- Modal footer with only the "OK" button -->
-              <template #modal-footer="{ cancel, ok }">
-                <b-button @click="ok" variant="primary">Apply changes</b-button>
-              </template>
-              <!-- Add more content as needed -->
-            </b-modal>
-            </template>
-
-
-           
-           <!-- <template #cell(assaignCap)="{ item }">
-             <div class="d-flex align-items-center">        
-                 <input type="text" class="form-control mr-2" style="width: 50px; height: 32px;" placeholder="#" v-model="item.capacityAssign">
-                 <b-button size="sm" variant="primary" @click="submitCapacity(item)">Submit</b-button>
-                 
-             </div>
-           </template> -->
-           <!-- <template #cell(capacity)="{ item }">
-             <div class="d-flex align-items-center">        
-                 
-             </div>
-           </template> -->
          </b-table>
  
          <p class="btn-grp">
@@ -95,7 +22,7 @@
    
    <script>
    import { mapState } from 'vuex';
-   import axios from 'axios';
+
    // import { coords } from './coords.js';
    //import PahoMQTT from 'paho-mqtt';
    export default {
@@ -113,17 +40,13 @@
          inputLong:'',
          inputCap:'',
          fields: [
-         { key: 'id', sortable: true },
-         { key: 'status', sortable: true },
-         { key: 'customer', sortable:true},
+         { key: 'farm', sortable: true },
+         { key: 'status', sortable: true },        
          { key: 'power', sortable: true, label: 'Power kW'},
-         { key: 'lat', sortable: true, label: 'Latitude' },
-         { key: 'long', sortable: true, label: 'Longitude' },
-         { key: 'type', sortable: true },
-         // { key: 'assaignCap', label: 'Asign Capacity'},       
-         { key: 'capacity', label: 'Capacity'},  
-         { key: 'grid', label: 'Grid Node'}, 
-         { key: 'edit', label: 'Edit SM'}  
+         { key: 'latitude', sortable: true, label: 'Latitude' },
+         { key: 'longitude', sortable: true, label: 'Longitude' },
+         { key: 'farm_type', sortable: true },            
+         { key: 'capacity', label: 'Capacity'},         
        ],        
          power: '',
          powerCorr:'',
@@ -138,141 +61,23 @@
          btn_class: 'btn btn-success mb-2',
          all: [],
          posts: [],
-         
- 
- 
-         
-         sm_coeff: [{"sm-0001":120},{"sm-0002":320},{"sm-0003":400},{"sm-0004":200},{"sm-0006":200},{"sm-0008":200},{"sm-0009":80},
-                    {"sm-0010":60},{"sm-0011":60},{"sm-0015":60},{"sm-0016":250},{"sm-0017":200},{"sm-0018":400},{"sm-0019":500},{"sm-0020":500},{"sm-0025":200}],  
+      
        };
      },
    
-     methods: {
-    
-          openModal(sm) {            
-            // Open modal based on grid node
-            if(sm.grid){
-              this.currentGrid = sm.grid
-            }
-            if (sm.lat){
-              this.currentLat = sm.lat
-            }
-            if(sm.long){
-              this.currentLong = sm.long
-            }
-            if(sm.capacity){
-              this.currentCap = sm.capacity 
-            }
-   
-            this.$bvModal.show('modal_' + sm.id);
-          },      
-
-          sendDataGrNode(id){
-            console.log(this.inputGrid, id)  
-            axios.post('http://85.14.6.37:16455/api/asign/',     
-            {
-              "dev" : id,
-              "node": this.inputGrid
-            }).then(response =>{
-            
-              this.success = 'Data saved successfully';
-              this.response = JSON.stringify(response, null, 2)
-            }).catch(error => {
-              this.response = 'Error: ' + error.response.status
-            })
-            this.inputGrid = ''      
-
-
-          },
-          sendDataLat(id){
-            console.log(this.inputLat, id)
-          },
-          sendDataLong(id){
-            console.log(this.inputLong, id)
-          },
-          sendDataCap(id){           
-
-            axios.post('http://85.14.6.37:16455/api/capa/', {
-              "dev" : id,
-              "capacity": this.inputCap
-            }).then(response =>{
-              console.log(response.data)
-              this.success = 'Data saved successfully';
-              this.response = JSON.stringify(response, null, 2)
-            }).catch(error => {
-              this.response = 'Error: ' + error.response.status
-            })
-            this.inputCap = ''
-            
-
-
-
-          },
+     methods: {    
  
          async pollData() {
            this.polling = setInterval(async () => {
              await this.createAllDevs();
-             await this.capacityLog();
-             await this.asignedNodes();
+ 
            }, 15000);
          },
          
-         async capacityLog(){
- 
-             axios
-                 .get("http://85.14.6.37:16455/api/capa_asign/")
-                 .then(response => response.data.forEach(el=>{         
-                     let capacityObj = {
-                         "dev":el.dev,
-                         "cap":el.capacity              
-                     }
-                     let found = this.all.find(element => element.id === capacityObj.dev)
-                     if (found){
-                         found.capacity = capacityObj.cap
-                     }
- 
-                 }))
-                 .catch(error=>{
-                 console.log(error)
-                 })
-             },
-           
- 
-         async asignedNodes(){
-           axios
-               .get("http://85.14.6.37:16455/api/grid_asign/")
-               .then(response => response.data.forEach(el=>{                
-               
-                   let found = this.all.find(element => element.id === el.dev)
-                   if (found){
-                       found.grid = el.grid_name
-                   }
- 
-               }))
-               .catch(error=>{
-               console.log(error)
-               })
-         
-         },
- 
-         // submitCapacity(item) {
-         //     console.log(item)
-         //     axios.post('http://85.14.6.37:16455/api/capa/', {
-         //         "dev" : item.id,
-         //         "capacity": item.capacityAssign
-         //     }).then(response =>{
-         //         console.log(response.data)
-         //         this.success = 'Data saved successfully';
-         //         this.response = JSON.stringify(response, null, 2)
-         //     }).catch(error => {
-         //         this.response = 'Error: ' + error.response.status
-         //     })
-             
-         // },
- 
+    
          getLedClass(status) {
              switch (status) {
-             case 'not-ready':
+             case 'online':
                  return 'led-blue';
              case 'offline':
                  return 'led-gray';
@@ -304,9 +109,8 @@
    
      created (){       
        this.createAllDevs()      
-       this.capacityLog()
-       this.asignedNodes()
        this.pollData()
+       console.log("all",this.all)
      },
      beforeDestroy () {
           clearInterval(this.polling)
@@ -317,21 +121,6 @@
        },
        ...mapState(['all_devs']),
 
-      labelGrid() {
-        return `Edit Grid Node (${this.currentGrid})`;
-      },
-      labelLat() {
-        return `Edit Latitude (${this.currentLat})`;
-      },
-      labelLong() {
-        return `Edit Longitude (${this.currentLong})`;
-      },
-      labelCap() {
-        return `Edit Capacity (${this.currentCap})`;
-      },
-      modalTitle() {
-        return `Enter Smart Meter Details `;
-      }
       }
    
    

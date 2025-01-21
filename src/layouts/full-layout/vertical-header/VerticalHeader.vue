@@ -393,7 +393,5 @@ export default {
 </script>
 
 <style scoped>
-.topbar{
-  max-height: 30px;
-}
+
 </style>

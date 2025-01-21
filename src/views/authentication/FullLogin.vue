@@ -155,7 +155,7 @@ export default {
     async login() {
       try {
         const response = await axios.post(
-          "http://85.14.6.37:16543/api/token/",
+          "http://127.0.0.1:8000/api/token/",
           {
             username: this.form.username,            
             password: this.form.pwd,
@@ -166,14 +166,14 @@ export default {
             },
           }
         );
-        
+        console.log(response.data)
         // Store tokens in localStorage
         localStorage.setItem("accessToken", response.data.access);
         localStorage.setItem("refreshToken", response.data.refresh);
         
 
         // Redirect to a protected route
-        this.$router.push({ name: "Battery Fleet" });
+        this.$router.push({ name: "PV Dashboard" });
       } catch (error) {
         console.error("Login error:", error.response);
         if (error.response && error.response.status === 401) {

@@ -34,12 +34,13 @@
     methods: {
       ...mapActions(['updateSelected']),
       setSelected(sel) {
+        console.log(sel);
         this.updateSelected(sel);
       },
       populateOptions() {     
         const devOptions = this.all_devs.map(dev =>         
         ({                    
-          value: dev.farm, 
+          value: dev.PPE, 
           text: dev.farm,                              
         }));   
         

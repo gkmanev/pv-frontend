@@ -22,7 +22,7 @@ export default {
     mounted() {
         this.fetchAllData();
         window.addEventListener('resize', this.handleResize);
-        console.log(this.all_devs)
+        
     },
     computed: {
       ...mapState(['dateRange', 'selectedDev', 'confidanceCheck', 'all_devs']),      
@@ -99,13 +99,14 @@ export default {
       if (this.selectedDev && this.lastRouteSegment() !== 'entra') {  
         let extraParams = dateRanges[this.dateRange] || '';
         if (extraParams) {
-          baseUrl += `/?all=all&${this.dateRange}${extraParams}&farm=${this.selectedDev}`;
+          baseUrl += `/?all=all&${this.dateRange}${extraParams}&ppe=${this.selectedDev}`;
           
         } else {
-          baseUrl = `${baseUrl}?farm=${this.selectedDev}&${this.dateRange}`;
+          baseUrl = `${baseUrl}?ppe=${this.selectedDev}&${this.dateRange}`;
           this.timestampField = 'timestamp';
           this.valueField = 'production';          
-        }           
+        }        
+        console.log(baseUrl)   
         
       }
       else{        
@@ -117,7 +118,7 @@ export default {
       }
      
       try {        
-        
+        console.log(baseUrl)
         const response = await axios.get(baseUrl, {
                           headers: {
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
@@ -309,7 +310,7 @@ export default {
       };
     },
     addMaxSeries(groupedData, timestamps){    
-      console.log("InMaxSeries", this.dateRange)
+    
       return Object.keys(groupedData).map(farm => {
         const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item['max_production'] - item['min_production']]));
         const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp) || null]); // Use null for missing data

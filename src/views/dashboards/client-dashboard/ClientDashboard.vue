@@ -55,7 +55,6 @@
     RangeComponent,  
     MeasurementData,
     WeatherDataChart  
-
 },
 
     mounted() {

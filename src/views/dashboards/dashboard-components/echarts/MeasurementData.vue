@@ -117,10 +117,16 @@ export default {
       }
      
       try {        
-        const response = await axios.get(baseUrl);  
-        this.measurementData = response.data;        
         
-        if (this.measurementData.length > 0) {          
+        const response = await axios.get(baseUrl, {
+                          headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                            }
+                          });  
+        this.measurementData = response.data;              
+        
+        if (this.measurementData.length > 0) { 
+                  
           this.initChart();
           this.$nextTick(() => {
             this.handleResize();
@@ -149,6 +155,11 @@ export default {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        if (error.response.status
+          && error.response.status === 401) {
+          this.$router.push({ name: 'FullLogin' });
+        }
+        
       }
         },
     initChart() {      

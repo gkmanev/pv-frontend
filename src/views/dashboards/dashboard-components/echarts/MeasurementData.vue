@@ -1,6 +1,6 @@
 <template>    
     <b-card >
-      <div ref="chart" :style="{ width: '100%', height: '450px' }"><span v-if="noDataMessage">There Are no Data for this Period</span></div>
+      <div ref="chart" :style="{ width: '100%', height: '250px' }"><span v-if="noDataMessage">There Are no Data for this Period</span></div>
     </b-card>
 </template>
 
@@ -27,8 +27,8 @@ export default {
     computed: {
       ...mapState(['dateRange', 'selectedDev', 'confidanceCheck', 'all_devs']),      
       chartHeight() {
-    return window.innerHeight * 0.3; // Adjust this factor as needed
-  }
+        return window.innerHeight * 0.1; // Adjust this factor as needed
+      }
     },
     beforeDestroy() {
       window.removeEventListener('resize', this.handleResize);
@@ -59,10 +59,10 @@ export default {
     },
   methods: {
     handleResize() {
-    if (this.chart) {
-      this.chart.resize();
-    }
-  },
+      if (this.chart) {
+        this.chart.resize();
+      }
+    },
 
     fetchConfidence(){
       let url = 'http://209.38.208.230:8000/api/confidence/?confidence=true'
@@ -94,20 +94,24 @@ export default {
       const dateRanges = {
         'start_date=2023-01-01': '&end_date=2024-01-01',
         'start_date=2024-01-01': '&end_date=2025-01-01',
-        'start_date=2025-01-01': '&end_date=2026-01-01'
+        'start_date=2025-01-01': '&end_date=2026-01-01',
+        
       };
       if (this.selectedDev && this.lastRouteSegment() !== 'entra') {  
         let extraParams = dateRanges[this.dateRange] || '';
         if (extraParams) {
           baseUrl += `/?all=all&${this.dateRange}${extraParams}&ppe=${this.selectedDev}`;
           
-        } else {
+        } else {          
           baseUrl = `${baseUrl}?ppe=${this.selectedDev}&${this.dateRange}`;
+          if(this.dateRange == 'day-ahead'){
+            baseUrl += `=day-ahead`            
+          }
           this.timestampField = 'timestamp';
           this.valueField = 'production';          
         }        
-        console.log(baseUrl)   
-        
+          
+        console.log(baseUrl);
       }
       else{        
         baseUrl = `${baseUrl}/?all=all`;
@@ -117,8 +121,7 @@ export default {
         }                      
       }
      
-      try {        
-        console.log(baseUrl)
+      try {       
         const response = await axios.get(baseUrl, {
                           headers: {
                               'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
@@ -126,11 +129,13 @@ export default {
                           });  
         this.measurementData = response.data;              
         
-        if (this.measurementData.length > 0) { 
-                  
+        if (this.measurementData.length > 0) {   
+          // this.option = {};
+          // this.chart.clear();
+          // this.chart.setOption(this.option);      
           this.initChart();
           this.$nextTick(() => {
-            this.handleResize();
+          this.handleResize();
           });
         } else {
           console.error('No data found');
@@ -164,11 +169,17 @@ export default {
       }
         },
     initChart() {      
-      this.chart = echarts.init(this.$refs.chart);
+      if (!this.chart) {
+        this.chart = echarts.init(this.$refs.chart);
+      }
+      else{
+        this.chart.clear();      
+      }
       const groupedData = this.groupDataByFarm(this.measurementData);
       const timestamps = this.getAllTimestamps(this.measurementData);
       const series = this.createSeries(groupedData, timestamps);
       const xAxis = this.getXAxisConfig(timestamps);
+      const tooltipConfig = this.getTooltipConfig();
       let allSeries = series      
       
       if (this.selectedDev && this.lastRouteSegment() !== 'entra'){        
@@ -196,52 +207,7 @@ export default {
             left:'10%',
             containLabel: false
             },
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'line',
-            label: {
-              backgroundColor: '#6a7985',
-            },
-          },
-          backgroundColor: '',
-          borderWidth: 0,
-          shadowBlur: 0,
-          shadowOffsetX: 0,
-          shadowOffsetY: 0,
-          shadowColor: 'transparent',
-          formatter: (params) => {
-            if (params && params.length) {
-              const param = params[0]; // Only show the first series being pointed to
-              let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
-              const utcTime = new Date(param.data[0]);
-              const hours = utcTime.getHours().toString().padStart(2, '0');
-              const minutes = utcTime.getMinutes().toString().padStart(2, '0');
-              const day = utcTime.getDate().toString().padStart(2, '0');
-              const month = (utcTime.getMonth() + 1).toString().padStart(2, '0');
-              const year = utcTime.getFullYear();
-              const localTime = `${day}.${month}.${year} | ${hours}:${minutes}`;
-              const sumValue = param.data[1];
-              tooltipContent += `
-              <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
-                <ul style="list-style-type: none; margin: 0; padding-left: 0;">
-                  <li>
-                    
-                    <span style="color: white;">Cumulative PV Production</span>
-                  </li>
-                </ul>
-              </div>`;
-              let footer = `
-              <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">
-                <strong>Total ${sumValue}  </strong> at <span style="color: white;">${localTime}</span>
-              </div>`;
-              tooltipContent += footer;
-              tooltipContent += `</div>`;
-              return tooltipContent;
-            }
-            return '';
-          },
-        },
+        tooltip: tooltipConfig,
         xAxis: xAxis,
      
         yAxis: {
@@ -255,6 +221,25 @@ export default {
             type: 'slider',
             start: 0,
             end: 100,
+            height: 20, // Adjust the height to make the slider tinier
+            bottom: 10, // Adjust the bottom to lower the slider
+            handleSize: '80%', // Adjust the handle size
+            handleStyle: {
+              color: '#fff',
+              borderColor: '#ccc',
+            },
+            fillerColor: 'rgba(167,183,204,0.4)', // Adjust the filler color
+            backgroundColor: 'rgba(47,69,84,0.25)', // Adjust the background color
+            borderColor: '#ddd', // Adjust the border color
+            textStyle: {
+              color: '#fff',
+            },
+            borderWidth: {
+              top: 1, // Adjust the width of the top border
+              right: 1,
+              bottom: 1,
+              left: 1
+            }
           },
         ],
         series: allSeries,
@@ -277,6 +262,67 @@ export default {
         timestamps.add(item[this.timestampField]);
       });
       return Array.from(timestamps).sort();
+    },
+    getTooltipConfig() {
+      return {        
+          trigger: 'axis',
+          axisPointer: {
+            type: 'line',
+            label: {
+              backgroundColor: '#6a7985',
+            },
+          },
+          backgroundColor: '',
+          borderWidth: 0,
+          shadowBlur: 0,
+          shadowOffsetX: 0,
+          shadowOffsetY: 0,
+          shadowColor: 'transparent',
+          formatter: (params) => {
+          if (params && params.length) {
+              let tooltipTitle = "Cumulative Production";
+              const param = params[0]; // Only show the first series being pointed to
+              let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
+              const utcTime = new Date(param.data[0]);
+              const hours = utcTime.getHours().toString().padStart(2, '0');
+              const minutes = utcTime.getMinutes().toString().padStart(2, '0');
+              const day = utcTime.getDate().toString().padStart(2, '0');
+              const month = (utcTime.getMonth() + 1).toString().padStart(2, '0');
+              const year = utcTime.getFullYear();
+              let localTime;
+              let cumulativeValue = 0;
+              params.forEach(param => {                // calculate cumulative value if param is not null
+                if (param.data[1] !== null) {                  
+                  cumulativeValue += parseFloat(param.data[1]);
+                }
+              });
+              
+              if (this.selectedDev && this.lastRouteSegment() !== 'entra'){
+                localTime = `${day}.${month}.${year} | ${hours}:${minutes}`;
+                tooltipTitle = "Production";
+              }
+              localTime = `${day}.${month}.${year}`;
+              //const sumValue = param.data[1];
+              tooltipContent += `
+              <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
+                <ul style="list-style-type: none; margin: 0; padding-left: 0;">
+                  <li>
+                    
+                    <span style="color: white;">${tooltipTitle}</span>
+                  </li>
+                </ul>
+              </div>`;
+              let footer = `
+              <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">
+                <strong>Total ${cumulativeValue.toFixed(2)}  </strong> at <span style="color: white;">${localTime}</span>
+              </div>`;
+              tooltipContent += footer;
+              tooltipContent += `</div>`;
+              return tooltipContent;
+            }
+            return '';
+          },        
+      };
     },
     createSeries(groupedData, timestamps) {      
         return Object.keys(groupedData).map(farm => {

@@ -1,6 +1,6 @@
 <template>    
     <b-card>
-        <div ref="chart" style="width: 100%; height: 400px;"><span v-if="noDataMessage">There Are no Data for this Period</span></div>
+        <div ref="chart" style="width: 100%; height: 250px;"><span v-if="noDataMessage">There Are no Data for this Period</span></div>
     </b-card>
 </template>
 
@@ -22,9 +22,19 @@ export default {
   },
     mounted() {
         this.fetchAllData();
+        window.addEventListener('resize', this.handleResize);
     },
     computed: {
-      ...mapState(['dateRange', 'selectedDev']),      
+      ...mapState(['dateRange', 'selectedDev']),  
+      chartHeight() {
+        return window.innerHeight * 0.1; // Adjust this factor as needed
+      }          
+    },
+    beforeDestroy() {
+      window.removeEventListener('resize', this.handleResize);
+      if (this.chart) {
+        this.chart.dispose();
+      }
     },
     watch: {      
       dateRange(newRange, oldRange) {
@@ -39,6 +49,11 @@ export default {
     },
     },
   methods: {
+    handleResize() {
+      if (this.chart) {
+        this.chart.resize();
+      }
+    },
     lastRouteSegment() {
       const pathArray = this.$route.path.split('/');    
       return pathArray.pop() || pathArray[pathArray.length - 1]; // This handles non-trailing slash URLs
@@ -55,18 +70,22 @@ export default {
       if (this.selectedDev && this.lastRouteSegment() !== 'entra') {  
         let extraParams = dateRanges[this.dateRange] || '';
         if (extraParams) {
-          baseUrl += `/?all=all&${this.dateRange}${extraParams}&farm=${this.selectedDev}`;
+          baseUrl += `/?all=all&${this.dateRange}${extraParams}&ppe=${this.selectedDev}`;
           
-        } else {
-          baseUrl = `${baseUrl}?farm=${this.selectedDev}&${this.dateRange}`;
+        } else {          
+          baseUrl = `${baseUrl}?ppe=${this.selectedDev}&${this.dateRange}`;
+          if(this.dateRange == 'day-ahead'){
+            baseUrl += `=day-ahead`            
+          }
           this.timestampField = 'timestamp';
-          this.valueFieldRadiation = 'uv_index';          
-        }           
+          this.valueField = 'production';          
+        }     
        
       }      
       try {        
           const response = await axios.get(baseUrl);             
-          this.measurementData = response.data;
+          this.measurementData = response.data;   
+          console.log("Meas",this.measurementData);      
         if (this.measurementData.length > 0) {
 
           this.initChart();
@@ -96,12 +115,25 @@ export default {
       }
     },
     initChart() {
-      this.chart = echarts.init(this.$refs.chart);
+      if (!this.chart) {
+        this.chart = echarts.init(this.$refs.chart);
+        //console.log(this.measurementData);
+      }
+      else{
+        this.chart.clear();
+        this.option = {};   
+        // console.log("here",this.measurementData);
+        // console.log("Chart",this.chart);
+           
+      }
       const groupedData = this.groupDataByFarm(this.measurementData);
+      console.log("Grouped Data",groupedData);
       const timestamps = this.getAllTimestamps(this.measurementData);
       const series = this.createSeries(groupedData, timestamps);
+      
+      const xAxis = this.getXAxisConfig(timestamps);
 
-      const option = {
+      this.option = {
         title: {
             text: 'Direct Radiation [W/m²] | Temperature [°C]', 
             left: 'center',
@@ -165,25 +197,8 @@ export default {
             return '';
           },
         },
-        xAxis: 
-        {
-            type: 'time',
-            axisLabel: {
-            rotate:40,
-            margin:25,
-            textStyle: {
-                color: '#9a9a9a'
-            },
-        },
-        axisLine: {
-            show: true,
-            onZero: true
-        },
+        xAxis: xAxis, 
 
-    
-        boundaryGap: false,    
-            
-        },
         yAxis: {
           type: 'value',
           axisLine: { show: false },
@@ -195,12 +210,31 @@ export default {
             type: 'slider',
             start: 0,
             end: 100,
+            height: 20, // Adjust the height to make the slider tinier
+            bottom: 10, // Adjust the bottom to lower the slider
+            handleSize: '80%', // Adjust the handle size
+            handleStyle: {
+              color: '#fff',
+              borderColor: '#ccc',
+            },
+            fillerColor: 'rgba(167,183,204,0.4)', // Adjust the filler color
+            backgroundColor: 'rgba(47,69,84,0.25)', // Adjust the background color
+            borderColor: '#ddd', // Adjust the border color
+            textStyle: {
+              color: '#fff',
+            },
+            borderWidth: {
+              top: 1, // Adjust the width of the top border
+              right: 1,
+              bottom: 1,
+              left: 1
+            }
           },
         ],
         series: series,
       };
-
-      this.chart.setOption(option);
+      console.log("Option",this.option)
+      this.chart.setOption(this.option);
     },
     groupDataByFarm(data) {
       return data.reduce((acc, item) => {
@@ -210,6 +244,15 @@ export default {
         acc[item.farm].push(item);
         return acc;
       }, {});
+    },
+    getXAxisConfig(timestamps) {
+     
+      return {
+        type: 'time',
+        min: timestamps[0],
+        max: timestamps[timestamps.length - 1],
+        boundaryGap: false
+      };
     },
     getAllTimestamps(data) {
       const timestamps = new Set();
@@ -222,6 +265,7 @@ export default {
       return Object.keys(groupedData).map(farm => {
         const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));
         const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp) || null]); // Use null for missing data
+        console.log("Data",data);
         return {
           name: farm,
           type: 'line',

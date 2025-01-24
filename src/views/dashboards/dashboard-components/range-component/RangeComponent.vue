@@ -34,6 +34,11 @@
         >
           YTD
         </b-button>
+        <b-button v-if="isVisible"
+          @click="filterContent('day-ahead')" 
+          :class="{ 'active': selectedPeriod === 'day-ahead' }">
+          Day Ahead
+        </b-button>
       </b-button-group>   
     </b-col>
     <b-col v-if="isVisible" cols="auto">

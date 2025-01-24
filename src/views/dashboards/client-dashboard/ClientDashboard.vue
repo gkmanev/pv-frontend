@@ -16,9 +16,8 @@
         <b-card>
           <MeasurementData />          
         </b-card>
-      </b-col>
-    </b-row>
-    <b-row v-if="isDevSelected">
+      </b-col>    
+    <!-- <b-row v-if="isDevSelected"> -->
       <b-col cols="12" class="mt-4">
         <b-card>
           <WeatherDataChart />

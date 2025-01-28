@@ -8,12 +8,14 @@
 import * as echarts from 'echarts';
 import axios from 'axios';
 import { mapState } from 'vuex';
+
 export default {
   name: 'MeasurementData',
   data() {
     return {
       chart: null,
       measurementData: [],
+      technicalData: [],
       timestampField: 'day',
       valueField: 'total_production',
       noDataMessage: false
@@ -100,18 +102,22 @@ export default {
       if (this.selectedDev && this.lastRouteSegment() !== 'entra') {  
         let extraParams = dateRanges[this.dateRange] || '';
         if (extraParams) {
-          baseUrl += `/?all=all&${this.dateRange}${extraParams}&ppe=${this.selectedDev}`;
+          baseUrl += `/?all=all&${this.dateRange}${extraParams}&farm=${this.selectedDev}`;
           
         } else {          
-          baseUrl = `${baseUrl}?ppe=${this.selectedDev}&${this.dateRange}`;
+          baseUrl = `${baseUrl}?farm=${this.selectedDev}&${this.dateRange}`;
           if(this.dateRange == 'day-ahead'){
-            baseUrl += `=day-ahead`            
+            baseUrl += `=day-ahead`  
+            const url_technical = `http://209.38.208.230:8000/api/pvdata/?farm=${this.selectedDev}`
+            const response = await axios.get(url_technical);
+            this.technicalData = response.data;
+         
           }
           this.timestampField = 'timestamp';
           this.valueField = 'production';          
-        }        
-          
-        console.log(baseUrl);
+        }         
+        
+                       
       }
       else{        
         baseUrl = `${baseUrl}/?all=all`;
@@ -121,18 +127,13 @@ export default {
         }                      
       }
      
-      try {       
-        const response = await axios.get(baseUrl, {
-                          headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                            }
-                          });  
-        this.measurementData = response.data;              
-        
+      try {    
+     
+        const response = await axios.get(baseUrl);
+        this.measurementData = response.data;        
         if (this.measurementData.length > 0) {   
-          // this.option = {};
-          // this.chart.clear();
-          // this.chart.setOption(this.option);      
+
+    
           this.initChart();
           this.$nextTick(() => {
           this.handleResize();
@@ -168,24 +169,37 @@ export default {
         
       }
         },
-    initChart() {      
+    initChart() {  
+      let allSeries = [];    
+      let xAxis = {};
+      let tooltipConfig = {};
       if (!this.chart) {
         this.chart = echarts.init(this.$refs.chart);
       }
       else{
         this.chart.clear();      
       }
-      const groupedData = this.groupDataByFarm(this.measurementData);
-      const timestamps = this.getAllTimestamps(this.measurementData);
-      const series = this.createSeries(groupedData, timestamps);
-      const xAxis = this.getXAxisConfig(timestamps);
-      const tooltipConfig = this.getTooltipConfig();
-      let allSeries = series      
-      
-      if (this.selectedDev && this.lastRouteSegment() !== 'entra'){        
-        const newSeriesMax = this.addMaxSeries(groupedData, timestamps);        
-        const newSeriesMin = this.addMinSeries(groupedData, timestamps);        
-        allSeries = allSeries.concat(newSeriesMin).concat(newSeriesMax);       
+      if (this.lastRouteSegment() == 'entra'){
+        
+        const groupedData = this.groupDataByFarm(this.measurementData);
+        const timestamps = this.getAllTimestamps(this.measurementData);
+        const series = this.createSeries(groupedData, timestamps);
+        xAxis = this.getXAxisConfig(timestamps);
+        tooltipConfig = this.getTooltipConfig();
+        allSeries = series      
+      }
+      if (this.selectedDev && this.lastRouteSegment() !== 'entra'){    
+        const timestamps = this.getAllTimestamps(this.measurementData); 
+        const timestampsTech = this.getAllTimestamps(this.technicalData);      
+        const groupedData = this.groupDataByFarm(this.measurementData);         
+        const groupedDataTech = this.groupDataByFarmTech(this.technicalData);   
+        // const newSeriesMax = this.addMaxSeries(groupedData, timestamps);        
+        // const newSeriesMin = this.addMinSeries(groupedData, timestamps); 
+        const series = this.createSeries(groupedData, timestamps);             
+        const technicalSeries = this.createTechnicalSeries(groupedDataTech, timestampsTech); 
+        xAxis = this.getXAxisConfig(timestamps);
+        allSeries = series.concat(technicalSeries);        
+        tooltipConfig = this.getTooltipConfig();
         series[0].areaStyle.opacity = 0
         series[0].lineStyle.color = "orange"
       }     
@@ -245,7 +259,8 @@ export default {
         series: allSeries,
         //series: series,
       };
-      this.chart.setOption(this.option);
+      this.chart.setOption(this.option);     
+  
     },
     groupDataByFarm(data) {
       return data.reduce((acc, item) => {
@@ -253,6 +268,15 @@ export default {
           acc[item.farm] = [];
         }
         acc[item.farm].push(item);
+        return acc;
+      }, {});
+    },
+    groupDataByFarmTech(data) {
+      return data.reduce((acc, item) => {
+        if (!acc[item.installation_name]) {
+          acc[item.installation_name] = [];
+        }
+        acc[item.installation_name].push(item);
         return acc;
       }, {});
     },
@@ -279,7 +303,7 @@ export default {
           shadowOffsetY: 0,
           shadowColor: 'transparent',
           formatter: (params) => {
-          if (params && params.length) {
+          if (params && params.length) {           
               let tooltipTitle = "Cumulative Production";
               const param = params[0]; // Only show the first series being pointed to
               let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
@@ -291,8 +315,10 @@ export default {
               const year = utcTime.getFullYear();
               let localTime;
               let cumulativeValue = 0;
-              params.forEach(param => {                // calculate cumulative value if param is not null
-                if (param.data[1] !== null) {                  
+              params.forEach(param => {               
+                // calculate cumulative value if param is not null or undefined
+                if (param.data[1] !== null && param.data[1] !== undefined) { 
+                  console.log(param.data[1] )                 
                   cumulativeValue += parseFloat(param.data[1]);
                 }
               });
@@ -300,8 +326,16 @@ export default {
               if (this.selectedDev && this.lastRouteSegment() !== 'entra'){
                 localTime = `${day}.${month}.${year} | ${hours}:${minutes}`;
                 tooltipTitle = "Production";
+                let seriesName = param.seriesName;
+                if(seriesName.includes("Technical")){
+                  tooltipTitle = "Technical Production";
+                }
               }
-              localTime = `${day}.${month}.${year}`;
+              else{
+                localTime = `${day}.${month}.${year}`;
+                tooltipTitle = "Cumulative Production";
+              }
+              //localTime = `${day}.${month}.${year}`;
               //const sumValue = param.data[1];
               tooltipContent += `
               <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
@@ -324,10 +358,12 @@ export default {
           },        
       };
     },
-    createSeries(groupedData, timestamps) {      
+    createSeries(groupedData, timestamps) {    
+     
         return Object.keys(groupedData).map(farm => {
-          const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueField]]));
-          const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp) || null]); // Use null for missing data
+          const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueField]]));          
+          const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
+          console.log(data)
           const config = {          
           type: 'line',
           stack: 'total',  
@@ -347,6 +383,27 @@ export default {
       });
       
     },
+    createTechnicalSeries(groupedDataTech, timestamps) {  
+      return Object.keys(groupedDataTech).map(installation_name => {
+          const dataMap = new Map(groupedDataTech[installation_name].map(item => [item[this.timestampField], item["signal_value"]]));
+          
+          const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
+          
+          
+          const config = {          
+          type: 'line',       
+          lineStyle:{
+            color:'orange',
+            opacity:0.5
+          },   
+          connectNulls: false,
+          showSymbol: false,      
+        }
+          config.name = `${installation_name} Technical`
+          config.data = data
+          return config      
+      });
+    },
     getXAxisConfig(timestamps) {
       return {
         type: 'time',
@@ -360,7 +417,7 @@ export default {
       return Object.keys(groupedData).map(farm => {
         const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item['max_production'] - item['min_production']]));
         const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp) || null]); // Use null for missing data
-      
+        
     
       return {
         name: `${farm} Max`,

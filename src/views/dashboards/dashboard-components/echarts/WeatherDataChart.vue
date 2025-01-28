@@ -14,9 +14,9 @@ export default {
     return {
       chart: null,
       measurementData: [],
-      timestampField: 'day',
+      timestampField: 'timestamp',
       valueFieldTemp: 'avg_temperature',
-      valueFieldRadiation: 'avg_uv_index',
+      valueFieldRadiation: 'direct_radiation',
       noDataMessage: false
     };
   },
@@ -61,7 +61,7 @@ export default {
     async fetchAllData() {
       let baseUrl = 'http://209.38.208.230:8000/api/pvmeasurementdata';
       this.timestampField = 'day';
-      this.valueField = 'total_production'; 
+      this.valueFieldRadiation = 'avg_direct_radiation'; 
       const dateRanges = {
         'start_date=2023-01-01': '&end_date=2024-01-01',
         'start_date=2024-01-01': '&end_date=2025-01-01',
@@ -70,22 +70,23 @@ export default {
       if (this.selectedDev && this.lastRouteSegment() !== 'entra') {  
         let extraParams = dateRanges[this.dateRange] || '';
         if (extraParams) {
-          baseUrl += `/?all=all&${this.dateRange}${extraParams}&ppe=${this.selectedDev}`;
+          baseUrl += `/?all=all&${this.dateRange}${extraParams}&farm=${this.selectedDev}`;
           
         } else {          
-          baseUrl = `${baseUrl}?ppe=${this.selectedDev}&${this.dateRange}`;
+          baseUrl = `${baseUrl}?farm=${this.selectedDev}&${this.dateRange}`;
           if(this.dateRange == 'day-ahead'){
             baseUrl += `=day-ahead`            
           }
           this.timestampField = 'timestamp';
-          this.valueField = 'production';          
+          this.valueFieldRadiation = 'direct_radiation';          
         }     
        
       }      
       try {        
+          console.log(baseUrl)
           const response = await axios.get(baseUrl);             
           this.measurementData = response.data;   
-          console.log("Meas",this.measurementData);      
+                
         if (this.measurementData.length > 0) {
 
           this.initChart();
@@ -116,21 +117,16 @@ export default {
     },
     initChart() {
       if (!this.chart) {
-        this.chart = echarts.init(this.$refs.chart);
-        //console.log(this.measurementData);
+        this.chart = echarts.init(this.$refs.chart);        
       }
       else{
         this.chart.clear();
-        this.option = {};   
-        // console.log("here",this.measurementData);
-        // console.log("Chart",this.chart);
-           
+        this.option = {};           
       }
-      const groupedData = this.groupDataByFarm(this.measurementData);
-      console.log("Grouped Data",groupedData);
-      const timestamps = this.getAllTimestamps(this.measurementData);
-      const series = this.createSeries(groupedData, timestamps);
       
+      const groupedData = this.groupDataByFarm(this.measurementData);      
+      const timestamps = this.getAllTimestamps(this.measurementData);
+      const series = this.createSeries(groupedData, timestamps);      
       const xAxis = this.getXAxisConfig(timestamps);
 
       this.option = {
@@ -232,8 +228,7 @@ export default {
           },
         ],
         series: series,
-      };
-      console.log("Option",this.option)
+      };      
       this.chart.setOption(this.option);
     },
     groupDataByFarm(data) {
@@ -262,10 +257,12 @@ export default {
       return Array.from(timestamps).sort();
     },
     createSeries(groupedData, timestamps) {
+      
       return Object.keys(groupedData).map(farm => {
-        const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));
-        const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp) || null]); // Use null for missing data
-        console.log("Data",data);
+        
+        const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
+        const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp) ]); // Use null for missing data
+        
         return {
           name: farm,
           type: 'line',

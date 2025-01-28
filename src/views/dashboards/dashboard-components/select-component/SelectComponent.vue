@@ -40,7 +40,7 @@
         
         const devOptions = this.all_devs.map(dev =>         
         ({                    
-          value: dev.PPE, 
+          value: dev.farm, 
           text: dev.farm,                              
         }));   
         

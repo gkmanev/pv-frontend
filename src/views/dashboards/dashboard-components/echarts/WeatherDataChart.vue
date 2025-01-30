@@ -83,7 +83,7 @@ export default {
        
       }      
       try {        
-          console.log(baseUrl)
+         
           const response = await axios.get(baseUrl);             
           this.measurementData = response.data;   
                 
@@ -126,12 +126,22 @@ export default {
       
       const groupedData = this.groupDataByFarm(this.measurementData);      
       const timestamps = this.getAllTimestamps(this.measurementData);
-      const series = this.createSeries(groupedData, timestamps);      
+      let totalSeries = [];    
+ 
+      let seriesToday = this.createSeriesToday(groupedData, timestamps);      
+      let dayAhead = this.createDayAheadSeries(groupedData, timestamps);
+      let dayBefore = this.createDayBeforeSeries(groupedData, timestamps);
+      //let totalSeries = dayBefore;
+      totalSeries = dayBefore.concat(seriesToday).concat(dayAhead);
+      if(this.dateRange !== 'day-ahead'){
+        totalSeries = this.createSeries(groupedData, timestamps);
+      }
+      console.log(totalSeries)
+      //series.push(...dayAhead); 
       const xAxis = this.getXAxisConfig(timestamps);
-
       this.option = {
         title: {
-            text: 'Direct Radiation [W/m²] | Temperature [°C]', 
+            text: 'Direct Radiation [W/m²]', 
             left: 'center',
             top: 'top',   
             textStyle: {
@@ -166,19 +176,19 @@ export default {
               const param = params[0]; // Only show the first series being pointed to
               let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
               const utcTime = new Date(param.data[0]);
-            //   const hours = utcTime.getHours().toString().padStart(2, '0');
-            //   const minutes = utcTime.getMinutes().toString().padStart(2, '0');
+              const hours = utcTime.getHours().toString().padStart(2, '0');
+              const minutes = utcTime.getMinutes().toString().padStart(2, '0');
               const day = utcTime.getDate().toString().padStart(2, '0');
               const month = (utcTime.getMonth() + 1).toString().padStart(2, '0');
               const year = utcTime.getFullYear();
-              const localTime = `${day}.${month}.${year}`;
+              const localTime = `${day}.${month}.${year} ${hours}:${minutes}`;
               const sumValue = param.data[1];
               tooltipContent += `
               <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
                 <ul style="list-style-type: none; margin: 0; padding-left: 0;">
                   <li>
                     
-                    <span style="color: white;">Cumulative PV Production</span>
+                    <span style="color: white;">Direct Radiation</span>
                   </li>
                 </ul>
               </div>`;
@@ -227,7 +237,7 @@ export default {
             }
           },
         ],
-        series: series,
+        series: totalSeries,
       };      
       this.chart.setOption(this.option);
     },
@@ -256,12 +266,38 @@ export default {
       });
       return Array.from(timestamps).sort();
     },
-    createSeries(groupedData, timestamps) {
-      
+    createSeries(groupedData, timestamps){
+      return Object.keys(groupedData).map(farm => {
+        const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
+        const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
+        return {
+          name: farm,
+          type: 'line',
+          stack: 'total',
+          connectNulls: false,
+          lineStyle: {
+            color: 'rgba(255,255,255,1)',            
+          },
+          showSymbol: false,
+          data: data,
+        };
+      });
+
+    },
+    createSeriesToday(groupedData, timestamps) {
+      //filter out the timestamps untill tomorrow at 00:00
+      const yesterday = new Date();
+      yesterday.setHours(0, 0, 0, 0);
+      yesterday.setDate(yesterday.getDate());
+      const tomorrow = new Date();
+      tomorrow.setHours(0, 0, 0, 0);
+      tomorrow.setDate(tomorrow.getDate() + 1);      
+      const filteredTimestamps = timestamps.filter(timestamp => yesterday < new Date(timestamp) && new Date(timestamp) < tomorrow);
+     
       return Object.keys(groupedData).map(farm => {
         
         const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
-        const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp) ]); // Use null for missing data
+        const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp) ]); // Use null for missing data
         
         return {
           name: farm,
@@ -269,14 +305,69 @@ export default {
           stack: 'total',
           connectNulls: false,
           lineStyle: {
-            color: 'rgba(255,255,255,0.6)',
-            
+            color: 'rgba(255,255,255,0.6)',            
           },
           showSymbol: false,
     
           data: data,
         };
       });
+    },
+
+    createDayBeforeSeries(groupedData, timestamps) {
+      
+      // Filter out the timestamps untill tomorrow at 00:00
+      const yesterday = new Date();
+      yesterday.setHours(0, 0, 0, 0);
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      today.setDate(today.getDate());
+
+      const filteredTimestamps = timestamps.filter(timestamp => yesterday < new Date(timestamp) && new Date(timestamp) < today);      
+      
+      return Object.keys(groupedData).map(farm => {
+        const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
+        const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
+        return {
+          name: farm,
+          type: 'line',
+          stack: 'total',
+          connectNulls: false,
+          lineStyle: {
+            color: 'rgba(255,255,255,1)',
+
+          },
+          showSymbol: false,
+          data: data,
+        };
+      })
+    },
+
+    createDayAheadSeries(groupedData, timestamps) {
+      
+      // Filter out the timestamps starting from tomorrow at 00:00
+      const tomorrow = new Date();
+      tomorrow.setHours(0, 0, 0, 0);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const filteredTimestamps = timestamps.filter(timestamp => new Date(timestamp) >= tomorrow);
+      return Object.keys(groupedData).map(farm => {
+        const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));   
+        const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
+        return {
+          name: farm,
+          type: 'line',
+          stack: 'total',
+          connectNulls: false,
+          lineStyle: {
+            color: 'rgba(255,255,255,0.3)',
+
+          },
+          showSymbol: false,
+          data: data,
+        };
+      })
     },
   },
 };

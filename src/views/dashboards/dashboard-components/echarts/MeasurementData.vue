@@ -103,15 +103,19 @@ export default {
         let extraParams = dateRanges[this.dateRange] || '';
         if (extraParams) {
           baseUrl += `/?all=all&${this.dateRange}${extraParams}&farm=${this.selectedDev}`;
-          
-        } else {          
+          if(this.dateRange == 'start_date=2025-01-01'){
+            baseUrl = `http://209.38.208.230:8000/api/pvmeasurementdata/?${this.dateRange}${extraParams}&farm=${this.selectedDev}`
+            this.timestampField = 'timestamp';
+            this.valueField = 'production'; 
+          }
+        } else {    
+               
           baseUrl = `${baseUrl}?farm=${this.selectedDev}&${this.dateRange}`;
           if(this.dateRange == 'day-ahead'){
             baseUrl += `=day-ahead`  
             const url_technical = `http://209.38.208.230:8000/api/pvdata/?farm=${this.selectedDev}`
             const response = await axios.get(url_technical);
-            this.technicalData = response.data;
-         
+            this.technicalData = response.data;         
           }
           this.timestampField = 'timestamp';
           this.valueField = 'production';          
@@ -127,10 +131,9 @@ export default {
         }                      
       }
      
-      try {    
-     
+      try {        
         const response = await axios.get(baseUrl);
-        this.measurementData = response.data;        
+        this.measurementData = response.data;             
         if (this.measurementData.length > 0) {   
 
     
@@ -173,6 +176,8 @@ export default {
       let allSeries = [];    
       let xAxis = {};
       let tooltipConfig = {};
+      let newSeriesMax = [];
+      let newSeriesMin = [];
       if (!this.chart) {
         this.chart = echarts.init(this.$refs.chart);
       }
@@ -192,13 +197,15 @@ export default {
         const timestamps = this.getAllTimestamps(this.measurementData); 
         const timestampsTech = this.getAllTimestamps(this.technicalData);      
         const groupedData = this.groupDataByFarm(this.measurementData);         
-        const groupedDataTech = this.groupDataByFarmTech(this.technicalData);   
-        // const newSeriesMax = this.addMaxSeries(groupedData, timestamps);        
-        // const newSeriesMin = this.addMinSeries(groupedData, timestamps); 
+        const groupedDataTech = this.groupDataByFarmTech(this.technicalData); 
+        if(this.dateRange !== 'start_date=2025-01-01'){
+          newSeriesMax = this.addMaxSeries(groupedData, timestamps);        
+          newSeriesMin = this.addMinSeries(groupedData, timestamps); 
+        }
         const series = this.createSeries(groupedData, timestamps);             
         const technicalSeries = this.createTechnicalSeries(groupedDataTech, timestampsTech); 
         xAxis = this.getXAxisConfig(timestamps);
-        allSeries = series.concat(technicalSeries);        
+        allSeries = series.concat(technicalSeries).concat(newSeriesMax).concat(newSeriesMin);        
         tooltipConfig = this.getTooltipConfig();
         series[0].areaStyle.opacity = 0
         series[0].lineStyle.color = "orange"
@@ -259,7 +266,8 @@ export default {
         series: allSeries,
         //series: series,
       };
-      this.chart.setOption(this.option);     
+      this.chart.setOption(this.option);    
+      
   
     },
     groupDataByFarm(data) {
@@ -317,8 +325,7 @@ export default {
               let cumulativeValue = 0;
               params.forEach(param => {               
                 // calculate cumulative value if param is not null or undefined
-                if (param.data[1] !== null && param.data[1] !== undefined) { 
-                  console.log(param.data[1] )                 
+                if (param.data[1] !== null && param.data[1] !== undefined) {                                 
                   cumulativeValue += parseFloat(param.data[1]);
                 }
               });
@@ -361,9 +368,10 @@ export default {
     createSeries(groupedData, timestamps) {    
      
         return Object.keys(groupedData).map(farm => {
-          const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueField]]));          
-          const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
-          console.log(data)
+        
+          const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueField]]));
+          const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp)] || null);       
+          
           const config = {          
           type: 'line',
           stack: 'total',  
@@ -385,6 +393,7 @@ export default {
     },
     createTechnicalSeries(groupedDataTech, timestamps) {  
       return Object.keys(groupedDataTech).map(installation_name => {
+          
           const dataMap = new Map(groupedDataTech[installation_name].map(item => [item[this.timestampField], item["signal_value"]]));
           
           const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data

@@ -25,7 +25,7 @@ export default {
         window.addEventListener('resize', this.handleResize);
     },
     computed: {
-      ...mapState(['dateRange', 'selectedDev']),  
+      ...mapState(['dateRange', 'selectedDev', 'updateZoom']),  
       chartHeight() {
         return window.innerHeight * 0.1; // Adjust this factor as needed
       }          
@@ -37,6 +37,15 @@ export default {
       }
     },
     watch: {      
+      updateZoom(newRange, oldRange) {
+        if (newRange !== oldRange) {
+          console.log('Zoom range:', newRange);   
+          const option = this.chart.getOption();   
+          option.dataZoom[0].start = newRange.start;
+          option.dataZoom[0].end = newRange.end;
+          this.chart.setOption(option);                
+        }
+      },
       dateRange(newRange, oldRange) {
         if (newRange !== oldRange) {
             this.fetchAllData();           
@@ -71,7 +80,11 @@ export default {
         let extraParams = dateRanges[this.dateRange] || '';
         if (extraParams) {
           baseUrl += `/?all=all&${this.dateRange}${extraParams}&farm=${this.selectedDev}`;
-          
+          if(this.dateRange == 'start_date=2025-01-01'){
+            baseUrl = `http://209.38.208.230:8000/api/pvmeasurementdata/?${this.dateRange}${extraParams}&farm=${this.selectedDev}`
+            this.timestampField = 'timestamp';
+            this.valueFieldRadiation = 'direct_radiation'; 
+          }          
         } else {          
           baseUrl = `${baseUrl}?farm=${this.selectedDev}&${this.dateRange}`;
           if(this.dateRange == 'day-ahead'){
@@ -82,8 +95,9 @@ export default {
         }     
        
       }      
-      try {        
-         
+      try {   
+        
+                   
           const response = await axios.get(baseUrl);             
           this.measurementData = response.data;   
                 
@@ -133,10 +147,12 @@ export default {
       let dayBefore = this.createDayBeforeSeries(groupedData, timestamps);
       //let totalSeries = dayBefore;
       totalSeries = dayBefore.concat(seriesToday).concat(dayAhead);
-      if(this.dateRange !== 'day-ahead'){
+      if(this.dateRange !== 'day-ahead' || this.dateRange == 'start_date=2025-01-01'){
+        
         totalSeries = this.createSeries(groupedData, timestamps);
       }
-      console.log(totalSeries)
+   
+      
       //series.push(...dayAhead); 
       const xAxis = this.getXAxisConfig(timestamps);
       this.option = {
@@ -267,6 +283,7 @@ export default {
       return Array.from(timestamps).sort();
     },
     createSeries(groupedData, timestamps){
+      console.log(this.valueFieldRadiation)
       return Object.keys(groupedData).map(farm => {
         const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
         const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data

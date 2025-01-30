@@ -8,6 +8,7 @@
 import * as echarts from 'echarts';
 import axios from 'axios';
 import { mapState } from 'vuex';
+import { mapActions } from 'vuex';
 
 export default {
   name: 'MeasurementData',
@@ -24,7 +25,9 @@ export default {
     mounted() {
         this.fetchAllData();
         window.addEventListener('resize', this.handleResize);
-        
+        if (this.chart) {
+          this.chart.on('dataZoom', this.handleDataZoom);
+        }        
     },
     computed: {
       ...mapState(['dateRange', 'selectedDev', 'confidanceCheck', 'all_devs']),      
@@ -35,6 +38,7 @@ export default {
     beforeDestroy() {
       window.removeEventListener('resize', this.handleResize);
       if (this.chart) {
+        this.chart.off('dataZoom', this.handleDataZoom);
         this.chart.dispose();
       }
     },
@@ -44,6 +48,7 @@ export default {
             this.fetchAllData();           
         }
       },  
+
       confidanceCheck(newVal, oldVal) {
         
         if (newVal !== oldVal) {
@@ -60,11 +65,24 @@ export default {
     },
     },
   methods: {
+
+    ...mapActions(['updateZoomData']),
+
     handleResize() {
       if (this.chart) {
         this.chart.resize();
       }
     },
+    handleDataZoom(params) {
+    const { start, end } = params;    
+    const zoomRange = { "start":start, "end":end };
+    this.updateZoomData(zoomRange);
+
+
+    // Perform any actions you want when zooming occurs
+    // For example, you could fetch new data based on the zoom range:
+    // this.fetchDataForRange(start, end);
+  },
 
     fetchConfidence(){
       let url = 'http://209.38.208.230:8000/api/confidence/?confidence=true'
@@ -180,6 +198,7 @@ export default {
       let newSeriesMin = [];
       if (!this.chart) {
         this.chart = echarts.init(this.$refs.chart);
+        this.chart.on('dataZoom', this.handleDataZoom);
       }
       else{
         this.chart.clear();      

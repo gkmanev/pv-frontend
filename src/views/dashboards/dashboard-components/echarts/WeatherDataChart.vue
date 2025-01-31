@@ -204,7 +204,7 @@ export default {
                 <ul style="list-style-type: none; margin: 0; padding-left: 0;">
                   <li>
                     
-                    <span style="color: white;">Direct Radiation</span>
+                    <span style="color: white;">${param.seriesName}</span>
                   </li>
                 </ul>
               </div>`;
@@ -283,7 +283,7 @@ export default {
       return Array.from(timestamps).sort();
     },
     createSeries(groupedData, timestamps){
-      console.log(this.valueFieldRadiation)
+      
       return Object.keys(groupedData).map(farm => {
         const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
         const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
@@ -317,7 +317,7 @@ export default {
         const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp) ]); // Use null for missing data
         
         return {
-          name: farm,
+          name: 'Forecast',
           type: 'line',
           stack: 'total',
           connectNulls: false,
@@ -348,7 +348,7 @@ export default {
         const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
         const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
         return {
-          name: farm,
+          name: 'Meteo',
           type: 'line',
           stack: 'total',
           connectNulls: false,
@@ -373,7 +373,7 @@ export default {
         const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));   
         const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
         return {
-          name: farm,
+          name: 'Forecast t+1',
           type: 'line',
           stack: 'total',
           connectNulls: false,

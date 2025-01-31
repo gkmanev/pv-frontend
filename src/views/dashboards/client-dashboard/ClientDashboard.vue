@@ -53,7 +53,8 @@
     SelectComponent,    
     RangeComponent,  
     MeasurementData,
-    WeatherDataChart  
+    WeatherDataChart,
+    
 },
 
     mounted() {

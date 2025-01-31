@@ -217,17 +217,21 @@ export default {
         const timestampsTech = this.getAllTimestamps(this.technicalData);      
         const groupedData = this.groupDataByFarm(this.measurementData);         
         const groupedDataTech = this.groupDataByFarmTech(this.technicalData); 
-        if(this.dateRange !== 'start_date=2025-01-01'){
-          newSeriesMax = this.addMaxSeries(groupedData, timestamps);        
+        if(this.dateRange !== 'start_date=2025-01-01' && this.dateRange !== 'day-ahead'){
+          
+          newSeriesMax = this.addMaxSeries(groupedData, timestamps); 
+            
           newSeriesMin = this.addMinSeries(groupedData, timestamps); 
         }
         const series = this.createSeries(groupedData, timestamps);             
         const technicalSeries = this.createTechnicalSeries(groupedDataTech, timestampsTech); 
         xAxis = this.getXAxisConfig(timestamps);
+        
         allSeries = series.concat(technicalSeries).concat(newSeriesMax).concat(newSeriesMin);        
         tooltipConfig = this.getTooltipConfig();
         series[0].areaStyle.opacity = 0
         series[0].lineStyle.color = "orange"
+        
       }     
       this.option = {
         title: {
@@ -285,7 +289,9 @@ export default {
         series: allSeries,
         //series: series,
       };
-      this.chart.setOption(this.option);    
+      this.chart.setOption(this.option);
+    
+
       
   
     },
@@ -330,7 +336,8 @@ export default {
           shadowOffsetY: 0,
           shadowColor: 'transparent',
           formatter: (params) => {
-          if (params && params.length) {           
+          if (params && params.length) {  
+                   
               let tooltipTitle = "Cumulative Production";
               const param = params[0]; // Only show the first series being pointed to
               let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
@@ -351,9 +358,11 @@ export default {
               
               if (this.selectedDev && this.lastRouteSegment() !== 'entra'){
                 localTime = `${day}.${month}.${year} | ${hours}:${minutes}`;
-                tooltipTitle = "Production";
+                tooltipTitle = param.seriesName;
                 let seriesName = param.seriesName;
+                
                 if(seriesName.includes("Technical")){
+                  
                   tooltipTitle = "Technical Production";
                 }
               }
@@ -385,11 +394,26 @@ export default {
       };
     },
     createSeries(groupedData, timestamps) {    
+
+        let filteredTimestamps = timestamps;
+        let name = ''
+        if (this.dateRange == 'day-ahead'){
+          const yesterday = new Date();
+          yesterday.setHours(0, 0, 0, 0);
+          yesterday.setDate(yesterday.getDate() - 1);
+
+          const today = new Date();
+          today.setHours(1, 0, 0, 0);
+          today.setDate(today.getDate());
+
+          filteredTimestamps = timestamps.filter(timestamp => yesterday < new Date(timestamp) && new Date(timestamp) < today);      
+          name = 'Comercial'
+        }        
      
         return Object.keys(groupedData).map(farm => {
         
           const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueField]]));
-          const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp)] || null);       
+          const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)] || null);       
           
           const config = {          
           type: 'line',
@@ -404,7 +428,7 @@ export default {
            
           },         
         }
-          config.name = farm
+          config.name = name ? name : farm
           config.data = data
           return config      
       });
@@ -427,7 +451,7 @@ export default {
           connectNulls: false,
           showSymbol: false,      
         }
-          config.name = `${installation_name} Technical`
+          config.name = `Technical`
           config.data = data
           return config      
       });

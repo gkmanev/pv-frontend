@@ -66,7 +66,7 @@ export default {
     },
   methods: {
 
-    ...mapActions(['updateZoomData']),
+    ...mapActions(['updateZoomData', 'updateResponseData']),
 
     handleResize() {
       if (this.chart) {
@@ -108,53 +108,36 @@ export default {
       return pathArray.pop() || pathArray[pathArray.length - 1]; // This handles non-trailing slash URLs
     },
     async fetchAllData() {
+      
       let baseUrl = 'http://209.38.208.230:8000/api/pvmeasurementdata';
       this.timestampField = 'day';
       this.valueField = 'total_production'; 
-      const dateRanges = {
-        'start_date=2023-01-01': '&end_date=2024-01-01',
-        'start_date=2024-01-01': '&end_date=2025-01-01',
-        'start_date=2025-01-01': '&end_date=2026-01-01',
-        
-      };
-      if (this.selectedDev && this.lastRouteSegment() !== 'entra') {  
-        let extraParams = dateRanges[this.dateRange] || '';
-        if (extraParams) {
-          baseUrl += `/?all=all&${this.dateRange}${extraParams}&farm=${this.selectedDev}`;
-          if(this.dateRange == 'start_date=2025-01-01'){
-            baseUrl = `http://209.38.208.230:8000/api/pvmeasurementdata/?${this.dateRange}${extraParams}&farm=${this.selectedDev}`
-            this.timestampField = 'timestamp';
-            this.valueField = 'production'; 
-          }
-        } else {    
-               
-          baseUrl = `${baseUrl}?farm=${this.selectedDev}&${this.dateRange}`;
-          if(this.dateRange == 'day-ahead'){
-            baseUrl += `=day-ahead`  
-            const url_technical = `http://209.38.208.230:8000/api/pvdata/?farm=${this.selectedDev}`
-            const response = await axios.get(url_technical);
-            this.technicalData = response.data;         
-          }
+      baseUrl += `/?all=all&${this.dateRange}=${this.dateRange}`;
+      if (this.selectedDev && this.lastRouteSegment() !== 'entra') {
+        if(this.dateRange == 'ytd'){
+          baseUrl = `http://209.38.208.230:8000/api/pvmeasurementdata/?${this.dateRange}=${this.dateRange}&farm=${this.selectedDev}`;
           this.timestampField = 'timestamp';
-          this.valueField = 'production';          
-        }         
-        
-                       
-      }
-      else{        
-        baseUrl = `${baseUrl}/?all=all`;
-        let extraParams = dateRanges[this.dateRange] || '';
-        if (extraParams) {
-          baseUrl += `&${this.dateRange}${extraParams}`;
-        }                      
-      }
-     
+          this.valueField = 'production';
+        }
+        else if(this.dateRange == '7d'){
+          baseUrl = `http://209.38.208.230:8000/api/pvmeasurementdata/?${this.dateRange}=${this.dateRange}&farm=${this.selectedDev}`;
+          const baseUrlTechnical = `http://209.38.208.230:8000/api/pvdata/?farm=${this.selectedDev}`
+          const response = await axios.get(baseUrlTechnical);
+          this.technicalData = response.data;         
+          this.timestampField = 'timestamp';
+          this.valueField = 'production';
+          
+        }
+        else{
+          baseUrl = `http://209.38.208.230:8000/api/pvmeasurementdata/?all=all&${this.dateRange}=${this.dateRange}&farm=${this.selectedDev}`;
+        }
+      }     
+       
       try {        
         const response = await axios.get(baseUrl);
-        this.measurementData = response.data;             
-        if (this.measurementData.length > 0) {   
-
-    
+        this.measurementData = response.data;    
+        this.updateResponseData(this.measurementData);  
+        if (this.measurementData.length > 0) {    
           this.initChart();
           this.$nextTick(() => {
           this.handleResize();
@@ -196,6 +179,9 @@ export default {
       let tooltipConfig = {};
       let newSeriesMax = [];
       let newSeriesMin = [];
+      let timestampsTech = [];
+      let groupedDataTech = [];
+      let titleText = 'PV Comulative Production [kWh] | Res 1h';
       if (!this.chart) {
         this.chart = echarts.init(this.$refs.chart);
         this.chart.on('dataZoom', this.handleDataZoom);
@@ -203,8 +189,7 @@ export default {
       else{
         this.chart.clear();      
       }
-      if (this.lastRouteSegment() == 'entra'){
-        
+      if (this.lastRouteSegment() == 'entra'){        
         const groupedData = this.groupDataByFarm(this.measurementData);
         const timestamps = this.getAllTimestamps(this.measurementData);
         const series = this.createSeries(groupedData, timestamps);
@@ -212,21 +197,29 @@ export default {
         tooltipConfig = this.getTooltipConfig();
         allSeries = series      
       }
-      if (this.selectedDev && this.lastRouteSegment() !== 'entra'){    
-        const timestamps = this.getAllTimestamps(this.measurementData); 
-        const timestampsTech = this.getAllTimestamps(this.technicalData);      
-        const groupedData = this.groupDataByFarm(this.measurementData);         
-        const groupedDataTech = this.groupDataByFarmTech(this.technicalData); 
-        if(this.dateRange !== 'start_date=2025-01-01' && this.dateRange !== 'day-ahead'){
-          
-          newSeriesMax = this.addMaxSeries(groupedData, timestamps); 
-            
-          newSeriesMin = this.addMinSeries(groupedData, timestamps); 
+      if (this.selectedDev && this.lastRouteSegment() !== 'entra'){
+        if (this.dateRange == 'y-1' || this.dateRange == 'y-2'){
+          titleText = `PV Production [kWh] | ${this.selectedDev} | Res 1h`;
         }
+        else {
+          titleText = `PV Production [kWh] | ${this.selectedDev} | Res 15min`;
+        }        
+        const timestamps = this.getAllTimestamps(this.measurementData); 
+        const groupedData = this.groupDataByFarm(this.measurementData);         
+        if(this.technicalData.length > 0){
+          
+          timestampsTech = this.getAllTimestamps(this.technicalData);       
+          groupedDataTech = this.groupDataByFarmTech(this.technicalData); 
+        }
+        // if(this.dateRange !== 'ytd' || this.dateRange !== '7d' || this.dateRange !== 'y-1' || this.dateRange !== 'y-2'){
+          
+        //   newSeriesMax = this.addMaxSeries(groupedData, timestamps); 
+            
+        //   newSeriesMin = this.addMinSeries(groupedData, timestamps); 
+        // }
         const series = this.createSeries(groupedData, timestamps);             
         const technicalSeries = this.createTechnicalSeries(groupedDataTech, timestampsTech); 
-        xAxis = this.getXAxisConfig(timestamps);
-        
+        xAxis = this.getXAxisConfig(timestamps);        
         allSeries = series.concat(technicalSeries).concat(newSeriesMax).concat(newSeriesMin);        
         tooltipConfig = this.getTooltipConfig();
         series[0].areaStyle.opacity = 0
@@ -235,7 +228,7 @@ export default {
       }     
       this.option = {
         title: {
-            text: 'PV Production [MW/h] | Resolution: 1h', 
+            text: titleText, 
             left: 'center', 
             top: 'top',  
             textStyle: {

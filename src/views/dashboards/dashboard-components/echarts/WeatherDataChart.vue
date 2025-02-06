@@ -6,8 +6,9 @@
 
 <script>
 import * as echarts from 'echarts';
-import axios from 'axios';
+
 import { mapState } from 'vuex';
+
 export default {
   name: 'MeasurementData',
   data() {
@@ -25,7 +26,7 @@ export default {
         window.addEventListener('resize', this.handleResize);
     },
     computed: {
-      ...mapState(['dateRange', 'selectedDev', 'updateZoom']),  
+      ...mapState(['dateRange', 'selectedDev', 'updateZoom', 'updateResponse']),  
       chartHeight() {
         return window.innerHeight * 0.1; // Adjust this factor as needed
       }          
@@ -39,13 +40,18 @@ export default {
     watch: {      
       updateZoom(newRange, oldRange) {
         if (newRange !== oldRange) {
-          console.log('Zoom range:', newRange);   
+          
           const option = this.chart.getOption();   
           option.dataZoom[0].start = newRange.start;
           option.dataZoom[0].end = newRange.end;
           this.chart.setOption(option);                
         }
       },
+      updateResponse(newData, oldData) {
+        if (newData !== oldData) {         
+            this.fetchAllData(newData);           
+        }
+      },  
       dateRange(newRange, oldRange) {
         if (newRange !== oldRange) {
             this.fetchAllData();           
@@ -67,41 +73,31 @@ export default {
       const pathArray = this.$route.path.split('/');    
       return pathArray.pop() || pathArray[pathArray.length - 1]; // This handles non-trailing slash URLs
     },
-    async fetchAllData() {
+    async fetchAllData(data) {
       let baseUrl = 'http://209.38.208.230:8000/api/pvmeasurementdata';
       this.timestampField = 'day';
-      this.valueFieldRadiation = 'avg_direct_radiation'; 
-      const dateRanges = {
-        'start_date=2023-01-01': '&end_date=2024-01-01',
-        'start_date=2024-01-01': '&end_date=2025-01-01',
-        'start_date=2025-01-01': '&end_date=2026-01-01'
-      };
-      if (this.selectedDev && this.lastRouteSegment() !== 'entra') {  
-        let extraParams = dateRanges[this.dateRange] || '';
-        if (extraParams) {
-          baseUrl += `/?all=all&${this.dateRange}${extraParams}&farm=${this.selectedDev}`;
-          if(this.dateRange == 'start_date=2025-01-01'){
-            baseUrl = `http://209.38.208.230:8000/api/pvmeasurementdata/?${this.dateRange}${extraParams}&farm=${this.selectedDev}`
-            this.timestampField = 'timestamp';
-            this.valueFieldRadiation = 'direct_radiation'; 
-          }          
-        } else {          
-          baseUrl = `${baseUrl}?farm=${this.selectedDev}&${this.dateRange}`;
-          if(this.dateRange == 'day-ahead'){
-            baseUrl += `=day-ahead`            
-          }
+      this.valueFieldRadiation = 'avg_direct_radiation';        
+   
+        if(this.dateRange == 'y-1' || this.dateRange == 'y-2')
+        {
+          baseUrl += `/?all=all&${this.dateRange}&farm=${this.selectedDev}`;
+        }
+        else if(this.dateRange == 'ytd'){
+          baseUrl = `http://209.38.208.230:8000/api/pvmeasurementdata/?${this.dateRange}&farm=${this.selectedDev}`
           this.timestampField = 'timestamp';
-          this.valueFieldRadiation = 'direct_radiation';          
-        }     
-       
-      }      
-      try {   
-        
-                   
-          const response = await axios.get(baseUrl);             
-          this.measurementData = response.data;   
-                
-        if (this.measurementData.length > 0) {
+          this.valueFieldRadiation = 'direct_radiation';
+        }
+        else if (this.dateRange == '7d'){
+          this.timestampField = 'timestamp';
+          this.valueFieldRadiation = 'direct_radiation_forecast';
+        }
+        else{
+          baseUrl += `/?all=all&${this.dateRange}&farm=${this.selectedDev}`;
+        }   
+            console.log(baseUrl)
+      try {                 
+        if (data && data.length > 0) {
+          this.measurementData = data;         
 
           this.initChart();
         } else {
@@ -141,17 +137,20 @@ export default {
       const groupedData = this.groupDataByFarm(this.measurementData);      
       const timestamps = this.getAllTimestamps(this.measurementData);
       let totalSeries = [];    
- 
-      let seriesToday = this.createSeriesToday(groupedData, timestamps);      
-      let dayAhead = this.createDayAheadSeries(groupedData, timestamps);
-      let dayBefore = this.createDayBeforeSeries(groupedData, timestamps);
-      //let totalSeries = dayBefore;
-      totalSeries = dayBefore.concat(seriesToday).concat(dayAhead);
-      if(this.dateRange !== 'day-ahead' || this.dateRange == 'start_date=2025-01-01'){
-        
-        totalSeries = this.createSeries(groupedData, timestamps);
-      }
-   
+      totalSeries = this.createSeries(groupedData, timestamps);
+       
+      if(this.dateRange == '7d'){
+        let seriesToday = this.createSeriesToday(groupedData, timestamps);       
+        let dayAhead = this.createDayAheadSeries(groupedData, timestamps);      
+        let dayBefore = this.createDayBeforeSeries(groupedData, timestamps);
+        let fiveDaysAgo = this.createfiveDaysAgo(groupedData, timestamps); 
+        let fiveDaysAgoForecast = this.createfiveDaysAgoForecast(groupedData, timestamps);      
+        // forecast 5days ago
+
+        totalSeries = fiveDaysAgoForecast.concat(fiveDaysAgo).concat(dayBefore).concat(seriesToday).concat(dayAhead);        
+      }     
+
+      
       
       //series.push(...dayAhead); 
       const xAxis = this.getXAxisConfig(timestamps);
@@ -187,37 +186,43 @@ export default {
           shadowOffsetX: 0,
           shadowOffsetY: 0,
           shadowColor: 'transparent',
-          formatter: (params) => {
+            formatter: (params) => {
             if (params && params.length) {
-              const param = params[0]; // Only show the first series being pointed to
               let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
-              const utcTime = new Date(param.data[0]);
+              const utcTime = new Date(params[0].data[0]);
               const hours = utcTime.getHours().toString().padStart(2, '0');
               const minutes = utcTime.getMinutes().toString().padStart(2, '0');
               const day = utcTime.getDate().toString().padStart(2, '0');
               const month = (utcTime.getMonth() + 1).toString().padStart(2, '0');
               const year = utcTime.getFullYear();
               const localTime = `${day}.${month}.${year} ${hours}:${minutes}`;
-              const sumValue = param.data[1];
+              
               tooltipContent += `
               <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
-                <ul style="list-style-type: none; margin: 0; padding-left: 0;">
-                  <li>
-                    
-                    <span style="color: white;">${param.seriesName}</span>
-                  </li>
-                </ul>
+              <ul style="list-style-type: none; margin: 0; padding-left: 0;">`;
+              
+                params.forEach(param => {
+                tooltipContent += `
+                <li>
+                <span style="color: ${param.color};">${param.seriesName}: ${param.data[1]}</span>
+                </li>`;
+                });
+              
+              tooltipContent += `
+              </ul>
               </div>`;
+              
               let footer = `
               <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">
-                <strong>Total ${sumValue}  </strong> at <span style="color: white;">${localTime}</span>
+              <strong>Time: ${localTime}</strong>
               </div>`;
+              
               tooltipContent += footer;
               tooltipContent += `</div>`;
               return tooltipContent;
             }
             return '';
-          },
+            },
         },
         xAxis: xAxis, 
 
@@ -283,7 +288,7 @@ export default {
       return Array.from(timestamps).sort();
     },
     createSeries(groupedData, timestamps){
-      
+     
       return Object.keys(groupedData).map(farm => {
         const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
         const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
@@ -312,8 +317,9 @@ export default {
       const filteredTimestamps = timestamps.filter(timestamp => yesterday < new Date(timestamp) && new Date(timestamp) < tomorrow);
      
       return Object.keys(groupedData).map(farm => {
-        
-        const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
+        console.log(groupedData);
+        const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));     
+       
         const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp) ]); // Use null for missing data
         
         return {
@@ -329,6 +335,67 @@ export default {
           data: data,
         };
       });
+    },
+
+    createfiveDaysAgo(groupedData, timestamps){
+      const fiveDaysAgo = new Date();
+      fiveDaysAgo.setHours(0, 0, 0, 0);
+      fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      today.setDate(today.getDate() - 1);
+      this.valueFieldRadiation = 'direct_radiation'
+
+      const filteredTimestamps = timestamps.filter(timestamp => fiveDaysAgo < new Date(timestamp) && new Date(timestamp) < today);  
+      return Object.keys(groupedData).map(farm => {
+        const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
+        const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
+        return {
+          name: 'Meteo',
+          type: 'line',
+          stack: 'total',
+          connectNulls: false,
+          lineStyle: {
+            color: 'rgba(255,255,255,1)',
+
+          },
+          showSymbol: false,
+          data: data,
+          color: 'rgba(255,255,255,1)'
+        };
+      })
+     
+    },
+    createfiveDaysAgoForecast(groupedData, timestamps){
+      const fiveDaysAgo = new Date();
+      fiveDaysAgo.setHours(0, 0, 0, 0);
+      fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      today.setDate(today.getDate() - 1);
+      this.valueFieldRadiation = 'direct_radiation_forecast'
+
+      const filteredTimestamps = timestamps.filter(timestamp => fiveDaysAgo < new Date(timestamp) && new Date(timestamp) < today);  
+      return Object.keys(groupedData).map(farm => {
+        const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
+        const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
+        return {
+          name: 'Meteo Forecast',
+          type: 'line',
+          color:'orange',
+          stack: 'total',
+          connectNulls: false,
+          lineStyle: {
+            color: 'orange',
+
+          },
+          showSymbol: false,
+          data: data,
+        };
+      })
+     
     },
 
     createDayBeforeSeries(groupedData, timestamps) {
@@ -348,7 +415,7 @@ export default {
         const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
         const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
         return {
-          name: 'Meteo',
+          name: 'Meteo Forecast',
           type: 'line',
           stack: 'total',
           connectNulls: false,
@@ -362,8 +429,7 @@ export default {
       })
     },
 
-    createDayAheadSeries(groupedData, timestamps) {
-      
+    createDayAheadSeries(groupedData, timestamps) {      
       // Filter out the timestamps starting from tomorrow at 00:00
       const tomorrow = new Date();
       tomorrow.setHours(0, 0, 0, 0);

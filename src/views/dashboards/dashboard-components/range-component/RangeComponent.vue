@@ -17,27 +17,27 @@
           All
         </b-button> -->
         <b-button 
-          @click="filterContent('start_date=2023-01-01')" 
-          :class="{ 'active': selectedPeriod === 'start_date=2023-01-01' }"
+          @click="filterContent('y-2')" 
+          :class="{ 'active': selectedPeriod === 'y-2' }"
         >
           2023
         </b-button>
         <b-button 
-          @click="filterContent('start_date=2024-01-01')" 
-          :class="{ 'active': selectedPeriod === 'start_date=2024-01-01' }"
+          @click="filterContent('y-1')" 
+          :class="{ 'active': selectedPeriod === 'y-1' }"
         >
           2024
         </b-button>
         <b-button 
-          @click="filterContent('start_date=2025-01-01')" 
-          :class="{ 'active': selectedPeriod === 'start_date=2025-01-01' }"
+          @click="filterContent('ytd')" 
+          :class="{ 'active': selectedPeriod === 'ytd' }"
         >
           YTD
         </b-button>
         <b-button v-if="isVisible"
-          @click="filterContent('day-ahead')" 
-          :class="{ 'active': selectedPeriod === 'day-ahead' }">
-          Day Ahead
+          @click="filterContent('7d')" 
+          :class="{ 'active': selectedPeriod === '7d' }">
+          7 Days
         </b-button>
       </b-button-group>   
     </b-col>

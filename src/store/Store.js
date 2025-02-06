@@ -10,9 +10,10 @@ export default new Vuex.Store({
     confidanceCheck: false,
     all_devs: [],
     updateZoom:{"min:": 0, "max": 0},
+    updateResponse:[],
     checkedDevs:[],
     selectBoxDevs:[],    
-    dateRange: 'start_date=2024-01-01',
+    dateRange: 'ytd',
     Theme: "dark", // theme can be light or dark
     LayoutType: "full-sidebar", // this can be full-sidebar, mini-sidebar
     Sidebar_drawer: false,
@@ -39,7 +40,9 @@ export default new Vuex.Store({
     SET_CHART_ZOOM(state, payload){
       state.updateZoom = payload
     },
-
+    SET_RESPONSE_DATA(state, payload){    
+      state.updateResponse = payload
+    },
     SET_SELECTED_DEV(state, payload){
       state.selectedDev = payload
     },
@@ -95,6 +98,9 @@ export default new Vuex.Store({
 
   },
   actions: {
+    updateResponseData({ commit }, data) {     
+      commit('SET_RESPONSE_DATA', data);
+    },
     updateZoomData({ commit }, data) {     
       commit('SET_CHART_ZOOM', data);
     },

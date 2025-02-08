@@ -17,6 +17,7 @@ export default {
       chart: null,
       measurementData: [],
       technicalData: [],
+      predictionsData: [],
       timestampField: 'day',
       valueField: 'total_production',
       noDataMessage: false
@@ -120,13 +121,15 @@ export default {
           this.valueField = 'production';
         }
         else if(this.dateRange == '7d'){
+          const predictionsUrl = `http://85.14.6.37:16454/api/pvforecast/?farm=${this.selectedDev}`
           baseUrl = `http://209.38.208.230:8000/api/pvmeasurementdata/?${this.dateRange}=${this.dateRange}&farm=${this.selectedDev}`;
           const baseUrlTechnical = `http://209.38.208.230:8000/api/pvdata/?farm=${this.selectedDev}`
           const response = await axios.get(baseUrlTechnical);
           this.technicalData = response.data;         
+          const responsePredictions = await axios.get(predictionsUrl);
+          this.predictionsData = responsePredictions.data;
           this.timestampField = 'timestamp';
-          this.valueField = 'production';
-          
+          this.valueField = 'production';          
         }
         else{
           baseUrl = `http://209.38.208.230:8000/api/pvmeasurementdata/?all=all&${this.dateRange}=${this.dateRange}&farm=${this.selectedDev}`;
@@ -181,6 +184,8 @@ export default {
       let newSeriesMin = [];
       let timestampsTech = [];
       let groupedDataTech = [];
+      let timestampsPrediction = [];
+      let groupedDataPrediction = [];
       let titleText = 'PV Comulative Production [kWh] | Res 1h';
       if (!this.chart) {
         this.chart = echarts.init(this.$refs.chart);
@@ -206,10 +211,13 @@ export default {
         }        
         const timestamps = this.getAllTimestamps(this.measurementData); 
         const groupedData = this.groupDataByFarm(this.measurementData);         
-        if(this.technicalData.length > 0){
-          
+        if(this.technicalData.length > 0){          
           timestampsTech = this.getAllTimestamps(this.technicalData);       
           groupedDataTech = this.groupDataByFarmTech(this.technicalData); 
+        }
+        if(this.predictionsData.length > 0){
+          timestampsPrediction = this.getAllTimestamps(this.predictionsData);
+          groupedDataPrediction = this.groupDataByFarm(this.predictionsData);
         }
         // if(this.dateRange !== 'ytd' || this.dateRange !== '7d' || this.dateRange !== 'y-1' || this.dateRange !== 'y-2'){
           
@@ -219,8 +227,10 @@ export default {
         // }
         const series = this.createSeries(groupedData, timestamps);             
         const technicalSeries = this.createTechnicalSeries(groupedDataTech, timestampsTech); 
+        const predictionsSeries = this.createPredictionSeries(groupedDataPrediction, timestampsPrediction);
+
         xAxis = this.getXAxisConfig(timestamps);        
-        allSeries = series.concat(technicalSeries).concat(newSeriesMax).concat(newSeriesMin);        
+        allSeries = series.concat(technicalSeries).concat(newSeriesMax).concat(newSeriesMin).concat(predictionsSeries);        
         tooltipConfig = this.getTooltipConfig();
         series[0].areaStyle.opacity = 0
         series[0].lineStyle.color = "orange"
@@ -283,10 +293,7 @@ export default {
         //series: series,
       };
       this.chart.setOption(this.option);
-    
-
-      
-  
+     
     },
     groupDataByFarm(data) {
       return data.reduce((acc, item) => {
@@ -448,6 +455,30 @@ export default {
           config.data = data
           return config      
       });
+    },
+    createPredictionSeries(groupedDataPrediction, timestampsPrediction){
+      return Object.keys(groupedDataPrediction).map(farm => {
+          
+          const dataMap = new Map(groupedDataPrediction[farm].map(item => [item["timestamp"], item["production_forecast"]]));
+          
+          const data = timestampsPrediction.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
+          
+          
+          const config = {          
+          type: 'line',       
+          lineStyle:{
+            color:'magenta',
+            opacity:1,
+            type: 'dashed'
+          },   
+          connectNulls: false,
+          showSymbol: false,      
+        }
+          config.name = `Technical`
+          config.data = data
+          return config      
+      });
+
     },
     getXAxisConfig(timestamps) {
       return {

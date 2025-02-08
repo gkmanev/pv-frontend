@@ -324,8 +324,7 @@ export default {
         
         return {
           name: 'Forecast',
-          type: 'line',
-          stack: 'total',
+          type: 'line',         
           connectNulls: false,
           lineStyle: {
             color: 'rgba(255,255,255,0.6)',            
@@ -353,8 +352,7 @@ export default {
         const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
         return {
           name: 'Meteo',
-          type: 'line',
-          stack: 'total',
+          type: 'line',          
           connectNulls: false,
           lineStyle: {
             color: 'rgba(255,255,255,1)',
@@ -384,8 +382,7 @@ export default {
         return {
           name: 'Meteo Forecast',
           type: 'line',
-          color:'orange',
-          stack: 'total',
+          color:'orange',         
           connectNulls: false,
           lineStyle: {
             color: 'orange',
@@ -416,8 +413,7 @@ export default {
         const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
         return {
           name: 'Meteo Forecast',
-          type: 'line',
-          stack: 'total',
+          type: 'line',         
           connectNulls: false,
           lineStyle: {
             color: 'rgba(255,255,255,1)',
@@ -440,12 +436,10 @@ export default {
         const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
         return {
           name: 'Forecast t+1',
-          type: 'line',
-          stack: 'total',
+          type: 'line',         
           connectNulls: false,
           lineStyle: {
             color: 'rgba(255,255,255,0.3)',
-
           },
           showSymbol: false,
           data: data,

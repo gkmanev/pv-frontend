@@ -358,15 +358,18 @@ export default {
               
               if (this.selectedDev && this.lastRouteSegment() !== 'entra'){
                 localTime = `${day}.${month}.${year} | ${hours}:${minutes}`;
-                tooltipTitle = param.seriesName;
-                let seriesName = param.seriesName;
-                
-                if(seriesName.includes("Technical")){
-                  
-                  tooltipTitle = "Technical Production";
+                params.forEach(param => {
+                if (param.data[1] === null || param.data[1] === undefined) {
+                  return;
                 }
+                tooltipContent += `
+                <li style="color: ${param.color}; padding-left:10px;">
+                <span style="color: ${param.color};">${param.seriesName}: ${param.data[1]}</span>
+                </li>`;
+                tooltipTitle = "";
+                });
               }
-              else{
+              else{                
                 localTime = `${day}.${month}.${year}`;
                 tooltipTitle = "Cumulative Production";
               }
@@ -375,16 +378,24 @@ export default {
               tooltipContent += `
               <div style="padding-right:15px;padding-left:15px;padding-top:3px;padding-bottom:3px;margin-bottom:0;border-bottom-left-radius: 8px;border-bottom-right-radius: 8px;">
                 <ul style="list-style-type: none; margin: 0; padding-left: 0;">
-                  <li>
-                    
+                  <li>                    
                     <span style="color: white;">${tooltipTitle}</span>
                   </li>
                 </ul>
               </div>`;
-              let footer = `
-              <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">
-                <strong>Total ${cumulativeValue.toFixed(2)}  </strong> at <span style="color: white;">${localTime}</span>
-              </div>`;
+              let footer = '';
+              if (this.selectedDev && this.lastRouteSegment() !== 'entra'){
+                footer = `                
+                <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">
+                  <strong></strong><span style="color: white;">${localTime}</span>
+                </div>`;
+              }
+              else{
+              footer = `
+                <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">
+                  <strong>Total ${cumulativeValue.toFixed(2)}  </strong> at <span style="color: white;">${localTime}</span>
+                </div>`;
+              }
               tooltipContent += footer;
               tooltipContent += `</div>`;
               return tooltipContent;
@@ -440,8 +451,7 @@ export default {
           const dataMap = new Map(groupedDataTech[installation_name].map(item => [item[this.timestampField], item["signal_value"]]));
           
           const data = timestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
-          
-          
+                   
           const config = {          
           type: 'line',       
           lineStyle:{
@@ -453,17 +463,17 @@ export default {
         }
           config.name = `Technical`
           config.data = data
+          config.color = 'orange'
           return config      
       });
     },
     createPredictionSeries(groupedDataPrediction, timestampsPrediction){
       return Object.keys(groupedDataPrediction).map(farm => {
           
-          const dataMap = new Map(groupedDataPrediction[farm].map(item => [item["timestamp"], item["production_forecast"]]));
+          const dataMap = new Map(groupedDataPrediction[farm].map(item => [item["timestamp"], item["production_forecast"].toFixed(2)]));
           
           const data = timestampsPrediction.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
-          
-          
+                    
           const config = {          
           type: 'line',       
           lineStyle:{
@@ -474,8 +484,9 @@ export default {
           connectNulls: false,
           showSymbol: false,      
         }
-          config.name = `Technical`
+          config.name = `Prediction`
           config.data = data
+          config.color = 'magenta'
           return config      
       });
 

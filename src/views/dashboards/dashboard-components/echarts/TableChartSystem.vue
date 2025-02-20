@@ -43,8 +43,9 @@
          { key: 'farm', sortable: true },
          { key: 'status', sortable: true },        
          { key: 'power', sortable: true, label: 'Power kW'},
-         { key: 'latitude', sortable: true, label: 'Latitude' },
-         { key: 'longitude', sortable: true, label: 'Longitude' },
+         {key: 'coordinates', sortable: true, label: 'Coordinates'},
+        //  { key: 'latitude', sortable: true, label: 'Latitude' },
+        //  { key: 'longitude', sortable: true, label: 'Longitude' },
          { key: 'farm_type', sortable: true },            
          { key: 'capacity', label: 'Capacity'},         
        ],        
@@ -103,14 +104,22 @@
        
       
        async createAllDevs() {        
-         this.all = this.all_devs      
+         this.all = this.all_devs   
+         this.all.forEach(dev => {
+          dev.coordinates = `${dev.latitude} / ${dev.longitude}`;
+          if (isNaN(dev.power)) {
+            dev.power = '-';
+          } else {
+            dev.power = parseFloat(dev.power).toFixed(2);
+          }
+        });
        } 
      },
    
      created (){       
        this.createAllDevs()      
        this.pollData()
-       console.log("all",this.all)
+       
      },
      beforeDestroy () {
           clearInterval(this.polling)
@@ -129,6 +138,10 @@
    </script>
    
    <style scoped>
+ 
+    ::v-deep(.table td) {
+      padding: 0 !important;
+    }
    .led-indicator {
    display: inline-block;
    width: 12px;

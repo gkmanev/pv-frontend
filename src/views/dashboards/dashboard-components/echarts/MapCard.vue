@@ -1,6 +1,6 @@
 <template>
   <b-card>
-        <div id="map-canvas" class="heatmap" style="height: 450px;"></div>
+        <div id="map-canvas" class="heatmap" style="height: 250px; width: 100%;"></div>
   </b-card>
 
   </template>

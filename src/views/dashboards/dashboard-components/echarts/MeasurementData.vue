@@ -121,13 +121,14 @@ export default {
           this.valueField = 'production';
         }
         else if(this.dateRange == '7d'){
-          const predictionsUrl = `http://85.14.6.37:16454/api/pvforecast/?farm=${this.selectedDev}`
+          const predictionsUrl = `http://85.14.6.37:2323/api/pvforecast/?farm=${this.selectedDev}`
           baseUrl = `http://209.38.208.230:8000/api/pvmeasurementdata/?${this.dateRange}=${this.dateRange}&farm=${this.selectedDev}`;
           const baseUrlTechnical = `http://209.38.208.230:8000/api/pvdata/?farm=${this.selectedDev}`
           const response = await axios.get(baseUrlTechnical);
           this.technicalData = response.data;         
           const responsePredictions = await axios.get(predictionsUrl);
           this.predictionsData = responsePredictions.data;
+          console.log(responsePredictions.data)
           this.timestampField = 'timestamp';
           this.valueField = 'production';          
         }
@@ -186,7 +187,7 @@ export default {
       let groupedDataTech = [];
       let timestampsPrediction = [];
       let groupedDataPrediction = [];
-      let titleText = 'PV Comulative Production [kWh] | Res 1h';
+      let titleText = 'PV Comulative Production [kWh] | Daily Resolution';
       if (!this.chart) {
         this.chart = echarts.init(this.$refs.chart);
         this.chart.on('dataZoom', this.handleDataZoom);
@@ -204,7 +205,7 @@ export default {
       }
       if (this.selectedDev && this.lastRouteSegment() !== 'entra'){
         if (this.dateRange == 'y-1' || this.dateRange == 'y-2'){
-          titleText = `PV Production [kWh] | ${this.selectedDev} | Res 1h`;
+          titleText = `PV Production [kWh] | ${this.selectedDev} | Daily Resolution`;
         }
         else {
           titleText = `PV Production [kWh] | ${this.selectedDev} | Res 15min`;
@@ -340,7 +341,7 @@ export default {
                    
               let tooltipTitle = "Cumulative Production";
               const param = params[0]; // Only show the first series being pointed to
-              let tooltipContent = `<div class="tooltip-set" style="text-align:left; padding:0; margin:0; background-color: black; border-radius: 8px;">`;
+              let tooltipContent = `<div class="tooltip-set" style="text-align:center; padding:0px; margin:0; background-color: black; border-radius: 8px;">`;
               const utcTime = new Date(param.data[0]);
               const hours = utcTime.getHours().toString().padStart(2, '0');
               const minutes = utcTime.getMinutes().toString().padStart(2, '0');
@@ -349,25 +350,31 @@ export default {
               const year = utcTime.getFullYear();
               let localTime;
               let cumulativeValue = 0;
-              params.forEach(param => {               
+                params.forEach(param => {               
                 // calculate cumulative value if param is not null or undefined
                 if (param.data[1] !== null && param.data[1] !== undefined) {                                 
-                  cumulativeValue += parseFloat(param.data[1]);
+                  cumulativeValue += parseFloat(param.data[1]);                    
                 }
-              });
+                });
+          
               
               if (this.selectedDev && this.lastRouteSegment() !== 'entra'){
                 localTime = `${day}.${month}.${year} | ${hours}:${minutes}`;
-                params.forEach(param => {
-                if (param.data[1] === null || param.data[1] === undefined) {
-                  return;
+                if (this.dateRange == 'y-1' || this.dateRange == 'y-2'){
+                  tooltipContent += ``;
+                  tooltipTitle = "";
                 }
-                tooltipContent += `
-                <li style="color: ${param.color}; padding-left:10px;">
-                <span style="color: ${param.color};">${param.seriesName}: ${param.data[1]}</span>
-                </li>`;
-                tooltipTitle = "";
-                });
+                else{
+                  tooltipContent += `<ul style="list-style-type: none; padding: 5px; margin-top: 0px;">`;
+                  params.forEach(param => {
+                  if (param.data[1] === null || param.data[1] === undefined) {
+                    return;
+                  }
+                  tooltipContent += `<li style="list-style-type: none; padding: 0px; margin: 0px;"><span style="color: ${param.color};">${param.seriesName}: ${param.data[1]}</span></li>`;               
+                  });
+                  tooltipContent += `</ul>`;
+                  tooltipTitle = "";
+                }
               }
               else{                
                 localTime = `${day}.${month}.${year}`;
@@ -385,15 +392,24 @@ export default {
               </div>`;
               let footer = '';
               if (this.selectedDev && this.lastRouteSegment() !== 'entra'){
-                footer = `                
-                <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">
-                  <strong></strong><span style="color: white;">${localTime}</span>
-                </div>`;
+                if (this.dateRange == 'y-1' || this.dateRange == 'y-2'){
+                  localTime = `${day}.${month}.${year}`
+                  footer = `                
+                  <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">
+                    <strong></strong><span style="color: white;">${localTime} | ${parseFloat(param.data[1]).toFixed(2)}</span>
+                  </div>`;
+                }
+                else{
+                  footer = `                
+                  <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">
+                    <strong></strong><span style="color: white;">${localTime}</span>
+                  </div>`;
+                }
               }
               else{
               footer = `
                 <div style="color: white; padding: 10px; background-color: #333; border-top: 1px solid #999;">
-                  <strong>Total ${cumulativeValue.toFixed(2)}  </strong> at <span style="color: white;">${localTime}</span>
+                  <strong>${localTime} </strong> | <span style="color: white;">${cumulativeValue.toFixed(2)}</span>
                 </div>`;
               }
               tooltipContent += footer;
@@ -404,21 +420,12 @@ export default {
           },        
       };
     },
-    createSeries(groupedData, timestamps) {    
+    createSeries(groupedData, timestamps) { 
 
         let filteredTimestamps = timestamps;
         let name = ''
-        if (this.dateRange == 'day-ahead'){
-          const yesterday = new Date();
-          yesterday.setHours(0, 0, 0, 0);
-          yesterday.setDate(yesterday.getDate() - 1);
-
-          const today = new Date();
-          today.setHours(1, 0, 0, 0);
-          today.setDate(today.getDate());
-
-          filteredTimestamps = timestamps.filter(timestamp => yesterday < new Date(timestamp) && new Date(timestamp) < today);      
-          name = 'Comercial'
+        if (this.dateRange == '7d'){      
+          name = 'Actual'
         }        
      
         return Object.keys(groupedData).map(farm => {
@@ -432,7 +439,9 @@ export default {
           itemStyle: {
             opacity:50
           },       
-          lineStyle:{},   
+          lineStyle:{
+            color: 'orange'
+          },   
           connectNulls: false,
           showSymbol: false,
             areaStyle: {
@@ -441,6 +450,7 @@ export default {
         }
           config.name = name ? name : farm
           config.data = data
+          config.color = 'orange'
           return config      
       });
       
@@ -477,16 +487,17 @@ export default {
           const config = {          
           type: 'line',       
           lineStyle:{
-            color:'magenta',
-            opacity:1,
+            with:1,
+            color:'yellow',
+            opacity:0.5,
             type: 'dashed'
           },   
           connectNulls: false,
           showSymbol: false,      
         }
-          config.name = `Prediction`
+          config.name = `Forecast`
           config.data = data
-          config.color = 'magenta'
+          config.color = 'yellow'
           return config      
       });
 

@@ -7,10 +7,12 @@
       </b-col>      
     </b-row>
     <b-row>
-        <b-col cols="6">
+        <b-col cols="12">
             <MeasurementData />
         </b-col>
-        <b-col cols="6">
+    </b-row>
+    <b-row>
+        <b-col cols="12" class="mt-4">
             <MapCard />            
         </b-col>     
     </b-row>

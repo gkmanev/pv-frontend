@@ -351,7 +351,7 @@ export default {
         const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
         const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
         return {
-          name: 'Meteo',
+          name: 'Actual',
           type: 'line',          
           connectNulls: false,
           lineStyle: {
@@ -380,7 +380,7 @@ export default {
         const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
         const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
         return {
-          name: 'Meteo Forecast',
+          name: 'Forecast',
           type: 'line',
           color:'orange',         
           connectNulls: false,
@@ -389,7 +389,7 @@ export default {
 
           },
           showSymbol: false,
-          data: data,
+          data: data,        
         };
       })
      
@@ -412,7 +412,7 @@ export default {
         const dataMap = new Map(groupedData[farm].map(item => [item[this.timestampField], item[this.valueFieldRadiation]]));        
         const data = filteredTimestamps.map(timestamp => [timestamp, dataMap.get(timestamp)]); // Use null for missing data
         return {
-          name: 'Meteo Forecast',
+          name: 'Actual',
           type: 'line',         
           connectNulls: false,
           lineStyle: {
@@ -421,6 +421,7 @@ export default {
           },
           showSymbol: false,
           data: data,
+          color: 'rgba(255,255,255,1)'
         };
       })
     },
@@ -443,6 +444,7 @@ export default {
           },
           showSymbol: false,
           data: data,
+          color: 'rgba(255,255,255,0.3)'
         };
       })
     },

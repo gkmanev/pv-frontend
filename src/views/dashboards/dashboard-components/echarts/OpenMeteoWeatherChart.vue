@@ -386,9 +386,7 @@ export default {
           connectNulls: false,
           lineStyle: {
             color: 'orange',
-            type: 'dotted',
-            opacity: 1,
-            width: 1
+
           },
           showSymbol: false,
           data: data,        
@@ -443,7 +441,6 @@ export default {
           connectNulls: false,
           lineStyle: {
             color: 'rgba(255,255,255,0.3)',
-            type: 'dotted'
           },
           showSymbol: false,
           data: data,

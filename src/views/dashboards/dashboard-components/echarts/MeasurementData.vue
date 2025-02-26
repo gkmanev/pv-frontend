@@ -487,10 +487,10 @@ export default {
           const config = {          
           type: 'line',       
           lineStyle:{
-            with:1,
-            color:'yellow',
-            opacity:0.5,
-            type: 'dashed'
+            width: 1,
+            color: 'yellow',
+            opacity: 0.7,
+            type: 'dotted'
           },   
           connectNulls: false,
           showSymbol: false,      

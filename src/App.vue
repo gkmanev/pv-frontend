@@ -23,7 +23,8 @@ export default {
     this.all = pvAssets;
     this.allDevsCreation(this.all); 
 
-    this.fetchApi()
+    this.fetchApi();
+    this.fetchToCheckLatestComersialData();
   },
   
 
@@ -32,6 +33,26 @@ export default {
   },
   methods:{
     ...mapActions(['allDevsCreation']),
+
+    fetchToCheckLatestComersialData() {
+      let today = new Date();
+      let yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const start_date = yesterday.toISOString().split('T')[0];
+      const end_date = today.toISOString().split('T')[0];      
+      const url = `http://209.38.208.230:8000/api/pvmeasurementdata/?start_date=${start_date}&end_date=${end_date}`;
+      console.log(url);
+      axios.get(url)
+      .then(response => {        
+        if(response.data.length > 0){
+          this.checkLatestComercial(response.data);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+    },
+      
 
     fetchApi() {
       let responseData = [];
@@ -46,8 +67,7 @@ export default {
         this.createAllDevs(responseData);
       });
     },
-    createAllDevs(data) {        
-   
+    createAllDevs(data) {  
       const mergedData = pvAssets.map(item => {
       const matchedData = data.find(c => c.installation_name === item.farm);
         return {
@@ -58,7 +78,20 @@ export default {
         });    
     this.all = mergedData;
     this.allDevsCreation(this.all);
+    },
 
+    checkLatestComercial(data) { 
+      
+      this.all = this.all.map(item => {
+        const matchedData = data.find(c => c.farm === item.farm);       
+
+        return {
+          ...item,
+          commercial: matchedData && matchedData.production !== null ? "updated" : "not-updated"
+        };
+      });
+
+      this.allDevsCreation(this.all);
     },
 
     },

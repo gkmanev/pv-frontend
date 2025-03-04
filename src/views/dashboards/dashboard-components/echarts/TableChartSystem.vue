@@ -8,13 +8,16 @@
            <template #cell(status)="{ item }">
              <span class="led-indicator" :class="getLedClass(item.online)"></span>
            </template>
+           <template #cell(updated)="{ item }">
+             <span class="led-indicator" :class="getLedClass(item.commercial)"></span>
+           </template>
          </b-table>
  
          <p class="btn-grp">
            <b-button size="sm" variant="outline-primary" @click="selectAllRows">Select all</b-button>
            <b-button size="sm" variant="outline-danger" @click="clearSelected">Clear selected</b-button>
          </p>
-         <p>Selected Rows:<br />{{ selected }}</p>
+         <!-- <p>Selected Rows:<br />{{ selected }}</p> -->
        </b-card>
      </b-col>
    </b-row>
@@ -41,11 +44,11 @@
          inputCap:'',
          fields: [
          { key: 'farm', sortable: true },
-         { key: 'status', sortable: true },        
+         { key: 'status', sortable: true },  
+         { key: 'updated', sortable: true, label: 'Updated' },      
          { key: 'power', sortable: true, label: 'Power kW'},
          {key: 'coordinates', sortable: true, label: 'Coordinates'},
-        //  { key: 'latitude', sortable: true, label: 'Latitude' },
-        //  { key: 'longitude', sortable: true, label: 'Longitude' },
+      
          { key: 'farm_type', sortable: true },            
          { key: 'capacity', label: 'Capacity'},         
        ],        
@@ -78,19 +81,23 @@
     
          getLedClass(status) {
              switch (status) {
-             case 'online':
-                 return 'led-blue';
-             case 'offline':
-                 return 'led-gray';
-             case 'ready':
-                 return 'led-green';
-             case 'providing':
-                 return 'led-orange';
-             default:
-                 return '';
+              case 'updated':
+                  return 'led-green';
+              case 'not-updated':
+                  return 'led-red';
+              case 'online':
+                  return 'led-blue';
+              case 'offline':
+                  return 'led-gray';
+              case 'ready':
+                  return 'led-green';
+              case 'providing':
+                  return 'led-orange';
+              default:
+                  return '';
              }
          },
- 
+          
          onRowSelected(selectedItems) {
          this.selected = selectedItems;
          },
@@ -105,6 +112,7 @@
       
        async createAllDevs() {        
          this.all = this.all_devs   
+         console.log("checkThisAll",this.all)
          this.all.forEach(dev => {
           dev.coordinates = `${dev.latitude} / ${dev.longitude}`;
           if (isNaN(dev.power)) {
@@ -159,11 +167,15 @@
  }
  
  .led-green {
-   background-color: green;
+   background-color: #6ccd6c;
  }
  
  .led-orange {
    background-color: orange;
  }
+
+ .led-red {
+   background-color: red;
+  }
    </style>
    

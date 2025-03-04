@@ -23,6 +23,11 @@
           <WeatherDataChart />
         </b-card>
       </b-col>
+      <!-- <b-col cols="12" class="mt-4">
+        <b-card>
+          <OpenMeteoWeatherChart />
+        </b-card>
+      </b-col> -->
     </b-row>
      
   </div>
@@ -37,6 +42,7 @@
   import MeasurementData from "../dashboard-components/echarts/MeasurementData.vue";
   import { mapState } from 'vuex';
   import WeatherDataChart from "../dashboard-components/echarts/WeatherDataChart.vue";
+  //import OpenMeteoWeatherChart from "../dashboard-components/echarts/OpenMeteoWeatherChart.vue";
   
   // -----------------------------------------
   // Export Here
@@ -54,6 +60,7 @@
     RangeComponent,  
     MeasurementData,
     WeatherDataChart,
+    //OpenMeteoWeatherChart
     
 },
 

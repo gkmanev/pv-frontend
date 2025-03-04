@@ -1,10 +1,13 @@
 module.exports = {
   publicPath: "/",
   css: {
+    extract: true,
+    sourceMap: false,
     loaderOptions: {
-      sass: {
-        additionalData: '@use "sass:meta"; @warn "Suppressing Sass warnings";',
-      },
-    },
-  },
+      css: {
+        // Disable CSS minification
+        minimize: false
+      }
+    }
+  }
 };

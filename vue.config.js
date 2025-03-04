@@ -4,9 +4,8 @@ module.exports = {
     extract: true,
     sourceMap: false,
     loaderOptions: {
-      css: {
-        // Disable CSS minification
-        minimize: false
+      css: {        // Disable CSS minification
+      
       }
     }
   }
